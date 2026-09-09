@@ -53,7 +53,34 @@ distribution becomes a real goal.
 - **Manga mode (later phase):** page images with OCR-detected text regions;
   tapping a region runs the same lookup popup as regular text.
 
-### 3.2 Study hub
+### 3.2 Import analysis (auto key-points extraction)
+
+The moment something is imported, Nagare runs the same pass a sous chef runs
+over a recipe before cooking starts: read through the whole thing once, pull
+out what actually matters, and hand it back prepped — rather than waiting for
+the reader to stumble onto each word one tap at a time.
+
+- **Trigger:** runs automatically on import. Not something the user asks for.
+- **What gets pulled:** every word and grammar pattern in the document,
+  filtered down to what's worth learning for *this* reader — new or unseen,
+  above their current level, or simply high-frequency in this specific piece.
+  Filtering uses the reader's own SRS/known-word state, so a heavily-N5
+  chapter doesn't flag every word, only what's actually new.
+- **What each item comes with — a what/how/when/where/why card, not just a
+  definition:**
+  - **What** it means (the sense actually used in this document)
+  - **How** it's used grammatically (particle attachment, conjugation, register)
+  - **When/where** this form shows up (casual speech vs. written vs. formal) —
+    illustrated with the real sentence pulled from *this* document, not a
+    generic corpus example
+  - **Why** it's flagged (e.g. "N3 grammar point, appears 6 times in this
+    chapter" / "a new reading of a kanji you already know")
+- **Output:** a "Key points" briefing attached to that item in the library —
+  vocab and grammar lists, skimmable before or during reading, with one-tap
+  "add all" or per-item add into the study decks. The reader's click-to-learn
+  interaction still covers anything the pass didn't flag.
+
+### 3.3 Study hub
 
 - **Vocabulary deck:** populated by (a) words you tap "add" on while reading,
   and (b) optional structured JLPT N5–N1 word lists you can opt into. Review
@@ -70,7 +97,7 @@ distribution becomes a real goal.
 - **Progress view:** N5→N1 readiness shown as coverage percentages (vocab,
   kanji, grammar known vs. that level's list) — not XP, not streaks.
 
-### 3.3 Library
+### 3.4 Library
 
 A shelf of everything imported, with per-item reading progress, last-read
 position, and source metadata (book / manga / article).
@@ -86,6 +113,7 @@ All open/free datasets — no licensing cost for an MVP:
 | Stroke order | KanjiVG | Animated stroke-order SVGs |
 | Example sentences | Tatoeba (JP↔EN) | Realistic usage examples |
 | JLPT level tags | community JLPT vocab/kanji/grammar lists | N5–N1 curriculum + level coverage |
+| Grammar patterns | curated JLPT grammar-point rule library | Detecting grammar points during import analysis |
 
 **Enhancement (optional, later):** call an LLM for on-demand, level-aware
 explanations ("explain this word the way you'd explain it to an N4 learner,
@@ -103,6 +131,10 @@ API server (FastAPI · Python)
   ├── Object storage — uploaded books/manga files
   ├── Tokenizer service — Sudachi (accurate modern-Japanese segmentation),
   │     results cached per document so re-reads are instant
+  ├── Extraction pipeline — runs once on import: tokenizer + grammar-pattern
+  │     matcher + level/frequency filter → a "key points" briefing (vocab +
+  │     grammar, each with a what/how/when/where/why card) attached to the
+  │     library item and queued for one-tap add to the study decks
   ├── Dictionary store — JMdict/KANJIDIC2/Tatoeba preprocessed into SQLite,
   │     mirrored into Postgres for server search and shipped as a read-only
   │     bundle to the client for offline lookups
@@ -136,8 +168,8 @@ connection; changes sync when back online).
 | Phase | Scope |
 |---|---|
 | 0 | Core reader MVP: import txt/epub, click-to-lookup via JMdict, no accounts yet (local-only) |
-| 1 | Vocabulary SRS: mining from lookups, JLPT list opt-in, review modes |
-| 2 | Kanji + grammar decks, cloze grammar testing, N5–N1 progress dashboard |
+| 1 | Vocabulary SRS: import-time key-vocab extraction + tap mining, JLPT list opt-in, review modes |
+| 2 | Kanji + grammar decks, import-time grammar-point extraction, cloze testing, N5–N1 progress dashboard |
 | 3 | Manga import (cbz/zip) + OCR-based click-to-lookup |
 | 4 | Accounts + cross-device sync, offline polish, install prompts |
 | 5 (stretch) | Pitch accent, TTS/listening mode, LLM-generated contextual explanations |
