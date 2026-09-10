@@ -57,6 +57,28 @@ export default function LibraryPage() {
         <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Library</h2>
         <LibraryList />
       </section>
+
+      <footer className="text-xs text-ink-soft">
+        Dictionary data from{" "}
+        <a
+          href="https://www.edrdg.org/jmdict/j_jmdict.html"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-accent"
+        >
+          JMdict/EDRDG
+        </a>
+        , used in conformance with the Group&apos;s{" "}
+        <a
+          href="https://www.edrdg.org/edrdg/licence.html"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-accent"
+        >
+          licence
+        </a>
+        .
+      </footer>
     </div>
   );
 }

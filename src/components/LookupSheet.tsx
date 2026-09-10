@@ -40,7 +40,8 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
           <>
             <p className="text-sm">{entry.meanings.join("; ")}</p>
             <p className="text-xs text-ink-soft">
-              {entry.pos} · {entry.level}
+              {entry.pos}
+              {entry.level ? ` · ${entry.level}` : ""}
             </p>
             <button
               type="button"
@@ -62,7 +63,7 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
           </>
         ) : (
           <p className="text-sm text-ink-soft">
-            Not in the sample dictionary yet — full JMdict lookup is coming in a later pass.
+            Not in the dictionary — it covers ~22,000 common words, not the full JMdict.
           </p>
         )}
       </div>

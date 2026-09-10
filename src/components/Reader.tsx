@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type UIEvent } from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
-import { lookupDictionary, type DictionaryEntry } from "@/lib/dictionary";
+import { loadDictionary, lookupDictionary, type DictionaryEntry, type JmdictLookup } from "@/lib/dictionary";
 import LookupSheet from "./LookupSheet";
 
 type Props = {
@@ -13,6 +13,7 @@ type Props = {
 
 export default function Reader({ text, initialProgress, onProgressChange }: Props) {
   const [tokens, setTokens] = useState<Token[] | null>(null);
+  const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
   const [selected, setSelected] = useState<{
     index: number;
     token: Token;
@@ -30,6 +31,18 @@ export default function Reader({ text, initialProgress, onProgressChange }: Prop
       active = false;
     };
   }, [text]);
+
+  useEffect(() => {
+    let active = true;
+    // Independent of tokenizing so a slow dictionary fetch never delays
+    // showing the text — clicks just fall back to "not found" until it's in.
+    void loadDictionary().then((dict) => {
+      if (active) setDictionary(dict);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -64,7 +77,7 @@ export default function Reader({ text, initialProgress, onProgressChange }: Prop
                 setSelected({
                   index,
                   token,
-                  entry: lookupDictionary(lookupKey(token), token.surface_form),
+                  entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary),
                 })
               }
               className={`rounded px-0.5 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 ${
