@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ImportPanel from "@/components/ImportPanel";
 import LibraryList from "@/components/LibraryList";
+import ClassicsShelf from "@/components/ClassicsShelf";
 import { addItem, listItems } from "@/lib/library";
 import { getStarred } from "@/lib/starred";
 import { SAMPLE_TEXT, SAMPLE_TITLE } from "@/lib/sample";
@@ -45,6 +46,11 @@ export default function LibraryPage() {
         >
           Or try a sample N5 text →
         </button>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Classics</h2>
+        <ClassicsShelf />
       </section>
 
       <section className="flex flex-col gap-3">
