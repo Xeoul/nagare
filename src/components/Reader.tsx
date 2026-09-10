@@ -13,9 +13,11 @@ type Props = {
 
 export default function Reader({ text, initialProgress, onProgressChange }: Props) {
   const [tokens, setTokens] = useState<Token[] | null>(null);
-  const [selected, setSelected] = useState<{ token: Token; entry: DictionaryEntry | null } | null>(
-    null,
-  );
+  const [selected, setSelected] = useState<{
+    index: number;
+    token: Token;
+    entry: DictionaryEntry | null;
+  } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasRestoredScroll = useRef(false);
 
@@ -51,7 +53,7 @@ export default function Reader({ text, initialProgress, onProgressChange }: Prop
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="h-[calc(100vh-160px)] overflow-y-auto rounded border border-line bg-paper-raised/60 p-6 text-xl leading-loose"
+        className="h-[calc(100vh-160px)] overflow-y-auto rounded border border-line bg-paper-raised/60 p-6 text-xl leading-loose [line-break:strict]"
       >
         {tokens.map((token, index) =>
           isLookupable(token) ? (
@@ -60,11 +62,16 @@ export default function Reader({ text, initialProgress, onProgressChange }: Prop
               type="button"
               onClick={() =>
                 setSelected({
+                  index,
                   token,
                   entry: lookupDictionary(lookupKey(token), token.surface_form),
                 })
               }
-              className="rounded px-0.5 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10"
+              className={`rounded px-0.5 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 ${
+                selected?.index === index
+                  ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
+                  : ""
+              }`}
             >
               {token.surface_form}
             </button>
