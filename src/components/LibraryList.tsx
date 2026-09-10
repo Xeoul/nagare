@@ -8,6 +8,7 @@ const KIND_LABEL: Record<LibraryItem["kind"], string> = {
   txt: "Text",
   epub: "EPUB",
   sample: "Sample",
+  classic: "Aozora Bunko",
 };
 
 export default function LibraryList() {
