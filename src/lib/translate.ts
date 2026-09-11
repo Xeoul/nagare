@@ -9,7 +9,11 @@ let pipelinePromise: Promise<(text: string) => Promise<string>> | null = null;
  */
 function getTranslator(): Promise<(text: string) => Promise<string>> {
   if (!pipelinePromise) {
-    pipelinePromise = import("@huggingface/transformers").then(async ({ pipeline }) => {
+    pipelinePromise = import("@huggingface/transformers").then(async ({ pipeline, env }) => {
+      // Forces the single-threaded WASM backend instead of the multi-threaded
+      // one, which occasionally crashed the tab under load — worth trading
+      // some inference speed for reliability here.
+      env.backends.onnx.wasm.numThreads = 1;
       // graphOptimizationLevel must be lowered to work around a known
       // onnxruntime-web bug where its default optimizer rewrites this
       // model's quantized weights into a MatMulNBits op that expects a scale
