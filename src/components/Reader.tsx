@@ -11,12 +11,20 @@ type Props = {
   initialProgress: number;
   onProgressChange: (progress: number) => void;
   showFurigana: boolean;
+  showTranslation: boolean;
 };
 
-function TokenText({ token, showFurigana }: { token: Token; showFurigana: boolean }) {
+function TokenText({
+  token,
+  showFurigana,
+  gloss,
+}: {
+  token: Token;
+  showFurigana: boolean;
+  gloss: string | null;
+}) {
   const furigana = showFurigana ? getFurigana(token) : null;
-  if (!furigana) return <>{token.surface_form}</>;
-  return (
+  const base = furigana ? (
     <>
       {furigana.before}
       <ruby>
@@ -25,10 +33,30 @@ function TokenText({ token, showFurigana }: { token: Token; showFurigana: boolea
       </ruby>
       {furigana.after}
     </>
+  ) : (
+    token.surface_form
+  );
+
+  if (!gloss) return base;
+
+  // A second, nested <ruby> is the standard technique for a dual
+  // annotation — the outer <rt> uses ruby-position:under to sit below the
+  // line instead of above it, mirroring how the furigana <rt> sits above.
+  return (
+    <ruby>
+      {base}
+      <rt className="[ruby-position:under]">{gloss}</rt>
+    </ruby>
   );
 }
 
-export default function Reader({ text, initialProgress, onProgressChange, showFurigana }: Props) {
+export default function Reader({
+  text,
+  initialProgress,
+  onProgressChange,
+  showFurigana,
+  showTranslation,
+}: Props) {
   const [tokens, setTokens] = useState<Token[] | null>(null);
   const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
   const [selected, setSelected] = useState<{
@@ -84,35 +112,37 @@ export default function Reader({ text, initialProgress, onProgressChange, showFu
         ref={scrollRef}
         onScroll={handleScroll}
         className={`h-[calc(100vh-160px)] overflow-y-auto rounded border border-line bg-paper-raised/60 p-6 text-xl [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
-          showFurigana ? "leading-[2.6]" : "leading-loose"
+          showFurigana && showTranslation
+            ? "leading-[3.6]"
+            : showFurigana || showTranslation
+              ? "leading-[2.6]"
+              : "leading-loose"
         }`}
       >
-        {tokens.map((token, index) =>
-          isLookupable(token) ? (
+        {tokens.map((token, index) => {
+          const entry = isLookupable(token)
+            ? lookupDictionary(lookupKey(token), token.surface_form, dictionary)
+            : null;
+          const gloss = showTranslation ? (entry?.meanings[0] ?? null) : null;
+          return isLookupable(token) ? (
             <button
               key={index}
               type="button"
-              onClick={() =>
-                setSelected({
-                  index,
-                  token,
-                  entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary),
-                })
-              }
+              onClick={() => setSelected({ index, token, entry })}
               className={`rounded px-0.5 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 ${
                 selected?.index === index
                   ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
                   : ""
               }`}
             >
-              <TokenText token={token} showFurigana={showFurigana} />
+              <TokenText token={token} showFurigana={showFurigana} gloss={gloss} />
             </button>
           ) : (
             <span key={index} className="whitespace-pre-wrap">
               {token.surface_form}
             </span>
-          ),
-        )}
+          );
+        })}
       </div>
 
       {selected && (

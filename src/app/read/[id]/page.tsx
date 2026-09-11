@@ -4,13 +4,19 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getItem, updateProgress, type LibraryItem } from "@/lib/library";
-import { getFuriganaPreference, setFuriganaPreference } from "@/lib/preferences";
+import {
+  getFuriganaPreference,
+  setFuriganaPreference,
+  getTranslationPreference,
+  setTranslationPreference,
+} from "@/lib/preferences";
 import Reader from "@/components/Reader";
 
 export default function ReadPage() {
   const { id } = useParams<{ id: string }>();
   const [item, setItem] = useState<LibraryItem | null | undefined>(undefined);
   const [showFurigana, setShowFurigana] = useState(getFuriganaPreference);
+  const [showTranslation, setShowTranslation] = useState(getTranslationPreference);
   const lastSaveRef = useRef(0);
 
   useEffect(() => {
@@ -21,6 +27,14 @@ export default function ReadPage() {
     setShowFurigana((prev) => {
       const next = !prev;
       setFuriganaPreference(next);
+      return next;
+    });
+  }
+
+  function toggleTranslation() {
+    setShowTranslation((prev) => {
+      const next = !prev;
+      setTranslationPreference(next);
       return next;
     });
   }
@@ -49,30 +63,44 @@ export default function ReadPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3 p-4 sm:p-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-2">
         <Link href="/" className="shrink-0 text-sm text-ink-soft hover:text-accent">
           ← Library
         </Link>
         <h1 className="min-w-0 flex-1 truncate text-center text-sm font-medium text-ink-soft">
           {item.title}
         </h1>
-        <button
-          type="button"
-          onClick={toggleFurigana}
-          className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-            showFurigana
-              ? "border-accent bg-accent text-paper"
-              : "border-line text-ink-soft hover:border-accent hover:text-accent"
-          }`}
-        >
-          Furigana
-        </button>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            onClick={toggleFurigana}
+            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+              showFurigana
+                ? "border-accent bg-accent text-paper"
+                : "border-line text-ink-soft hover:border-accent hover:text-accent"
+            }`}
+          >
+            Furigana
+          </button>
+          <button
+            type="button"
+            onClick={toggleTranslation}
+            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+              showTranslation
+                ? "border-accent bg-accent text-paper"
+                : "border-line text-ink-soft hover:border-accent hover:text-accent"
+            }`}
+          >
+            Translation
+          </button>
+        </div>
       </div>
       <Reader
         text={item.text}
         initialProgress={item.progress}
         onProgressChange={handleProgressChange}
         showFurigana={showFurigana}
+        showTranslation={showTranslation}
       />
     </div>
   );
