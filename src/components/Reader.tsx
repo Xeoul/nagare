@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type UIEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type UIEvent } from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
 import { loadDictionary, lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
 import { getFurigana } from "@/lib/furigana";
@@ -44,6 +44,7 @@ function Sentence({
   dictionary,
   selectedIndex,
   onSelect,
+  registerRef,
 }: {
   sentence: Token[];
   startIndex: number;
@@ -53,12 +54,19 @@ function Sentence({
   dictionary: JmdictLookup | null;
   selectedIndex: number | null;
   onSelect: (selected: Selected) => void;
+  registerRef: (startIndex: number, el: HTMLElement | null) => void;
 }) {
   const [translation, setTranslation] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const ref = useRef<HTMLSpanElement>(null);
   const translatable = isTranslatable(sentence);
 
+  // In vertical mode the translation is shown in a caption bar instead (see
+  // TranslationCaption below) — inline "below the sentence" placement reads
+  // as attached to whichever column happens to be adjacent, not its own
+  // sentence, since a vertical-rl block flows into a new column rather than
+  // sitting directly under the text. Still warm the cache here so the
+  // caption doesn't have to wait once a sentence becomes active.
   useEffect(() => {
     if (!showTranslation || !translatable || status !== "idle") return;
     const el = ref.current;
@@ -87,7 +95,14 @@ function Sentence({
 
   return (
     <>
-      <span ref={ref}>
+      <span
+        ref={(el) => {
+          ref.current = el;
+          registerRef(startIndex, el);
+          return () => registerRef(startIndex, null);
+        }}
+        data-start-index={startIndex}
+      >
         {sentence.map((token, i) => {
           const index = startIndex + i;
           return isLookupable(token) ? (
@@ -116,12 +131,8 @@ function Sentence({
           );
         })}
       </span>
-      {showTranslation && translatable && (
-        <div
-          className={`mb-2 block text-sm text-ink-soft [writing-mode:horizontal-tb] ${
-            vertical ? "w-40" : ""
-          }`}
-        >
+      {showTranslation && translatable && !vertical && (
+        <div className="mb-2 block text-sm text-ink-soft">
           {status === "error"
             ? "Translation unavailable"
             : status === "done"
@@ -130,6 +141,36 @@ function Sentence({
         </div>
       )}
     </>
+  );
+}
+
+/** A subtitle-style bar showing the translation for whichever sentence is currently centered in view. */
+function TranslationCaption({ text }: { text: string | null }) {
+  const [result, setResult] = useState<{ text: string; translation: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!text) return;
+    let active = true;
+    translateSentence(text)
+      .then((translation) => {
+        if (active) setResult({ text, translation });
+      })
+      .catch(() => {
+        if (active) setResult({ text, translation: null });
+      });
+    return () => {
+      active = false;
+    };
+  }, [text]);
+
+  if (!text) return null;
+
+  const label = result?.text !== text ? "Translating…" : (result.translation ?? "Translation unavailable");
+
+  return (
+    <div className="absolute inset-x-0 bottom-0 border-t border-line bg-paper px-4 py-2 text-sm text-ink-soft [writing-mode:horizontal-tb]">
+      {label}
+    </div>
   );
 }
 
@@ -145,8 +186,15 @@ export default function Reader({
   const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
   const [selected, setSelected] = useState<Selected | null>(null);
   const [modelProgress, setModelProgress] = useState<ModelProgress>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasRestoredScroll = useRef(false);
+  const sentenceEls = useRef(new Map<number, HTMLElement>());
+
+  const registerSentenceRef = useCallback((startIndex: number, el: HTMLElement | null) => {
+    if (el) sentenceEls.current.set(startIndex, el);
+    else sentenceEls.current.delete(startIndex);
+  }, []);
 
   useEffect(() => onModelProgress(setModelProgress), []);
 
@@ -208,6 +256,36 @@ export default function Reader({
     });
   }, [tokens]);
 
+  // In vertical mode, track whichever sentence currently sits in a thin band
+  // through the center of the reading pane — that's the one the caption bar
+  // shows a translation for, like a scroll-spy.
+  useEffect(() => {
+    if (!vertical || !showTranslation) return;
+    const root = scrollRef.current;
+    if (!root) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let best: { index: number; ratio: number } | null = null;
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const index = Number((entry.target as HTMLElement).dataset.startIndex);
+          if (!best || entry.intersectionRatio > best.ratio) best = { index, ratio: entry.intersectionRatio };
+        }
+        if (best) setActiveIndex(best.index);
+      },
+      { root, rootMargin: "0px -45% 0px -45%", threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    for (const el of sentenceEls.current.values()) observer.observe(el);
+    return () => observer.disconnect();
+  }, [vertical, showTranslation, sentences]);
+
+  const activeSentenceText = useMemo(() => {
+    if (!vertical || !showTranslation || activeIndex === null) return null;
+    const active = sentences.find((s) => s.startIndex === activeIndex);
+    return active && isTranslatable(active.sentence) ? sentenceText(active.sentence) : null;
+  }, [vertical, showTranslation, activeIndex, sentences]);
+
   function handleScroll(event: UIEvent<HTMLDivElement>) {
     const el = event.currentTarget;
     if (vertical) {
@@ -235,30 +313,34 @@ export default function Reader({
           Downloading translation model (one-time, ~110MB)… {downloadPercent}%
         </p>
       )}
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className={`h-[calc(100vh-160px)] rounded border border-line bg-paper-raised/60 p-6 text-xl [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
-          showFurigana ? "leading-[2.6]" : "leading-loose"
-        } ${
-          vertical
-            ? "overflow-x-auto overflow-y-hidden [writing-mode:vertical-rl]"
-            : "overflow-y-auto overflow-x-hidden"
-        }`}
-      >
-        {sentences.map(({ sentence, startIndex }) => (
-          <Sentence
-            key={startIndex}
-            sentence={sentence}
-            startIndex={startIndex}
-            showFurigana={showFurigana}
-            showTranslation={showTranslation}
-            vertical={vertical}
-            dictionary={dictionary}
-            selectedIndex={selected?.index ?? null}
-            onSelect={setSelected}
-          />
-        ))}
+      <div className="relative h-[calc(100vh-160px)]">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className={`h-full w-full rounded border border-line bg-paper-raised/60 p-6 text-xl [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+            showFurigana ? "leading-[2.6]" : "leading-loose"
+          } ${
+            vertical
+              ? "overflow-x-auto overflow-y-hidden [writing-mode:vertical-rl]"
+              : "overflow-y-auto overflow-x-hidden"
+          } ${vertical && activeSentenceText ? "pb-14" : ""}`}
+        >
+          {sentences.map(({ sentence, startIndex }) => (
+            <Sentence
+              key={startIndex}
+              sentence={sentence}
+              startIndex={startIndex}
+              showFurigana={showFurigana}
+              showTranslation={showTranslation}
+              vertical={vertical}
+              dictionary={dictionary}
+              selectedIndex={selected?.index ?? null}
+              onSelect={setSelected}
+              registerRef={registerSentenceRef}
+            />
+          ))}
+        </div>
+        {vertical && <TranslationCaption text={activeSentenceText} />}
       </div>
 
       {selected && (
