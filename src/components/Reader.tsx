@@ -3,15 +3,32 @@
 import { useEffect, useRef, useState, type UIEvent } from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
 import { loadDictionary, lookupDictionary, type DictionaryEntry, type JmdictLookup } from "@/lib/dictionary";
+import { getFurigana } from "@/lib/furigana";
 import LookupSheet from "./LookupSheet";
 
 type Props = {
   text: string;
   initialProgress: number;
   onProgressChange: (progress: number) => void;
+  showFurigana: boolean;
 };
 
-export default function Reader({ text, initialProgress, onProgressChange }: Props) {
+function TokenText({ token, showFurigana }: { token: Token; showFurigana: boolean }) {
+  const furigana = showFurigana ? getFurigana(token) : null;
+  if (!furigana) return <>{token.surface_form}</>;
+  return (
+    <>
+      {furigana.before}
+      <ruby>
+        {furigana.kanji}
+        <rt>{furigana.reading}</rt>
+      </ruby>
+      {furigana.after}
+    </>
+  );
+}
+
+export default function Reader({ text, initialProgress, onProgressChange, showFurigana }: Props) {
   const [tokens, setTokens] = useState<Token[] | null>(null);
   const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
   const [selected, setSelected] = useState<{
@@ -66,7 +83,9 @@ export default function Reader({ text, initialProgress, onProgressChange }: Prop
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="h-[calc(100vh-160px)] overflow-y-auto rounded border border-line bg-paper-raised/60 p-6 text-xl leading-loose [line-break:strict]"
+        className={`h-[calc(100vh-160px)] overflow-y-auto rounded border border-line bg-paper-raised/60 p-6 text-xl [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+          showFurigana ? "leading-[2.6]" : "leading-loose"
+        }`}
       >
         {tokens.map((token, index) =>
           isLookupable(token) ? (
@@ -86,7 +105,7 @@ export default function Reader({ text, initialProgress, onProgressChange }: Prop
                   : ""
               }`}
             >
-              {token.surface_form}
+              <TokenText token={token} showFurigana={showFurigana} />
             </button>
           ) : (
             <span key={index} className="whitespace-pre-wrap">

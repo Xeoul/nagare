@@ -3,10 +3,10 @@
 A Japanese reader that teaches as you read. See [`docs/PLAN.md`](docs/PLAN.md)
 for the full product and technical plan.
 
-This is the **Phase 0** scaffold: import a `.txt` or `.epub`, read it, and
-tap any word for its reading, meaning, and part of speech. Everything runs
-client-side — no backend, no accounts yet (see the roadmap in the plan for
-what's next).
+This is the **Phase 0** scaffold: import a `.txt` or `.epub`, read it with an
+optional furigana toggle, and tap any word for its reading, meaning, and part
+of speech. Everything runs client-side — no backend, no accounts yet (see the
+roadmap in the plan for what's next).
 
 ## Getting started
 
@@ -39,3 +39,7 @@ N5 text" link on the library page if you don't have a file handy.
   Phase 1 study hub's job.
 - **EPUB import** is a minimal reader (unzip → follow the spine → strip HTML
   to text) — no styling, images, or footnotes.
+- **Furigana** (`src/lib/furigana.ts`) is generated from the tokenizer's own
+  readings, not baked into the source text — it splits off matching trailing
+  okurigana (食べる → 食 gets た, べる stays plain) so the reading sits only
+  over the kanji. Toggle persists per-browser via `localStorage`, defaults on.
