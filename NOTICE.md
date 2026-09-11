@@ -23,3 +23,13 @@ Text fetched at runtime (see `src/lib/aozora.ts`) from
 https://aozorahack.org/aozorabunko_text, a mirror of
 https://www.aozora.gr.jp — Japan's public-domain digital library. Usage
 terms: https://www.aozora.gr.jp/guide/kijyunn.html.
+
+## Translation model — Xenova/opus-mt-ja-en
+
+The sentence translation toggle (see `src/lib/translate.ts`) lazily loads
+the `Xenova/opus-mt-ja-en` model — an ONNX conversion, for in-browser use
+with [transformers.js](https://github.com/huggingface/transformers.js), of
+`Helsinki-NLP/opus-mt-ja-en` (Language Technology Research Group at the
+University of Helsinki), trained on OPUS data with the Marian NMT
+framework. Licensed Apache License 2.0. Runs entirely client-side; nothing
+is sent to a server.

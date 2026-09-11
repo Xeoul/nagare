@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type UIEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type UIEvent } from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
 import { loadDictionary, lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
 import { getFurigana } from "@/lib/furigana";
+import { isTranslatable, sentenceText, splitIntoSentences } from "@/lib/sentences";
+import { translateSentence } from "@/lib/translate";
 import LookupSheet from "./LookupSheet";
 
 type Props = {
@@ -14,17 +16,11 @@ type Props = {
   showTranslation: boolean;
 };
 
-function TokenText({
-  token,
-  showFurigana,
-  gloss,
-}: {
-  token: Token;
-  showFurigana: boolean;
-  gloss: string | null;
-}) {
+function TokenText({ token, showFurigana }: { token: Token; showFurigana: boolean }) {
   const furigana = showFurigana ? getFurigana(token) : null;
-  const base = furigana ? (
+  if (!furigana) return token.surface_form;
+
+  return (
     <>
       {furigana.before}
       <ruby>
@@ -33,20 +29,97 @@ function TokenText({
       </ruby>
       {furigana.after}
     </>
-  ) : (
-    token.surface_form
   );
+}
 
-  if (!gloss) return base;
+type Selected = { index: number; token: Token; entry: JmdictEntry | null };
 
-  // A second, nested <ruby> is the standard technique for a dual
-  // annotation — the outer <rt> uses ruby-position:under to sit below the
-  // line instead of above it, mirroring how the furigana <rt> sits above.
+function Sentence({
+  sentence,
+  startIndex,
+  showFurigana,
+  showTranslation,
+  dictionary,
+  selectedIndex,
+  onSelect,
+}: {
+  sentence: Token[];
+  startIndex: number;
+  showFurigana: boolean;
+  showTranslation: boolean;
+  dictionary: JmdictLookup | null;
+  selectedIndex: number | null;
+  onSelect: (selected: Selected) => void;
+}) {
+  const [translation, setTranslation] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const ref = useRef<HTMLSpanElement>(null);
+  const translatable = isTranslatable(sentence);
+
+  useEffect(() => {
+    if (!showTranslation || !translatable || status !== "idle") return;
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        observer.disconnect();
+        setStatus("loading");
+        translateSentence(sentenceText(sentence))
+          .then((result) => {
+            setTranslation(result);
+            setStatus("done");
+          })
+          .catch(() => setStatus("error"));
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [showTranslation, translatable, status, sentence]);
+
   return (
-    <ruby>
-      {base}
-      <rt className="[ruby-position:under]">{gloss}</rt>
-    </ruby>
+    <>
+      <span ref={ref}>
+        {sentence.map((token, i) => {
+          const index = startIndex + i;
+          return isLookupable(token) ? (
+            <button
+              key={index}
+              type="button"
+              onClick={() =>
+                onSelect({
+                  index,
+                  token,
+                  entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary),
+                })
+              }
+              className={`rounded px-0.5 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 ${
+                selectedIndex === index
+                  ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
+                  : ""
+              }`}
+            >
+              <TokenText token={token} showFurigana={showFurigana} />
+            </button>
+          ) : (
+            <span key={index} className="whitespace-pre-wrap">
+              {token.surface_form}
+            </span>
+          );
+        })}
+      </span>
+      {showTranslation && translatable && (
+        <div className="mb-2 block text-sm text-ink-soft">
+          {status === "error"
+            ? "Translation unavailable"
+            : status === "done"
+              ? translation
+              : "Translating…"}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -59,11 +132,7 @@ export default function Reader({
 }: Props) {
   const [tokens, setTokens] = useState<Token[] | null>(null);
   const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
-  const [selected, setSelected] = useState<{
-    index: number;
-    token: Token;
-    entry: JmdictEntry | null;
-  } | null>(null);
+  const [selected, setSelected] = useState<Selected | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasRestoredScroll = useRef(false);
 
@@ -96,6 +165,16 @@ export default function Reader({
     el.scrollTop = (el.scrollHeight - el.clientHeight) * initialProgress;
   }, [tokens, initialProgress]);
 
+  const sentences = useMemo(() => {
+    if (!tokens) return [];
+    let offset = 0;
+    return splitIntoSentences(tokens).map((sentence) => {
+      const startIndex = offset;
+      offset += sentence.length;
+      return { sentence, startIndex };
+    });
+  }, [tokens]);
+
   function handleScroll(event: UIEvent<HTMLDivElement>) {
     const el = event.currentTarget;
     const max = el.scrollHeight - el.clientHeight;
@@ -112,37 +191,21 @@ export default function Reader({
         ref={scrollRef}
         onScroll={handleScroll}
         className={`h-[calc(100vh-160px)] overflow-y-auto rounded border border-line bg-paper-raised/60 p-6 text-xl [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
-          showFurigana && showTranslation
-            ? "leading-[3.6]"
-            : showFurigana || showTranslation
-              ? "leading-[2.6]"
-              : "leading-loose"
+          showFurigana ? "leading-[2.6]" : "leading-loose"
         }`}
       >
-        {tokens.map((token, index) => {
-          const entry = isLookupable(token)
-            ? lookupDictionary(lookupKey(token), token.surface_form, dictionary)
-            : null;
-          const gloss = showTranslation ? (entry?.meanings[0] ?? null) : null;
-          return isLookupable(token) ? (
-            <button
-              key={index}
-              type="button"
-              onClick={() => setSelected({ index, token, entry })}
-              className={`rounded px-0.5 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 ${
-                selected?.index === index
-                  ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
-                  : ""
-              }`}
-            >
-              <TokenText token={token} showFurigana={showFurigana} gloss={gloss} />
-            </button>
-          ) : (
-            <span key={index} className="whitespace-pre-wrap">
-              {token.surface_form}
-            </span>
-          );
-        })}
+        {sentences.map(({ sentence, startIndex }) => (
+          <Sentence
+            key={startIndex}
+            sentence={sentence}
+            startIndex={startIndex}
+            showFurigana={showFurigana}
+            showTranslation={showTranslation}
+            dictionary={dictionary}
+            selectedIndex={selected?.index ?? null}
+            onSelect={setSelected}
+          />
+        ))}
       </div>
 
       {selected && (
