@@ -309,6 +309,17 @@ export default function Reader({
     return () => observer.disconnect();
   }, [vertical, showTranslation, sentences]);
 
+  // A "sentence N of total" counter — the closest equivalent to a page/line
+  // number this continuously-scrolling reader has, since there are no real
+  // page boundaries to count. Driven by scroll fraction (not the scroll-spy
+  // above) so it starts at 1 and moves monotonically with how far you've
+  // scrolled, rather than jumping to wherever a sentence geometrically sits.
+  const [scrollFraction, setScrollFraction] = useState(initialProgress);
+  const currentPosition =
+    sentences.length > 0
+      ? Math.min(sentences.length, Math.max(1, Math.round(scrollFraction * (sentences.length - 1)) + 1))
+      : null;
+
   const activeSentenceText = useMemo(() => {
     if (!vertical || !showTranslation || activeIndex === null) return null;
     const active = sentences.find((s) => s.startIndex === activeIndex);
@@ -317,13 +328,17 @@ export default function Reader({
 
   function handleScroll(event: UIEvent<HTMLDivElement>) {
     const el = event.currentTarget;
-    if (vertical) {
-      const max = el.scrollWidth - el.clientWidth;
-      onProgressChange(max > 0 ? Math.abs(el.scrollLeft) / max : 1);
-    } else {
-      const max = el.scrollHeight - el.clientHeight;
-      onProgressChange(max > 0 ? el.scrollTop / max : 1);
-    }
+    const fraction = vertical
+      ? (() => {
+          const max = el.scrollWidth - el.clientWidth;
+          return max > 0 ? Math.abs(el.scrollLeft) / max : 1;
+        })()
+      : (() => {
+          const max = el.scrollHeight - el.clientHeight;
+          return max > 0 ? el.scrollTop / max : 1;
+        })();
+    onProgressChange(fraction);
+    setScrollFraction(fraction);
   }
 
   if (!tokens) {
@@ -372,6 +387,14 @@ export default function Reader({
           ))}
         </div>
         {vertical && <TranslationCaption text={activeSentenceText} />}
+        {currentPosition !== null && sentences.length > 0 && (
+          <p
+            aria-label={`Sentence ${currentPosition} of ${sentences.length}`}
+            className="pointer-events-none absolute right-2 top-2 rounded bg-paper/90 px-2 py-0.5 text-xs text-ink-soft"
+          >
+            {currentPosition} / {sentences.length}
+          </p>
+        )}
       </div>
 
       {selected && (
