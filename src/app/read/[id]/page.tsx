@@ -9,6 +9,8 @@ import {
   setFuriganaPreference,
   getTranslationPreference,
   setTranslationPreference,
+  getVerticalPreference,
+  setVerticalPreference,
 } from "@/lib/preferences";
 import Reader from "@/components/Reader";
 
@@ -17,6 +19,7 @@ export default function ReadPage() {
   const [item, setItem] = useState<LibraryItem | null | undefined>(undefined);
   const [showFurigana, setShowFurigana] = useState(getFuriganaPreference);
   const [showTranslation, setShowTranslation] = useState(getTranslationPreference);
+  const [vertical, setVertical] = useState(getVerticalPreference);
   const lastSaveRef = useRef(0);
 
   useEffect(() => {
@@ -35,6 +38,14 @@ export default function ReadPage() {
     setShowTranslation((prev) => {
       const next = !prev;
       setTranslationPreference(next);
+      return next;
+    });
+  }
+
+  function toggleVertical() {
+    setVertical((prev) => {
+      const next = !prev;
+      setVerticalPreference(next);
       return next;
     });
   }
@@ -93,6 +104,17 @@ export default function ReadPage() {
           >
             Translation
           </button>
+          <button
+            type="button"
+            onClick={toggleVertical}
+            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+              vertical
+                ? "border-accent bg-accent text-paper"
+                : "border-line text-ink-soft hover:border-accent hover:text-accent"
+            }`}
+          >
+            Vertical
+          </button>
         </div>
       </div>
       <Reader
@@ -101,6 +123,7 @@ export default function ReadPage() {
         onProgressChange={handleProgressChange}
         showFurigana={showFurigana}
         showTranslation={showTranslation}
+        vertical={vertical}
       />
     </div>
   );
