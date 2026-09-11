@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type UIEvent } from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
-import { loadDictionary, lookupDictionary, type DictionaryEntry, type JmdictLookup } from "@/lib/dictionary";
+import { loadDictionary, lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
 import { getFurigana } from "@/lib/furigana";
 import LookupSheet from "./LookupSheet";
 
@@ -34,7 +34,7 @@ export default function Reader({ text, initialProgress, onProgressChange, showFu
   const [selected, setSelected] = useState<{
     index: number;
     token: Token;
-    entry: DictionaryEntry | null;
+    entry: JmdictEntry | null;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasRestoredScroll = useRef(false);

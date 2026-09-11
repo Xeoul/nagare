@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "node scripts/copy-kuromoji-dict.mjs",
-    "build:dictionary": "node scripts/build-dictionary.mjs"
+    "build:dictionary": "node scripts/build-dictionary.mjs",
+    "build:jlpt-levels": "node scripts/build-jlpt-levels.mjs",
+    "score:difficulty": "node scripts/score-difficulty.mjs"
   },
   "dependencies": {
     "idb-keyval": "^6.3.0",
