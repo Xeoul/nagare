@@ -38,7 +38,7 @@ export default function ReadPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-3 p-4 sm:p-6">
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3 p-4 sm:p-6">
       <div className="flex items-center justify-between gap-4">
         <Link href="/" className="text-sm text-ink-soft hover:text-accent">
           ← Library
