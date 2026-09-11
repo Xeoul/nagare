@@ -16,10 +16,15 @@ function getTranslator(): Promise<(text: string) => Promise<string>> {
       // tensor the export doesn't have, and fails to create a session.
       // https://github.com/huggingface/transformers.js/issues/1707
       const translator = await pipeline("translation", "Xenova/opus-mt-ja-en", {
-        session_options: { graphOptimizationLevel: "disabled" },
+        session_options: { graphOptimizationLevel: "basic" },
       });
       return async (text: string) => {
-        const output = await translator(text, { num_beams: 1, do_sample: false });
+        const output = await translator(text, {
+          num_beams: 1,
+          do_sample: false,
+          max_new_tokens: 256,
+          no_repeat_ngram_size: 3,
+        });
         const [first] = Array.isArray(output) ? output : [output];
         const result = first as { translation_text?: string };
         return result.translation_text?.trim() ?? "";
