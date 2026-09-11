@@ -5,7 +5,7 @@ import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokeniz
 import { loadDictionary, lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
 import { getFurigana } from "@/lib/furigana";
 import { isTranslatable, sentenceText, splitIntoSentences } from "@/lib/sentences";
-import { translateSentence } from "@/lib/translate";
+import { onModelProgress, translateSentence, type ModelProgress } from "@/lib/translate";
 import LookupSheet from "./LookupSheet";
 
 type Props = {
@@ -136,8 +136,11 @@ export default function Reader({
   const [tokens, setTokens] = useState<Token[] | null>(null);
   const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
   const [selected, setSelected] = useState<Selected | null>(null);
+  const [modelProgress, setModelProgress] = useState<ModelProgress>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasRestoredScroll = useRef(false);
+
+  useEffect(() => onModelProgress(setModelProgress), []);
 
   useEffect(() => {
     let active = true;
@@ -188,8 +191,18 @@ export default function Reader({
     return <p className="text-sm text-ink-soft">Reading through the text…</p>;
   }
 
+  const downloadPercent =
+    showTranslation && modelProgress && modelProgress.total > 0
+      ? Math.min(100, Math.round((modelProgress.loaded / modelProgress.total) * 100))
+      : null;
+
   return (
     <>
+      {downloadPercent !== null && (
+        <p className="mb-2 text-xs text-ink-soft">
+          Downloading translation model (one-time, ~110MB)… {downloadPercent}%
+        </p>
+      )}
       <div
         ref={scrollRef}
         onScroll={handleScroll}

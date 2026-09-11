@@ -11,9 +11,44 @@ type PendingRequest = {
   timer: ReturnType<typeof setTimeout>;
 };
 
+type WorkerMessage =
+  | { type: "progress"; progress: { status: string; file?: string; loaded?: number; total?: number } }
+  | { type: "result"; id: number; result?: string; error?: string };
+
 let worker: Worker | null = null;
 let nextId = 0;
 const pending = new Map<number, PendingRequest>();
+
+export type ModelProgress = { loaded: number; total: number } | null;
+const fileProgress = new Map<string, { loaded: number; total: number }>();
+let latestProgress: ModelProgress = null;
+const progressListeners = new Set<(progress: ModelProgress) => void>();
+
+function setProgress(progress: ModelProgress) {
+  latestProgress = progress;
+  for (const listener of progressListeners) listener(progress);
+}
+
+/** Subscribes to the translation model's download/load progress. Calls back immediately with the current state. */
+export function onModelProgress(listener: (progress: ModelProgress) => void): () => void {
+  progressListeners.add(listener);
+  listener(latestProgress);
+  return () => progressListeners.delete(listener);
+}
+
+function handleProgressEvent(progress: { status: string; file?: string; loaded?: number; total?: number }) {
+  if (progress.status !== "progress" || !progress.file) return;
+  if (typeof progress.loaded !== "number" || typeof progress.total !== "number") return;
+
+  fileProgress.set(progress.file, { loaded: progress.loaded, total: progress.total });
+  let loaded = 0;
+  let total = 0;
+  for (const file of fileProgress.values()) {
+    loaded += file.loaded;
+    total += file.total;
+  }
+  setProgress({ loaded, total });
+}
 
 function failAllPending(err: Error) {
   for (const req of pending.values()) {
@@ -32,18 +67,24 @@ function getWorker(): Worker {
   if (worker) return worker;
 
   worker = new Worker(new URL("./translate-worker.ts", import.meta.url), { type: "module" });
-  worker.addEventListener(
-    "message",
-    (event: MessageEvent<{ id: number; result?: string; error?: string }>) => {
-      const { id, result, error } = event.data;
-      const req = pending.get(id);
-      if (!req) return;
-      pending.delete(id);
-      clearTimeout(req.timer);
-      if (error) req.reject(new Error(error));
-      else req.resolve(result ?? "");
-    },
-  );
+  worker.addEventListener("message", (event: MessageEvent<WorkerMessage>) => {
+    const data = event.data;
+    if (data.type === "progress") {
+      handleProgressEvent(data.progress);
+      return;
+    }
+    const { id, result, error } = data;
+    const req = pending.get(id);
+    if (!req) return;
+    pending.delete(id);
+    clearTimeout(req.timer);
+    if (error) req.reject(new Error(error));
+    else {
+      // The model is fully loaded once any translation completes.
+      setProgress(null);
+      req.resolve(result ?? "");
+    }
+  });
   worker.addEventListener("error", (event) => {
     failAllPending(new Error(event.message || "Translation worker error"));
     terminateWorker();
