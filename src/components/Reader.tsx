@@ -46,6 +46,7 @@ function Sentence({
   onSelect,
   registerRef,
   onActivate,
+  isActive,
 }: {
   sentence: Token[];
   startIndex: number;
@@ -57,6 +58,7 @@ function Sentence({
   onSelect: (selected: Selected) => void;
   registerRef: (startIndex: number, el: HTMLElement | null) => void;
   onActivate: (startIndex: number) => void;
+  isActive: boolean;
 }) {
   const [translation, setTranslation] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -111,6 +113,12 @@ function Sentence({
         // updates from scroll position) would stay stuck on whichever
         // sentence happened to be centered on load.
         onClick={vertical && showTranslation ? () => onActivate(startIndex) : undefined}
+        // Without this, tapping a sentence updates the caption invisibly —
+        // nothing on screen shows the tap registered or which sentence the
+        // caption bar is currently following.
+        className={
+          vertical && showTranslation && isActive ? "rounded bg-accent/10 transition-colors" : ""
+        }
       >
         {sentence.map((token, i) => {
           const index = startIndex + i;
@@ -347,6 +355,7 @@ export default function Reader({
               onSelect={setSelected}
               registerRef={registerSentenceRef}
               onActivate={setActiveIndex}
+              isActive={activeIndex === startIndex}
             />
           ))}
         </div>
