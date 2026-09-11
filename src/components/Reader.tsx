@@ -168,7 +168,7 @@ function TranslationCaption({ text }: { text: string | null }) {
   const label = result?.text !== text ? "Translating…" : (result.translation ?? "Translation unavailable");
 
   return (
-    <div className="absolute inset-x-0 bottom-0 border-t border-line bg-paper px-4 py-2 text-sm text-ink-soft [writing-mode:horizontal-tb]">
+    <div className="absolute inset-x-0 bottom-0 max-h-[40%] overflow-y-auto border-t border-line bg-paper px-4 py-2 text-sm text-ink-soft [writing-mode:horizontal-tb]">
       {label}
     </div>
   );
@@ -313,7 +313,7 @@ export default function Reader({
           Downloading translation model (one-time, ~110MB)… {downloadPercent}%
         </p>
       )}
-      <div className="relative h-[calc(100vh-160px)]">
+      <div className="relative h-[calc(100dvh-160px)]">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
