@@ -13,6 +13,7 @@
     "score:difficulty": "node scripts/score-difficulty.mjs"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
     "idb-keyval": "^6.3.0",
     "jszip": "^3.10.2",
     "kuromoji": "^0.1.2",
@@ -30,5 +31,8 @@
     "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "onnxruntime-web": "1.29.0"
   }
 }

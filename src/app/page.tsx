@@ -68,7 +68,16 @@ export default function LibraryPage() {
         >
           licence
         </a>
-        .
+        . Sentence translation uses{" "}
+        <a
+          href="https://huggingface.co/Xenova/opus-mt-ja-en"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-accent"
+        >
+          Xenova/opus-mt-ja-en
+        </a>
+        , run locally in your browser.
       </footer>
     </div>
   );
