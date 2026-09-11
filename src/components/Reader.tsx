@@ -97,6 +97,18 @@ function Sentence({
     return () => observer.disconnect();
   }, [showTranslation, translatable, status, sentence]);
 
+  // Tapping a word already opens its dictionary entry (see the button below)
+  // — this also marks the sentence you tapped as the one the translation
+  // caption follows. Without it, a passage short enough to fit on screen
+  // never scrolls, so the caption (which otherwise only updates from scroll
+  // position) would stay stuck on whichever sentence happened to be centered
+  // on load. Attached directly to every token (not just the outer span) —
+  // in vertical mode this sentence's wrapper spans multiple columns like
+  // wrapped lines, and Safari's click hit-testing on a multi-fragment inline
+  // element can be unreliable, so each token gets its own handler rather
+  // than relying on the tap bubbling up correctly from wherever it lands.
+  const activate = vertical && showTranslation ? () => onActivate(startIndex) : undefined;
+
   return (
     <>
       <span
@@ -106,18 +118,13 @@ function Sentence({
           return () => registerRef(startIndex, null);
         }}
         data-start-index={startIndex}
-        // Tapping a word already opens its dictionary entry (see the button
-        // below) — this also marks the sentence you tapped as the one the
-        // translation caption follows. Without it, a passage short enough to
-        // fit on screen never scrolls, so the caption (which otherwise only
-        // updates from scroll position) would stay stuck on whichever
-        // sentence happened to be centered on load.
-        onClick={vertical && showTranslation ? () => onActivate(startIndex) : undefined}
-        // Without this, tapping a sentence updates the caption invisibly —
-        // nothing on screen shows the tap registered or which sentence the
-        // caption bar is currently following.
+        onClick={activate}
+        // cursor: pointer is also the standard signal iOS Safari uses to treat
+        // a non-form element as tappable; without it taps can silently no-op.
         className={
-          vertical && showTranslation && isActive ? "rounded bg-accent/10 transition-colors" : ""
+          vertical && showTranslation
+            ? `cursor-pointer rounded transition-colors ${isActive ? "bg-accent/10" : ""}`
+            : ""
         }
       >
         {sentence.map((token, i) => {
@@ -126,13 +133,14 @@ function Sentence({
             <button
               key={index}
               type="button"
-              onClick={() =>
+              onClick={() => {
                 onSelect({
                   index,
                   token,
                   entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary),
-                })
-              }
+                });
+                activate?.();
+              }}
               className={`rounded px-0.5 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 ${
                 selectedIndex === index
                   ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
@@ -142,7 +150,11 @@ function Sentence({
               <TokenText token={token} showFurigana={showFurigana} />
             </button>
           ) : (
-            <span key={index} className="whitespace-pre-wrap">
+            <span
+              key={index}
+              className={`whitespace-pre-wrap ${activate ? "cursor-pointer" : ""}`}
+              onClick={activate}
+            >
               {token.surface_form}
             </span>
           );
