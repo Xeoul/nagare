@@ -19,6 +19,26 @@ if (!srcPath) {
 
 const xml = readFileSync(srcPath, "utf-8");
 
+// JLPT level tags (see scripts/build-jlpt-levels.mjs) — regenerate that
+// first if this file doesn't exist yet.
+const LEVEL_RANK = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
+let jlptLevels = {};
+try {
+  jlptLevels = JSON.parse(
+    readFileSync(new URL("../public/dictionary/jlpt-levels.json", import.meta.url), "utf-8"),
+  );
+} catch {
+  console.error("No jlpt-levels.json found — entries will ship without level tags.");
+}
+function lookupLevel(candidates) {
+  let best = null;
+  for (const word of candidates) {
+    const level = jlptLevels[word];
+    if (level && (!best || LEVEL_RANK[level] < LEVEL_RANK[best])) best = level;
+  }
+  return best;
+}
+
 // JMdict's DOCTYPE defines an ENTITY per POS/field/misc code, e.g.
 // <!ENTITY v5r "Godan verb with 'ru' ending">. Resolve those into readable
 // text instead of hardcoding JMdict's tag list ourselves.
@@ -79,12 +99,14 @@ while ((match = entryRe.exec(xml))) {
 
   const reading = readingForms[0] ?? kanjiForms[0];
   const surfaceForms = [...new Set([...kanjiForms, ...readingForms])];
+  const level = lookupLevel(surfaceForms);
 
   entries.push({
     surface: surfaceForms,
     reading,
     pos: pos.join(", "),
     meanings: glosses,
+    ...(level ? { level } : {}),
     // A kana string like は is a headword of its own for particles/auxiliaries
     // (no k_ele at all) but also shows up as a mere alternate *reading* of
     // unrelated kanji words (羽, 歯, 葉 for は). When both claim the same
@@ -142,7 +164,8 @@ const grammarFallback = {};
     const glosses = senses.flatMap((s) => s.glosses).slice(0, 5);
     if (glosses.length === 0) continue;
     const pos = [...new Set(senses.flatMap((s) => s.pos))].slice(0, 2);
-    const resolved = { reading, pos: pos.join(", "), meanings: glosses };
+    const level = lookupLevel([reading, ...kanjiForms]);
+    const resolved = { reading, pos: pos.join(", "), meanings: glosses, ...(level ? { level } : {}) };
     if (isGrammatical) grammarOverrides[reading] = resolved;
     else grammarFallback[reading] = resolved;
   }

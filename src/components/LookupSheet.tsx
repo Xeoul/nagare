@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { DictionaryEntry } from "@/lib/dictionary";
+import type { JmdictEntry } from "@/lib/dictionary";
 import { isStarred, toggleStarred } from "@/lib/starred";
 
 type Props = {
   surfaceForm: string;
   lookupKey: string;
-  entry: DictionaryEntry | null;
+  entry: JmdictEntry | null;
   onClose: () => void;
 };
 
