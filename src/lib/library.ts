@@ -4,7 +4,7 @@ export type LibraryItem = {
   id: string;
   title: string;
   text: string;
-  kind: "txt" | "epub" | "sample" | "classic";
+  kind: "txt" | "epub" | "sample" | "classic" | "starter";
   createdAt: number;
   /** Fraction of the document read, 0–1. Phase 0's resume-position stand-in. */
   progress: number;
