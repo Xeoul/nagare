@@ -71,7 +71,10 @@ function Sentence({
             setTranslation(result);
             setStatus("done");
           })
-          .catch(() => setStatus("error"));
+          .catch((err) => {
+            console.error("Sentence translation failed:", err);
+            setStatus("error");
+          });
       },
       { rootMargin: "200px" },
     );

@@ -10,7 +10,14 @@ let pipelinePromise: Promise<(text: string) => Promise<string>> | null = null;
 function getTranslator(): Promise<(text: string) => Promise<string>> {
   if (!pipelinePromise) {
     pipelinePromise = import("@huggingface/transformers").then(async ({ pipeline }) => {
-      const translator = await pipeline("translation", "Xenova/opus-mt-ja-en");
+      // graphOptimizationLevel must be lowered to work around a known
+      // onnxruntime-web bug where its default optimizer rewrites this
+      // model's quantized weights into a MatMulNBits op that expects a scale
+      // tensor the export doesn't have, and fails to create a session.
+      // https://github.com/huggingface/transformers.js/issues/1707
+      const translator = await pipeline("translation", "Xenova/opus-mt-ja-en", {
+        session_options: { graphOptimizationLevel: "disabled" },
+      });
       return async (text: string) => {
         const output = await translator(text, { num_beams: 1, do_sample: false });
         const [first] = Array.isArray(output) ? output : [output];
@@ -24,12 +31,19 @@ function getTranslator(): Promise<(text: string) => Promise<string>> {
 
 const cache = new Map<string, Promise<string>>();
 
+// Sentences become visible in a burst while scrolling, but the model only
+// has one inference session — running requests one at a time (instead of
+// letting them all fire at once) keeps memory/CPU use predictable, which
+// matters on phones and avoids overloading the WASM runtime.
+let queue: Promise<unknown> = Promise.resolve();
+
 /** Translates one sentence, caching by exact text so re-renders and re-visits are free. */
 export function translateSentence(text: string): Promise<string> {
   const cached = cache.get(text);
   if (cached) return cached;
 
-  const promise = getTranslator().then((translate) => translate(text));
+  const promise = queue.then(() => getTranslator()).then((translate) => translate(text));
+  queue = promise.catch(() => {});
   cache.set(text, promise);
   promise.catch(() => cache.delete(text));
   return promise;
