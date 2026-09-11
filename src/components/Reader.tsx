@@ -313,7 +313,7 @@ export default function Reader({
           Downloading translation model (one-time, ~110MB)… {downloadPercent}%
         </p>
       )}
-      <div className="relative h-[calc(100dvh-160px)]">
+      <div className="relative min-h-0 flex-1">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
