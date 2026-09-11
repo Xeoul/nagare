@@ -22,3 +22,15 @@ export function getTranslationPreference(): boolean {
 export function setTranslationPreference(show: boolean): void {
   window.localStorage.setItem(TRANSLATION_KEY, show ? "1" : "0");
 }
+
+const VERTICAL_KEY = "nagare:vertical-text";
+
+/** Defaults to off — horizontal is the more familiar starting layout. */
+export function getVerticalPreference(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(VERTICAL_KEY) === "1";
+}
+
+export function setVerticalPreference(vertical: boolean): void {
+  window.localStorage.setItem(VERTICAL_KEY, vertical ? "1" : "0");
+}

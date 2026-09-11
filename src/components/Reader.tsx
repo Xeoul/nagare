@@ -14,6 +14,7 @@ type Props = {
   onProgressChange: (progress: number) => void;
   showFurigana: boolean;
   showTranslation: boolean;
+  vertical: boolean;
 };
 
 function TokenText({ token, showFurigana }: { token: Token; showFurigana: boolean }) {
@@ -39,6 +40,7 @@ function Sentence({
   startIndex,
   showFurigana,
   showTranslation,
+  vertical,
   dictionary,
   selectedIndex,
   onSelect,
@@ -47,6 +49,7 @@ function Sentence({
   startIndex: number;
   showFurigana: boolean;
   showTranslation: boolean;
+  vertical: boolean;
   dictionary: JmdictLookup | null;
   selectedIndex: number | null;
   onSelect: (selected: Selected) => void;
@@ -114,7 +117,11 @@ function Sentence({
         })}
       </span>
       {showTranslation && translatable && (
-        <div className="mb-2 block text-sm text-ink-soft">
+        <div
+          className={`mb-2 block text-sm text-ink-soft [writing-mode:horizontal-tb] ${
+            vertical ? "w-40" : ""
+          }`}
+        >
           {status === "error"
             ? "Translation unavailable"
             : status === "done"
@@ -132,6 +139,7 @@ export default function Reader({
   onProgressChange,
   showFurigana,
   showTranslation,
+  vertical,
 }: Props) {
   const [tokens, setTokens] = useState<Token[] | null>(null);
   const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
@@ -168,8 +176,27 @@ export default function Reader({
     const el = scrollRef.current;
     if (!tokens || !el || hasRestoredScroll.current) return;
     hasRestoredScroll.current = true;
-    el.scrollTop = (el.scrollHeight - el.clientHeight) * initialProgress;
-  }, [tokens, initialProgress]);
+    if (vertical) {
+      const max = el.scrollWidth - el.clientWidth;
+      // vertical-rl starts at scrollLeft 0 and goes negative as you read
+      // further in (toward the end, which sits further to the left).
+      el.scrollLeft = -max * initialProgress;
+    } else {
+      el.scrollTop = (el.scrollHeight - el.clientHeight) * initialProgress;
+    }
+  }, [tokens, initialProgress, vertical]);
+
+  // Switching orientation mid-read changes the scroll axis entirely —
+  // rather than try to preserve the exact spot, just scroll back to the start.
+  const previousVertical = useRef(vertical);
+  useEffect(() => {
+    if (previousVertical.current === vertical) return;
+    previousVertical.current = vertical;
+    const el = scrollRef.current;
+    if (!el) return;
+    if (vertical) el.scrollLeft = 0;
+    else el.scrollTop = 0;
+  }, [vertical]);
 
   const sentences = useMemo(() => {
     if (!tokens) return [];
@@ -183,8 +210,13 @@ export default function Reader({
 
   function handleScroll(event: UIEvent<HTMLDivElement>) {
     const el = event.currentTarget;
-    const max = el.scrollHeight - el.clientHeight;
-    onProgressChange(max > 0 ? el.scrollTop / max : 1);
+    if (vertical) {
+      const max = el.scrollWidth - el.clientWidth;
+      onProgressChange(max > 0 ? Math.abs(el.scrollLeft) / max : 1);
+    } else {
+      const max = el.scrollHeight - el.clientHeight;
+      onProgressChange(max > 0 ? el.scrollTop / max : 1);
+    }
   }
 
   if (!tokens) {
@@ -206,8 +238,12 @@ export default function Reader({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className={`h-[calc(100vh-160px)] overflow-y-auto rounded border border-line bg-paper-raised/60 p-6 text-xl [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+        className={`h-[calc(100vh-160px)] rounded border border-line bg-paper-raised/60 p-6 text-xl [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
           showFurigana ? "leading-[2.6]" : "leading-loose"
+        } ${
+          vertical
+            ? "overflow-x-auto overflow-y-hidden [writing-mode:vertical-rl]"
+            : "overflow-y-auto overflow-x-hidden"
         }`}
       >
         {sentences.map(({ sentence, startIndex }) => (
@@ -217,6 +253,7 @@ export default function Reader({
             startIndex={startIndex}
             showFurigana={showFurigana}
             showTranslation={showTranslation}
+            vertical={vertical}
             dictionary={dictionary}
             selectedIndex={selected?.index ?? null}
             onSelect={setSelected}
