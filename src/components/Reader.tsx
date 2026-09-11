@@ -45,6 +45,7 @@ function Sentence({
   selectedIndex,
   onSelect,
   registerRef,
+  onActivate,
 }: {
   sentence: Token[];
   startIndex: number;
@@ -55,6 +56,7 @@ function Sentence({
   selectedIndex: number | null;
   onSelect: (selected: Selected) => void;
   registerRef: (startIndex: number, el: HTMLElement | null) => void;
+  onActivate: (startIndex: number) => void;
 }) {
   const [translation, setTranslation] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -102,6 +104,13 @@ function Sentence({
           return () => registerRef(startIndex, null);
         }}
         data-start-index={startIndex}
+        // Tapping a word already opens its dictionary entry (see the button
+        // below) — this also marks the sentence you tapped as the one the
+        // translation caption follows. Without it, a passage short enough to
+        // fit on screen never scrolls, so the caption (which otherwise only
+        // updates from scroll position) would stay stuck on whichever
+        // sentence happened to be centered on load.
+        onClick={vertical && showTranslation ? () => onActivate(startIndex) : undefined}
       >
         {sentence.map((token, i) => {
           const index = startIndex + i;
@@ -337,6 +346,7 @@ export default function Reader({
               selectedIndex={selected?.index ?? null}
               onSelect={setSelected}
               registerRef={registerSentenceRef}
+              onActivate={setActiveIndex}
             />
           ))}
         </div>
