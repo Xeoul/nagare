@@ -6,6 +6,7 @@ import ImportPanel from "@/components/ImportPanel";
 import LibraryList from "@/components/LibraryList";
 import ClassicsShelf from "@/components/ClassicsShelf";
 import StarterShelf from "@/components/StarterShelf";
+import ContinueReading from "@/components/ContinueReading";
 import { getStarred } from "@/lib/starred";
 
 export default function LibraryPage() {
@@ -26,6 +27,8 @@ export default function LibraryPage() {
           Word list ({wordCount})
         </Link>
       </header>
+
+      <ContinueReading />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Import</h2>

@@ -8,6 +8,8 @@ export type LibraryItem = {
   createdAt: number;
   /** Fraction of the document read, 0–1. Phase 0's resume-position stand-in. */
   progress: number;
+  /** Set whenever the reader is opened; drives "Continue reading". */
+  lastOpenedAt?: number;
 };
 
 const INDEX_KEY = "nagare:library:index";
@@ -47,6 +49,12 @@ export async function updateProgress(id: string, progress: number): Promise<void
   const item = await getItem(id);
   if (!item) return;
   await set(itemKey(id), { ...item, progress });
+}
+
+export async function markOpened(id: string): Promise<void> {
+  const item = await getItem(id);
+  if (!item) return;
+  await set(itemKey(id), { ...item, lastOpenedAt: Date.now() });
 }
 
 export async function removeItem(id: string): Promise<void> {

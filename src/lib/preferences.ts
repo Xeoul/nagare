@@ -34,3 +34,25 @@ export function getVerticalPreference(): boolean {
 export function setVerticalPreference(vertical: boolean): void {
   window.localStorage.setItem(VERTICAL_KEY, vertical ? "1" : "0");
 }
+
+const CONTINUE_DISMISSED_KEY = "nagare:continue-reading-dismissed";
+
+/**
+ * Remembers which item's "Continue reading" card was dismissed, keyed to
+ * that item's lastOpenedAt so the card comes back if you open the book
+ * again later (a fresh open makes the old dismissal stale).
+ */
+export function getDismissedContinueReading(): { id: string; lastOpenedAt: number } | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(CONTINUE_DISMISSED_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export function setDismissedContinueReading(id: string, lastOpenedAt: number): void {
+  window.localStorage.setItem(CONTINUE_DISMISSED_KEY, JSON.stringify({ id, lastOpenedAt }));
+}

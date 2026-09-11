@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { getItem, updateProgress, type LibraryItem } from "@/lib/library";
+import { getItem, markOpened, updateProgress, type LibraryItem } from "@/lib/library";
 import {
   getFuriganaPreference,
   setFuriganaPreference,
@@ -24,6 +24,7 @@ export default function ReadPage() {
 
   useEffect(() => {
     void getItem(id).then((found) => setItem(found ?? null));
+    void markOpened(id);
   }, [id]);
 
   function toggleFurigana() {
