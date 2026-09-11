@@ -9,6 +9,7 @@ const KIND_LABEL: Record<LibraryItem["kind"], string> = {
   epub: "EPUB",
   sample: "Sample",
   classic: "Aozora Bunko",
+  starter: "Starter reading",
 };
 
 export default function LibraryList() {
@@ -25,7 +26,8 @@ export default function LibraryList() {
   if (items.length === 0) {
     return (
       <p className="text-sm text-ink-soft">
-        Nothing imported yet — add a file above, or try the sample below.
+        Nothing imported yet — add a file above, or try a starter reading or
+        classic below.
       </p>
     );
   }
