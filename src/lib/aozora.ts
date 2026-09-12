@@ -5,6 +5,8 @@ export type ClassicWork = {
   author: string;
   /** Path relative to AOZORA_BASE, verified against the aozorahack mirror. */
   path: string;
+  /** Matches the file at public/classics/<slug>.txt — see scripts/fetch-classics.mjs. */
+  slug: string;
   note: string;
   /**
    * Estimated JLPT reading level — computed by scripts/score-difficulty.mjs
@@ -31,6 +33,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "蜘蛛の糸",
     author: "芥川龍之介",
     path: "cards/000879/files/92_ruby_164/92_ruby_164.txt",
+    slug: "kumo-no-ito",
     note: "Akutagawa — The Spider's Thread",
     level: "N3",
     density: 42,
@@ -39,6 +42,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "羅生門",
     author: "芥川龍之介",
     path: "cards/000879/files/127_ruby_150/127_ruby_150.txt",
+    slug: "rashomon",
     note: "Akutagawa — Rashōmon",
     level: "N3",
     density: 46,
@@ -47,6 +51,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "鼻",
     author: "芥川龍之介",
     path: "cards/000879/files/42_ruby_154/42_ruby_154.txt",
+    slug: "hana",
     note: "Akutagawa — The Nose",
     level: "N3",
     density: 44,
@@ -55,6 +60,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "杜子春",
     author: "芥川龍之介",
     path: "cards/000879/files/43015_ruby_17393/43015_ruby_17393.txt",
+    slug: "toshishun",
     note: "Akutagawa — Toshishun",
     level: "N3",
     density: 46,
@@ -63,6 +69,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "夢十夜",
     author: "夏目漱石",
     path: "cards/000148/files/799_ruby_6024/799_ruby_6024.txt",
+    slug: "yumejuya",
     note: "Sōseki — Ten Nights of Dreams",
     level: "N2",
     density: 48,
@@ -71,6 +78,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "注文の多い料理店",
     author: "宮沢賢治",
     path: "cards/000081/files/43754_ruby_17594/43754_ruby_17594.txt",
+    slug: "chumon-no-oi-ryoriten",
     note: "Miyazawa — The Restaurant of Many Orders",
     level: "N3",
     density: 50,
@@ -79,6 +87,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "やまなし",
     author: "宮沢賢治",
     path: "cards/000081/files/46605_ruby_29758/46605_ruby_29758.txt",
+    slug: "yamanashi",
     note: "Miyazawa — Wild Pear",
     level: "N3",
     density: 49,
@@ -87,6 +96,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "銀河鉄道の夜",
     author: "宮沢賢治",
     path: "cards/000081/files/456_ruby_145/456_ruby_145.txt",
+    slug: "ginga-tetsudo-no-yoru",
     note: "Miyazawa — Night on the Galactic Railroad",
     level: "N3",
     density: 56,
@@ -95,6 +105,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "走れメロス",
     author: "太宰治",
     path: "cards/000035/files/1567_ruby_4948/1567_ruby_4948.txt",
+    slug: "hashire-merosu",
     note: "Dazai — Run, Melos!",
     level: "N2",
     density: 50,
@@ -103,6 +114,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "ごん狐",
     author: "新美南吉",
     path: "cards/000121/files/628_ruby_649/628_ruby_649.txt",
+    slug: "gongitsune",
     note: "Niimi — Gon, the Fox",
     level: "N3",
     density: 61,
@@ -111,6 +123,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "山月記",
     author: "中島敦",
     path: "cards/000119/files/624_ruby_5668/624_ruby_5668.txt",
+    slug: "sangetsuki",
     note: "Nakajima — The Moon Over the Mountain",
     level: "N3",
     density: 55,
@@ -119,6 +132,7 @@ export const CLASSICS: ClassicWork[] = [
     title: "高瀬舟",
     author: "森鴎外",
     path: "cards/000129/files/45245_ruby_21882/45245_ruby_21882.txt",
+    slug: "takasebune",
     note: "Mori Ōgai — The Boat on the Takase River",
     level: "N3",
     density: 45,
@@ -159,7 +173,16 @@ export function stripAozoraMarkup(raw: string): string {
     .trim();
 }
 
+/**
+ * Reads pre-fetched, already-stripped text bundled at public/classics/<slug>.txt
+ * (see scripts/fetch-classics.mjs) instead of fetching Aozora Bunko live —
+ * opening a classic is then instant rather than waiting on an external site.
+ * Falls back to a live fetch if the bundled file is ever missing.
+ */
 export async function fetchClassicText(work: ClassicWork): Promise<string> {
+  const bundled = await fetch(`/classics/${work.slug}.txt`);
+  if (bundled.ok) return bundled.text();
+
   const res = await fetch(AOZORA_BASE + work.path);
   if (!res.ok) {
     throw new Error(`Couldn't reach Aozora Bunko (${res.status}). Try again in a moment.`);

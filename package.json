@@ -10,6 +10,7 @@
     "postinstall": "node scripts/copy-kuromoji-dict.mjs",
     "build:dictionary": "node scripts/build-dictionary.mjs",
     "build:jlpt-levels": "node scripts/build-jlpt-levels.mjs",
+    "fetch:classics": "node scripts/fetch-classics.mjs",
     "score:difficulty": "node scripts/score-difficulty.mjs"
   },
   "dependencies": {
