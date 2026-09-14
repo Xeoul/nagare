@@ -34,7 +34,19 @@ function getTranslator(): Promise<Pipeline> {
   return translatorPromise;
 }
 
-self.addEventListener("message", async (event: MessageEvent<{ id: number; text: string }>) => {
+type IncomingMessage = { type: "warm" } | { type: "translate"; id: number; text: string };
+
+self.addEventListener("message", async (event: MessageEvent<IncomingMessage>) => {
+  // A "warm" message just triggers the model download/load with no
+  // translation attached — used to preload before the user opens a
+  // reading, so the worker (and progress events) still behave exactly
+  // like a real request, but there's no id to reply to.
+  if (event.data.type === "warm") {
+    await getTranslator();
+    self.postMessage({ type: "warmed" });
+    return;
+  }
+
   const { id, text } = event.data;
   try {
     const translator = await getTranslator();
