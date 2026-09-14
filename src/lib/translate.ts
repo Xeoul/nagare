@@ -13,6 +13,7 @@ type PendingRequest = {
 
 type WorkerMessage =
   | { type: "progress"; progress: { status: string; file?: string; loaded?: number; total?: number } }
+  | { type: "warmed" }
   | { type: "result"; id: number; result?: string; error?: string };
 
 let worker: Worker | null = null;
@@ -73,6 +74,10 @@ function getWorker(): Worker {
       handleProgressEvent(data.progress);
       return;
     }
+    if (data.type === "warmed") {
+      setProgress(null);
+      return;
+    }
     const { id, result, error } = data;
     const req = pending.get(id);
     if (!req) return;
@@ -90,6 +95,11 @@ function getWorker(): Worker {
     terminateWorker();
   });
   return worker;
+}
+
+/** Starts the model downloading/loading without translating anything — see the library page. */
+export function preloadTranslationModel(): void {
+  getWorker().postMessage({ type: "warm" });
 }
 
 const cache = new Map<string, Promise<string>>();
@@ -114,7 +124,7 @@ export function translateSentence(text: string): Promise<string> {
       reject(new Error(`Translation timed out after ${TIMEOUT_MS}ms`));
     }, TIMEOUT_MS);
     pending.set(id, { resolve, reject, timer });
-    getWorker().postMessage({ id, text });
+    getWorker().postMessage({ type: "translate", id, text });
   });
   cache.set(text, promise);
   promise.catch(() => cache.delete(text));

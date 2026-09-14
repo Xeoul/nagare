@@ -8,13 +8,28 @@ import ClassicsShelf from "@/components/ClassicsShelf";
 import StarterShelf from "@/components/StarterShelf";
 import ContinueReading from "@/components/ContinueReading";
 import { getStarred } from "@/lib/starred";
+import { onModelProgress, preloadTranslationModel, type ModelProgress } from "@/lib/translate";
 
 export default function LibraryPage() {
   const [wordCount, setWordCount] = useState(0);
+  const [modelProgress, setModelProgress] = useState<ModelProgress>(null);
 
   useEffect(() => {
     void getStarred().then((words) => setWordCount(words.length));
   }, []);
+
+  // Downloads the translation model as soon as the library page loads,
+  // rather than waiting until a reading is open and Translation is toggled
+  // on — so it's already there by the time you need it.
+  useEffect(() => {
+    preloadTranslationModel();
+    return onModelProgress(setModelProgress);
+  }, []);
+
+  const downloadPercent =
+    modelProgress && modelProgress.total > 0
+      ? Math.min(100, Math.round((modelProgress.loaded / modelProgress.total) * 100))
+      : null;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 p-4 sm:p-6">
@@ -27,6 +42,12 @@ export default function LibraryPage() {
           Word list ({wordCount})
         </Link>
       </header>
+
+      {downloadPercent !== null && (
+        <p className="text-xs text-ink-soft">
+          Downloading translation model (one-time, ~110MB)… {downloadPercent}%
+        </p>
+      )}
 
       <ContinueReading />
 
