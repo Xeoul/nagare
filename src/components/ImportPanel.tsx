@@ -40,8 +40,10 @@ export default function ImportPanel() {
           const file = event.dataTransfer.files[0];
           if (file) void handleFile(file);
         }}
-        className={`flex flex-col items-center justify-center gap-2 rounded border-2 border-dashed px-6 py-10 text-center transition-colors cursor-pointer ${
-          isDragging ? "border-accent bg-paper-raised" : "border-line"
+        className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-all duration-200 ${
+          isDragging
+            ? "border-accent bg-paper-raised shadow-[0_10px_28px_-14px_rgb(var(--shadow-color)/0.35)]"
+            : "border-line/80 hover:border-accent-soft hover:bg-paper-raised/50"
         }`}
       >
         <span className="text-sm font-medium">

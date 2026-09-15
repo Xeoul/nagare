@@ -33,19 +33,22 @@ export default function StarterShelf() {
         const readings = STARTER_READINGS.filter((r) => r.level === level);
         if (readings.length === 0) return null;
         return (
-          <div key={level} className="flex flex-col gap-1">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-ink-soft">
+          <div key={level} className="flex flex-col gap-2">
+            <h3 className="text-xs font-medium uppercase tracking-[0.1em] text-ink-soft/80">
               {level}
             </h3>
-            <ul className="flex flex-col divide-y divide-line">
+            <ul className="flex flex-col gap-2">
               {readings.map((reading) => (
-                <li key={reading.title} className="flex items-center gap-4 py-3">
+                <li
+                  key={reading.title}
+                  className="card flex items-center gap-4 px-4 py-3"
+                >
                   <p className="min-w-0 flex-1 font-display text-lg">{reading.title}</p>
                   <button
                     type="button"
                     onClick={() => void open(reading)}
                     disabled={loadingTitle !== null}
-                    className="shrink-0 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-soft transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
+                    className="shrink-0 rounded-full border border-line px-3.5 py-1.5 text-xs font-medium text-ink-soft transition-all hover:border-accent hover:text-accent hover:shadow-sm active:scale-95 disabled:opacity-50"
                   >
                     {loadingTitle === reading.title ? "Loading…" : "Open"}
                   </button>

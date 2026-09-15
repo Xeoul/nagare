@@ -26,11 +26,11 @@ export default function ContinueReading() {
   if (!item) return null;
 
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">
+    <section className="flex flex-col gap-4">
+      <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
         Continue reading
       </h2>
-      <div className="flex items-center gap-4 rounded border border-line bg-paper-raised/60 px-4 py-3">
+      <div className="card card-interactive flex items-center gap-4 px-4 py-3">
         <Link href={`/read/${item.id}`} className="min-w-0 flex-1">
           <p className="truncate font-display text-lg">{item.title}</p>
           <p className="text-xs text-ink-soft">{Math.round(item.progress * 100)}% read</p>
@@ -42,7 +42,7 @@ export default function ContinueReading() {
             setItem(null);
           }}
           aria-label="Dismiss"
-          className="shrink-0 text-sm text-ink-soft hover:text-accent-warm"
+          className="shrink-0 text-lg text-ink-soft transition-colors hover:text-accent-warm"
         >
           ×
         </button>

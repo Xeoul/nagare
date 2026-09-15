@@ -75,8 +75,11 @@ export default function ReadPage() {
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col gap-3 p-4 sm:p-6">
-      <div className="flex shrink-0 items-center justify-between gap-2">
-        <Link href="/" className="shrink-0 text-sm text-ink-soft hover:text-accent">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line/70 pb-3">
+        <Link
+          href="/"
+          className="shrink-0 text-sm text-ink-soft transition-colors hover:text-accent"
+        >
           ← Library
         </Link>
         <h1 className="min-w-0 flex-1 truncate text-center text-sm font-medium text-ink-soft">
@@ -86,9 +89,9 @@ export default function ReadPage() {
           <button
             type="button"
             onClick={toggleFurigana}
-            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all active:scale-95 ${
               showFurigana
-                ? "border-accent bg-accent text-paper"
+                ? "border-accent bg-accent text-paper shadow-sm"
                 : "border-line text-ink-soft hover:border-accent hover:text-accent"
             }`}
           >
@@ -97,9 +100,9 @@ export default function ReadPage() {
           <button
             type="button"
             onClick={toggleTranslation}
-            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all active:scale-95 ${
               showTranslation
-                ? "border-accent bg-accent text-paper"
+                ? "border-accent bg-accent text-paper shadow-sm"
                 : "border-line text-ink-soft hover:border-accent hover:text-accent"
             }`}
           >
@@ -108,9 +111,9 @@ export default function ReadPage() {
           <button
             type="button"
             onClick={toggleVertical}
-            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all active:scale-95 ${
               vertical
-                ? "border-accent bg-accent text-paper"
+                ? "border-accent bg-accent text-paper shadow-sm"
                 : "border-line text-ink-soft hover:border-accent hover:text-accent"
             }`}
           >

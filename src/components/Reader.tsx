@@ -197,7 +197,7 @@ function TranslationCaption({ text }: { text: string | null }) {
   const label = result?.text !== text ? "Translating…" : (result.translation ?? "Translation unavailable");
 
   return (
-    <div className="absolute inset-x-0 bottom-0 max-h-[40%] overflow-y-auto border-t border-line bg-paper px-4 py-2 text-sm text-ink-soft [writing-mode:horizontal-tb]">
+    <div className="absolute inset-x-0 bottom-0 max-h-[40%] overflow-y-auto rounded-b-2xl border-t border-line/70 bg-paper/95 px-4 py-2.5 text-sm text-ink-soft backdrop-blur-sm [writing-mode:horizontal-tb]">
       {label}
     </div>
   );
@@ -361,7 +361,7 @@ export default function Reader({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className={`h-full w-full rounded border border-line bg-paper-raised/60 p-6 text-xl [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+          className={`h-full w-full rounded-2xl border border-line/70 bg-paper-raised/60 p-6 text-xl shadow-sm [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
             showFurigana ? "leading-[2.6]" : "leading-loose"
           } ${
             vertical
@@ -390,7 +390,7 @@ export default function Reader({
         {currentPosition !== null && sentences.length > 0 && (
           <p
             aria-label={`Sentence ${currentPosition} of ${sentences.length}`}
-            className="pointer-events-none absolute right-2 top-2 rounded bg-paper/90 px-2 py-0.5 text-xs text-ink-soft"
+            className="pointer-events-none absolute right-3 top-3 rounded-full border border-line/50 bg-paper/90 px-2.5 py-1 text-xs text-ink-soft shadow-sm backdrop-blur-sm"
           >
             {currentPosition} / {sentences.length}
           </p>

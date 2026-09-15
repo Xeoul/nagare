@@ -19,7 +19,7 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
   }, [lookupKey]);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper px-4 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+    <div className="fixed inset-x-0 bottom-0 z-20 rounded-t-2xl border-t border-line/70 bg-paper px-4 py-3.5 shadow-[0_-8px_24px_-8px_rgb(var(--shadow-color)/0.3)]">
       <div className="mx-auto flex max-w-2xl items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
@@ -44,10 +44,10 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
                       meanings: entry.meanings,
                     }).then((next) => setStarred(next.some((word) => word.key === lookupKey)));
                   }}
-                  className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                  className={`shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-all active:scale-95 ${
                     starred
-                      ? "border-accent bg-accent text-paper"
-                      : "border-line text-ink-soft hover:border-accent hover:text-accent"
+                      ? "border-accent bg-accent text-paper shadow-sm"
+                      : "border-line text-ink-soft hover:border-accent hover:text-accent hover:shadow-sm"
                   }`}
                 >
                   {starred ? "Added ✓" : "Add to word list"}
