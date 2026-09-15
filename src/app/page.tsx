@@ -6,6 +6,7 @@ import ImportPanel from "@/components/ImportPanel";
 import LibraryList from "@/components/LibraryList";
 import ClassicsShelf from "@/components/ClassicsShelf";
 import StarterShelf from "@/components/StarterShelf";
+import WikibooksShelf from "@/components/WikibooksShelf";
 import ContinueReading from "@/components/ContinueReading";
 import { getStarred } from "@/lib/starred";
 import { onModelProgress, preloadTranslationModel, type ModelProgress } from "@/lib/translate";
@@ -64,6 +65,13 @@ export default function LibraryPage() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">
+          Fairy Tales
+        </h2>
+        <WikibooksShelf />
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Classics</h2>
         <ClassicsShelf />
       </section>
@@ -101,7 +109,25 @@ export default function LibraryPage() {
         >
           Xenova/opus-mt-ja-en
         </a>
-        , run locally in your browser.
+        , run locally in your browser. Fairy tales from{" "}
+        <a
+          href="https://en.wikibooks.org/wiki/Japanese/Reader"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-accent"
+        >
+          Wikibooks
+        </a>
+        , licensed{" "}
+        <a
+          href="https://creativecommons.org/licenses/by-sa/4.0/"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-accent"
+        >
+          CC BY-SA 4.0
+        </a>
+        .
       </footer>
     </div>
   );
