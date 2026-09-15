@@ -10,6 +10,7 @@ const KIND_LABEL: Record<LibraryItem["kind"], string> = {
   sample: "Sample",
   classic: "Aozora Bunko",
   starter: "Starter reading",
+  reader: "Wikibooks",
 };
 
 export default function LibraryList() {

@@ -11,6 +11,7 @@
     "build:dictionary": "node scripts/build-dictionary.mjs",
     "build:jlpt-levels": "node scripts/build-jlpt-levels.mjs",
     "fetch:classics": "node scripts/fetch-classics.mjs",
+    "fetch:wikibooks-readers": "node scripts/fetch-wikibooks-readers.mjs",
     "score:difficulty": "node scripts/score-difficulty.mjs"
   },
   "dependencies": {
