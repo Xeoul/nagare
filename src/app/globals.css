@@ -9,6 +9,7 @@
   --accent: #2c4a6e;
   --accent-soft: #4d7091;
   --accent-warm: #b5603a;
+  --shadow-color: 28 36 32;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,6 +22,7 @@
     --accent: #7fa5cc;
     --accent-soft: #5c85ab;
     --accent-warm: #e08f61;
+    --shadow-color: 0 0 0;
   }
 }
 
@@ -40,4 +42,24 @@
 body {
   background: var(--paper);
   color: var(--ink);
+}
+
+/* A quiet, consistent card treatment used across shelves and lists —
+   static by default, with an optional hover lift for fully-clickable
+   rows (opt in with .card-interactive). Kept as plain CSS rather than
+   repeated Tailwind arbitrary values so every card stays in sync. */
+.card {
+  border-radius: 0.875rem;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-soft);
+  box-shadow: 0 10px 28px -14px rgb(var(--shadow-color) / 0.35);
 }

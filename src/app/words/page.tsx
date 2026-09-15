@@ -12,9 +12,9 @@ export default function WordsPage() {
   }, []);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 p-4 sm:p-6">
-      <div className="flex items-center justify-between gap-4">
-        <Link href="/" className="text-sm text-ink-soft hover:text-accent">
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 sm:p-8">
+      <div className="flex items-center justify-between gap-4 border-b border-line/70 pb-6">
+        <Link href="/" className="text-sm text-ink-soft transition-colors hover:text-accent">
           ← Library
         </Link>
         <h1 className="text-sm font-medium text-ink-soft">Word list</h1>
@@ -32,9 +32,9 @@ export default function WordsPage() {
             {words.length} word{words.length === 1 ? "" : "s"}. This is just a list for now —
             spaced-repetition review lands with the Phase 1 study hub.
           </p>
-          <ul className="flex flex-col divide-y divide-line">
+          <ul className="flex flex-col gap-2">
             {words.map((word) => (
-              <li key={word.key} className="py-3">
+              <li key={word.key} className="card px-4 py-3">
                 <p className="font-display text-lg">{word.key}</p>
                 <p className="text-sm text-ink-soft">
                   {word.reading} · {word.meanings.join("; ")}

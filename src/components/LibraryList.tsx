@@ -34,9 +34,12 @@ export default function LibraryList() {
   }
 
   return (
-    <ul className="flex flex-col divide-y divide-line">
+    <ul className="flex flex-col gap-2">
       {items.map((item) => (
-        <li key={item.id} className="flex items-center gap-4 py-3">
+        <li
+          key={item.id}
+          className="card card-interactive flex items-center gap-4 px-4 py-3"
+        >
           <Link href={`/read/${item.id}`} className="min-w-0 flex-1">
             <p className="truncate font-medium">{item.title}</p>
             <p className="text-xs text-ink-soft">
@@ -51,7 +54,7 @@ export default function LibraryList() {
                 setItems((current) => current?.filter((existing) => existing.id !== item.id) ?? null),
               );
             }}
-            className="shrink-0 text-xs text-ink-soft hover:text-accent-warm"
+            className="shrink-0 text-xs text-ink-soft transition-colors hover:text-accent-warm"
           >
             Remove
           </button>

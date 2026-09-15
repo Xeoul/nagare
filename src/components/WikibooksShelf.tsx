@@ -47,9 +47,9 @@ export default function WikibooksShelf() {
         (CC BY-SA 4.0) — genuine beginner-friendly native reading, which is
         hard to come by outside of graded readers.
       </p>
-      <ul className="flex flex-col divide-y divide-line">
+      <ul className="flex flex-col gap-2">
         {WIKIBOOKS_READERS.map((reader) => (
-          <li key={reader.slug} className="flex items-center gap-4 py-3">
+          <li key={reader.slug} className="card flex items-center gap-4 px-4 py-3">
             <div className="min-w-0 flex-1">
               <p className="font-display text-lg">{reader.title}</p>
               <p className="text-xs text-ink-soft">
@@ -60,7 +60,7 @@ export default function WikibooksShelf() {
               type="button"
               onClick={() => void open(reader)}
               disabled={loadingTitle !== null}
-              className="shrink-0 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-soft transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
+              className="shrink-0 rounded-full border border-line px-3.5 py-1.5 text-xs font-medium text-ink-soft transition-all hover:border-accent hover:text-accent hover:shadow-sm active:scale-95 disabled:opacity-50"
             >
               {loadingTitle === reader.title ? "Loading…" : "Open"}
             </button>

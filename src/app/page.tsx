@@ -33,55 +33,64 @@ export default function LibraryPage() {
       : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 p-4 sm:p-6">
-      <header className="flex items-start justify-between gap-4">
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 p-4 sm:p-8">
+      <header className="flex items-start justify-between gap-4 border-b border-line/70 pb-6">
         <div>
-          <p className="font-display text-sm text-ink-soft">流れ — &quot;flow&quot;</p>
-          <h1 className="font-display text-3xl font-bold">Nagare</h1>
+          <p className="font-display text-sm tracking-wide text-ink-soft">
+            流れ — &quot;flow&quot;
+          </p>
+          <h1 className="font-display text-4xl font-bold tracking-tight">Nagare</h1>
         </div>
-        <Link href="/words" className="mt-1 text-sm text-ink-soft hover:text-accent">
+        <Link
+          href="/words"
+          className="mt-1 shrink-0 text-sm text-ink-soft transition-colors hover:text-accent"
+        >
           Word list ({wordCount})
         </Link>
       </header>
 
       {downloadPercent !== null && (
-        <p className="text-xs text-ink-soft">
+        <p className="-mt-6 text-xs text-ink-soft">
           Downloading translation model (one-time, ~110MB)… {downloadPercent}%
         </p>
       )}
 
       <ContinueReading />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Import</h2>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">Import</h2>
         <ImportPanel />
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
           Starter readings
         </h2>
         <StarterShelf />
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
           Fairy Tales
         </h2>
         <WikibooksShelf />
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Classics</h2>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
+          Classics
+        </h2>
         <ClassicsShelf />
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">Library</h2>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
+          Library
+        </h2>
         <LibraryList />
       </section>
 
-      <footer className="text-xs text-ink-soft">
+      <footer className="border-t border-line/70 pt-6 text-xs text-ink-soft">
         Dictionary data from{" "}
         <a
           href="https://www.edrdg.org/jmdict/j_jmdict.html"
