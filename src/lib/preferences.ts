@@ -56,3 +56,25 @@ export function getDismissedContinueReading(): { id: string; lastOpenedAt: numbe
 export function setDismissedContinueReading(id: string, lastOpenedAt: number): void {
   window.localStorage.setItem(CONTINUE_DISMISSED_KEY, JSON.stringify({ id, lastOpenedAt }));
 }
+
+const FEED_LEVEL_KEY = "nagare:feed-level";
+
+/** Defaults to N5 — the feed should open on something a beginner can read. */
+export function getFeedLevelPreference(): "N5" | "N4" | "N3+" {
+  if (typeof window === "undefined") return "N5";
+  const stored = window.localStorage.getItem(FEED_LEVEL_KEY);
+  return stored === "N4" || stored === "N3+" ? stored : "N5";
+}
+
+const feedLevelListeners = new Set<() => void>();
+
+/** For useSyncExternalStore, so the feed re-renders when the level changes. */
+export function subscribeFeedLevel(listener: () => void): () => void {
+  feedLevelListeners.add(listener);
+  return () => feedLevelListeners.delete(listener);
+}
+
+export function setFeedLevelPreference(level: "N5" | "N4" | "N3+"): void {
+  window.localStorage.setItem(FEED_LEVEL_KEY, level);
+  for (const listener of feedLevelListeners) listener();
+}
