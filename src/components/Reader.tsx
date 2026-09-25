@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type UIEvent } from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
 import { loadDictionary, lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
-import { getFurigana } from "@/lib/furigana";
 import { isTranslatable, sentenceText, splitIntoSentences } from "@/lib/sentences";
 import { onModelProgress, translateSentence, type ModelProgress } from "@/lib/translate";
 import LookupSheet from "./LookupSheet";
+import TokenText from "./TokenText";
 
 type Props = {
   text: string;
@@ -16,22 +16,6 @@ type Props = {
   showTranslation: boolean;
   vertical: boolean;
 };
-
-function TokenText({ token, showFurigana }: { token: Token; showFurigana: boolean }) {
-  const furigana = showFurigana ? getFurigana(token) : null;
-  if (!furigana) return token.surface_form;
-
-  return (
-    <>
-      {furigana.before}
-      <ruby>
-        {furigana.kanji}
-        <rt>{furigana.reading}</rt>
-      </ruby>
-      {furigana.after}
-    </>
-  );
-}
 
 type Selected = { index: number; token: Token; entry: JmdictEntry | null };
 

@@ -19,7 +19,7 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
   }, [lookupKey]);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-20 rounded-t-2xl border-t border-line/70 bg-paper px-4 py-3.5 shadow-[0_-8px_24px_-8px_rgb(var(--shadow-color)/0.3)]">
+    <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-2xl border-t border-line/70 bg-paper px-4 text-ink py-3.5 shadow-[0_-8px_24px_-8px_rgb(var(--shadow-color)/0.3)]">
       <div className="mx-auto flex max-w-2xl items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getItem, markOpened, updateProgress, type LibraryItem } from "@/lib/library";
 import {
@@ -16,6 +16,7 @@ import Reader from "@/components/Reader";
 
 export default function ReadPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [item, setItem] = useState<LibraryItem | null | undefined>(undefined);
   const [showFurigana, setShowFurigana] = useState(getFuriganaPreference);
   const [showTranslation, setShowTranslation] = useState(getTranslationPreference);
@@ -66,7 +67,7 @@ export default function ReadPage() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
         <p>Couldn&apos;t find that item.</p>
-        <Link href="/" className="text-sm text-accent hover:underline">
+        <Link href="/library" className="text-sm text-accent hover:underline">
           Back to library
         </Link>
       </div>
@@ -76,12 +77,18 @@ export default function ReadPage() {
   return (
     <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col gap-3 p-4 sm:p-6">
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line/70 pb-3">
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={() => {
+            // Stories open from both the feed and the library — go back to
+            // whichever it was, falling back to the library on a direct visit.
+            if (window.history.length > 1) router.back();
+            else router.push("/library");
+          }}
           className="shrink-0 text-sm text-ink-soft transition-colors hover:text-accent"
         >
-          ← Library
-        </Link>
+          ← Back
+        </button>
         <h1 className="min-w-0 flex-1 truncate text-center text-sm font-medium text-ink-soft">
           {item.title}
         </h1>
