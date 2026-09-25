@@ -17,10 +17,6 @@
 /.next/
 /out/
 
-# kuromoji tokenizer dictionary — restored by `npm install` (see
-# scripts/copy-kuromoji-dict.mjs), not committed
-/public/dict/
-
 # production
 /build
 

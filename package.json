@@ -7,18 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/copy-kuromoji-dict.mjs",
     "build:dictionary": "node scripts/build-dictionary.mjs",
     "build:jlpt-levels": "node scripts/build-jlpt-levels.mjs",
-    "fetch:classics": "node scripts/fetch-classics.mjs",
-    "fetch:wikibooks-readers": "node scripts/fetch-wikibooks-readers.mjs",
-    "score:difficulty": "node scripts/score-difficulty.mjs"
+    "build:feed": "node scripts/build-feed.mjs"
   },
   "dependencies": {
-    "@huggingface/transformers": "^4.2.0",
     "idb-keyval": "^6.3.0",
-    "jszip": "^3.10.2",
-    "kuromoji": "^0.1.2",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
@@ -31,10 +25,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "kuromoji": "^0.1.2",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "overrides": {
-    "onnxruntime-web": "1.29.0"
   }
 }

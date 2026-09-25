@@ -1,6 +1,6 @@
 // One-time data-prep script: turns elzup/jlpt-word-list's per-level CSVs
 // into a single word -> level lookup, committed as
-// public/dictionary/jlpt-levels.json. Not run at app build/runtime.
+// data/dictionary/jlpt-levels.json. Not run at app build/runtime.
 //
 // Usage: node scripts/build-jlpt-levels.mjs /path/to/jlpt-word-list/src
 //
@@ -70,7 +70,7 @@ for (const level of LEVELS) {
   }
 }
 
-mkdirSync(new URL("../public/dictionary", import.meta.url), { recursive: true });
-const outPath = new URL("../public/dictionary/jlpt-levels.json", import.meta.url);
+mkdirSync(new URL("../data/dictionary", import.meta.url), { recursive: true });
+const outPath = new URL("../data/dictionary/jlpt-levels.json", import.meta.url);
 writeFileSync(outPath, JSON.stringify(byWord));
 console.error(`Wrote ${Object.keys(byWord).length} word -> level entries to ${outPath.pathname}`);

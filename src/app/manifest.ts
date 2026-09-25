@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Nagare",
     short_name: "Nagare",
-    description: "A Japanese reader that teaches as you read.",
+    description: "Learn Japanese one swipe at a time.",
     start_url: "/",
     display: "standalone",
     background_color: "#eef1ec",

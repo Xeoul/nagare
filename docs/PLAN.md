@@ -1,186 +1,93 @@
-# Nagare — Product & Technical Plan
+# Nagare — Product Plan
 
-Nagare (流れ, "flow") is a Japanese-native reader: import any text, book, or manga
-and read it the way you'd read on a Kindle, except every word is a doorway into
-learning it. A dedicated study hub turns what you've read (plus a structured
-N5→N1 curriculum) into low-pressure spaced review of vocabulary, grammar, and
-kanji.
+Nagare (流れ, "flow") teaches Japanese through a vertical, swipeable feed —
+the same shape as Reels or TikTok, but every card is something worth
+learning, and the feed quietly quizzes you on what you've seen right before
+you'd forget it.
+
+It replaces the earlier "import a book and read it" plan. Reading long texts
+turned out to be the wrong unit for learning on a phone: too big to finish
+in a spare minute, and nothing brings what you learned back later. A feed of
+one-idea cards fits the way phones are actually used, and a built-in review
+loop makes it stick.
 
 ## 1. Design principles
 
-- **Reading first, study second.** The reader is the product. Study tools exist
-  to reinforce what's read, not to gamify usage.
-- **No streaks, no guilt.** SRS is used for its scheduling efficiency, not its
-  behavioral hooks. No hearts, no leaderboards, no "don't break your streak."
-  A due queue exists; reviewing it is optional and untimed.
-- **One reader, every source.** Plain text, EPUB, web articles, and manga all
-  land in the same shelf and use the same click-to-learn interaction.
-- **Simple and well made.** Prefer fewer, solid features over broad, shallow
-  ones. Every screen should feel intentional.
-- **Cross-device by default.** Same library, same SRS state, same progress on
-  phone, laptop, and PC.
+- **One idea per card.** Every card fits one screen and takes a few seconds:
+  one word, one grammar pattern, one line of a story, one fact.
+- **Informative, not just drills.** Stories and "did you know" cards sit
+  between the vocab and grammar, so the feed is interesting to scroll
+  rather than a flashcard deck in disguise.
+- **Learning is built in.** Anything you meet comes back as a quick check a
+  few swipes later, then after longer and longer gaps (spaced repetition).
+  A miss sends it back to the start. You never have to open a separate
+  "review" mode.
+- **Try first, then check.** English translations stay blurred until
+  tapped, so you get a moment to understand the Japanese on your own.
+- **Every word is tappable.** Tap any word in any sentence for its reading
+  and meaning, and save it — saved words join your quizzes.
+- **No streaks, no guilt.** No hearts, XP, leaderboards, or "don't break
+  your streak." Progress is shown as words learned, nothing else.
+- **Accurate over plentiful.** The lessons are written by hand, with
+  furigana checked by eye. Machine translation (tried and dropped: it
+  rendered ももがながれてきました as "I'm getting nervous") and raw
+  dictionary lookups (ここ came back as "nine") are too wrong to learn from.
 
-## 2. Platform choice: PWA first
+## 2. Card types
 
-A installable **Progressive Web App** (single React/TypeScript codebase) is the
-right fit over building separate native apps:
-
-- One codebase covers phone, laptop, and desktop browser out of the box.
-- Installable to a home screen / dock, works offline via a service worker and
-  IndexedDB cache (dictionary data + in-progress books are local-first).
-- File import (local file picker) and clipboard/URL import both work fine in a
-  PWA — no native APIs are actually required for v1.
-- If app-store presence ever matters, the same codebase wraps in **Capacitor**
-  later with minimal rework. No need to decide that now.
-
-**Recommendation:** build the PWA. Revisit native wrapping only if app-store
-distribution becomes a real goal.
-
-## 3. Feature breakdown
-
-### 3.1 Reader
-
-- **Import:** local file (`.txt`, `.epub`, `.pdf`, `.cbz`/`.zip` of images for
-  manga) or a URL (web article — extracted via a readability parser; direct
-  file link — fetched and dropped into the library).
-- **Rendering:** horizontal or vertical text, optional furigana, adjustable
-  font size, light/dark themes, pagination with resume-where-you-left-off.
-- **Click-to-learn (the core interaction):** tap any word or kanji to open a
-  popup with reading, meaning(s), part of speech, JLPT level tag, 1–2 real
-  example sentences, and a "how it's used" note. One tap adds it to the study
-  deck. This works identically whether the source is a novel, a manga speech
-  bubble, or a pasted article.
-- **Manga mode (later phase):** page images with OCR-detected text regions;
-  tapping a region runs the same lookup popup as regular text.
-
-### 3.2 Import analysis (auto key-points extraction)
-
-The moment something is imported, Nagare runs the same pass a sous chef runs
-over a recipe before cooking starts: read through the whole thing once, pull
-out what actually matters, and hand it back prepped — rather than waiting for
-the reader to stumble onto each word one tap at a time.
-
-- **Trigger:** runs automatically on import. Not something the user asks for.
-- **What gets pulled:** every word and grammar pattern in the document,
-  filtered down to what's worth learning for *this* reader — new or unseen,
-  above their current level, or simply high-frequency in this specific piece.
-  Filtering uses the reader's own SRS/known-word state, so a heavily-N5
-  chapter doesn't flag every word, only what's actually new.
-- **What each item comes with — a what/how/when/where/why card, not just a
-  definition:**
-  - **What** it means (the sense actually used in this document)
-  - **How** it's used grammatically (particle attachment, conjugation, register)
-  - **When/where** this form shows up (casual speech vs. written vs. formal) —
-    illustrated with the real sentence pulled from *this* document, not a
-    generic corpus example
-  - **Why** it's flagged (e.g. "N3 grammar point, appears 6 times in this
-    chapter" / "a new reading of a kanji you already know")
-- **Output:** a "Key points" briefing attached to that item in the library —
-  vocab and grammar lists, skimmable before or during reading, with one-tap
-  "add all" or per-item add into the study decks. The reader's click-to-learn
-  interaction still covers anything the pass didn't flag.
-
-### 3.3 Study hub
-
-- **Vocabulary deck:** populated by (a) words you tap "add" on while reading,
-  and (b) optional structured JLPT N5–N1 word lists you can opt into. Review
-  modes: recognition (see word → recall meaning), production (see meaning →
-  recall word/reading).
-- **Kanji deck:** readings, meanings, stroke-order animation, radicals; a
-  kanji's card links back to the vocab words that contain it.
-- **Grammar deck:** JLPT-tagged grammar points with explanation + examples;
-  tested via cloze (fill-in-the-blank) exercises rather than flashcards.
-- **Scheduling:** a lightweight FSRS-style algorithm decides what's "due," but
-  the UI presents it as a soft, dismissible queue — not a countdown or quota.
-  New items stay suspended until explicitly added, so the deck never
-  ambushes you with a backlog you didn't ask for.
-- **Progress view:** N5→N1 readiness shown as coverage percentages (vocab,
-  kanji, grammar known vs. that level's list) — not XP, not streaks.
-
-### 3.4 Library
-
-A shelf of everything imported, with per-item reading progress, last-read
-position, and source metadata (book / manga / article).
-
-## 4. Data sources
-
-All open/free datasets — no licensing cost for an MVP:
-
-| Data | Source | Use |
-|---|---|---|
-| Dictionary | JMdict | Word meanings, readings, POS |
-| Kanji | KANJIDIC2 | Readings, meanings, grade, stroke count |
-| Stroke order | KanjiVG | Animated stroke-order SVGs |
-| Example sentences | Tatoeba (JP↔EN) | Realistic usage examples |
-| JLPT level tags | community JLPT vocab/kanji/grammar lists | N5–N1 curriculum + level coverage |
-| Grammar patterns | curated JLPT grammar-point rule library | Detecting grammar points during import analysis |
-
-**Enhancement (optional, later):** call an LLM for on-demand, level-aware
-explanations ("explain this word the way you'd explain it to an N4 learner,
-with a natural example") layered on top of the static dictionary data — richer
-than a fixed corpus, generated only when a static example isn't enough.
-
-## 5. Architecture
-
-```
-Client (PWA · React/TS)
-  │  offline cache: IndexedDB (dictionary subset, in-progress books, SRS queue)
-  ▼
-API server (FastAPI · Python)
-  ├── Postgres — accounts, library metadata, SRS state, progress
-  ├── Object storage — uploaded books/manga files
-  ├── Tokenizer service — Sudachi (accurate modern-Japanese segmentation),
-  │     results cached per document so re-reads are instant
-  ├── Extraction pipeline — runs once on import: tokenizer + grammar-pattern
-  │     matcher + level/frequency filter → a "key points" briefing (vocab +
-  │     grammar, each with a what/how/when/where/why card) attached to the
-  │     library item and queued for one-tap add to the study decks
-  ├── Dictionary store — JMdict/KANJIDIC2/Tatoeba preprocessed into SQLite,
-  │     mirrored into Postgres for server search and shipped as a read-only
-  │     bundle to the client for offline lookups
-  ├── (Phase 3) OCR service — manga-ocr (Python model trained on manga text)
-  └── (optional) Claude API — on-demand contextual explanations
-```
-
-Python is the pragmatic backend choice here specifically because the best
-Japanese NLP and manga-OCR tooling (Sudachi, fugashi/MeCab, manga-ocr) is
-Python-native — using it avoids re-implementing or shelling out to it from
-another language.
-
-Sync is account-based: library, SRS state, and progress follow the user
-across devices. The client stays offline-first (reads/reviews work with no
-connection; changes sync when back online).
-
-## 6. Suggested stack
-
-- **Frontend:** TypeScript, React (Next.js), Tailwind. Installable PWA.
-- **Tokenizer:** Sudachi, run server-side, cached per document.
-- **Backend:** Python (FastAPI).
-- **Database/auth/storage:** Postgres — Supabase is a fast path to get
-  Postgres + auth + object storage + realtime sync without hand-rolling all
-  of it for a solo/small build; a self-hosted Postgres + S3-compatible store
-  is the fallback if you'd rather not depend on a managed platform.
-- **Dictionary storage:** JMdict/KANJIDIC2 XML preprocessed once into SQLite
-  at build time, not parsed live.
-
-## 7. Roadmap
-
-| Phase | Scope |
+| Card | What it shows |
 |---|---|
-| 0 | Core reader MVP: import txt/epub, click-to-lookup via JMdict, no accounts yet (local-only) |
-| 1 | Vocabulary SRS: import-time key-vocab extraction + tap mining, JLPT list opt-in, review modes |
-| 2 | Kanji + grammar decks, import-time grammar-point extraction, cloze testing, N5–N1 progress dashboard |
-| 3 | Manga import (cbz/zip) + OCR-based click-to-lookup |
-| 4 | Accounts + cross-device sync, offline polish, install prompts |
-| 5 (stretch) | Pitch accent, TTS/listening mode, LLM-generated contextual explanations |
+| **New word** | Word, reading, meaning, an example sentence with the word highlighted. "I already know this" skips its early reviews. |
+| **Grammar** | Pattern, one-line meaning, a short explanation, how it's formed, two examples. |
+| **Story** | One line of a short original story, with a segmented progress bar. The previous line stays faintly visible. Stories come in pairs of cards, so each visit moves the plot along. |
+| **Did you know** | A fact about how Japanese works (three scripts, counters, pitch accent, aizuchi…), with an example. |
+| **Quick check** | Word quizzes rotate between meaning (JP → EN), reading (kanji → kana), and reverse (EN → JP). Grammar quizzes are fill-in-the-blank. |
 
-## 8. Open decisions
+The feed interleaves these in a fixed rhythm (see `PATTERN` in
+`src/lib/feed.ts`) and slots a quick check in whenever something is due, with
+at least two lesson cards between quizzes.
 
-These don't block starting Phase 0, but are worth deciding before Phase 3–4:
+## 3. Review schedule
 
-- **Managed vs. self-hosted backend** (Supabase vs. hand-rolled Postgres + storage) —
-  affects how fast Phase 4 (accounts/sync) goes.
-- **Manga timing** — OCR adds real complexity; confirm it should stay Phase 3
-  rather than pulling into the MVP.
-- **App-store distribution** — PWA-only vs. eventually wrapping with Capacitor
-  for Play Store / App Store presence.
+Stages and gaps (`src/lib/progress.ts`): 1 min → 5 min → 1 day → 3 days →
+7 days → 16 days → 35 days → 90 days. Meeting a word or grammar point starts
+it at stage 0. A correct answer moves it up a stage; a miss drops it to 0.
+Stage 3 or higher counts as "learned." Once every lesson has been introduced
+and nothing is due, the feed practices whatever is due soonest.
+
+Progress lives in IndexedDB on the device. There are no accounts yet.
+
+## 4. Content pipeline
+
+```
+content/*.json          hand-written lessons (words, grammar, facts, stories)
+data/dictionary/*.json  JMdict extract + JLPT levels (tap-glosses only)
+        │
+        ▼  npm run build:feed   (scripts/build-feed.mjs)
+public/feed/content.json  every sentence pre-tokenized with kuromoji,
+                          furigana attached, and a gloss per word
+```
+
+Tokenizing at build time means the phone never downloads the ~17 MB
+tokenizer dictionary or the full JMdict. It loads one ~190 KB file.
+
+Glosses come from, in order: the hand-written word list, a small table of
+particles and endings, then JMdict. JMdict matches are only used when their
+reading agrees with the tokenizer's. Readings kuromoji gets wrong in this
+content (日本 → にっぽん, 九時 → きゅうじ, and so on) are pinned in the
+script's `PHRASES` table.
+
+**Adding content:** edit a file in `content/`, run `npm run build:feed`, and
+check the script's output. It warns when a word doesn't appear in its own
+example sentence. Look over the furigana of any new sentence; if kuromoji
+misreads something, add it to `PHRASES`.
+
+## 5. Roadmap
+
+| Next | Scope |
+|---|---|
+| More content | Grow N5/N4 to full JLPT coverage (~1,400 words), add N3. More stories, including multi-part series. |
+| Listening cards | Hear a sentence first, then reveal the text. |
+| Kanji cards | Components/radicals, readings, and words that use the kanji. |
+| Sync | Optional account so progress follows you between phone and laptop. |
+| Offline | Service worker so the feed works with no connection. |

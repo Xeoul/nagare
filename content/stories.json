@@ -1,0 +1,177 @@
+[
+  {
+    "id": "nichiyoubi",
+    "title": "日曜日",
+    "en": "Sunday",
+    "level": "N5",
+    "sentences": [
+      {"jp": "私は日曜日が好きです。", "en": "I like Sundays."},
+      {"jp": "朝、九時に起きます。", "en": "In the morning, I get up at nine."},
+      {"jp": "それから、朝ご飯を食べます。", "en": "Then I eat breakfast."},
+      {"jp": "午後、公園へ行きます。", "en": "In the afternoon, I go to the park."},
+      {"jp": "犬と散歩します。", "en": "I take a walk with my dog."},
+      {"jp": "とても楽しいです。", "en": "It's really fun."},
+      {"jp": "夜、家族と晩ご飯を食べます。", "en": "In the evening, I eat dinner with my family."},
+      {"jp": "そのあと、テレビを見ます。", "en": "After that, I watch TV."},
+      {"jp": "早く寝ます。", "en": "I go to bed early."}
+    ]
+  },
+  {
+    "id": "kazoku",
+    "title": "私の家族",
+    "en": "My Family",
+    "level": "N5",
+    "sentences": [
+      {"jp": "父と母と兄がいます。", "en": "I have a father, a mother, and an older brother."},
+      {"jp": "父は会社員です。", "en": "My father is an office worker."},
+      {"jp": "毎朝、早く会社へ行きます。", "en": "Every morning, he goes to the office early."},
+      {"jp": "母は料理が上手です。", "en": "My mother is good at cooking."},
+      {"jp": "晩ご飯はいつもおいしいです。", "en": "Dinner is always delicious."},
+      {"jp": "兄は学生です。", "en": "My older brother is a student."},
+      {"jp": "今、英語を勉強しています。", "en": "He's studying English now."},
+      {"jp": "みんな、元気です。", "en": "Everyone is doing well."}
+    ]
+  },
+  {
+    "id": "kaimono",
+    "title": "買い物",
+    "en": "Shopping",
+    "level": "N5",
+    "sentences": [
+      {"jp": "今日、母とスーパーへ買い物に行きました。", "en": "Today I went shopping at the supermarket with my mother."},
+      {"jp": "りんごと魚と卵を買いました。", "en": "We bought apples, fish, and eggs."},
+      {"jp": "あまり高くなかったです。", "en": "It wasn't very expensive."},
+      {"jp": "それから、新しい靴も買いました。", "en": "Then we bought new shoes, too."},
+      {"jp": "とても楽しかったです。", "en": "It was a lot of fun."},
+      {"jp": "家に帰って、みんなで晩ご飯を作りました。", "en": "We went home and everyone made dinner together."}
+    ]
+  },
+  {
+    "id": "neko",
+    "title": "となりの猫",
+    "en": "The Neighbor's Cat",
+    "level": "N5",
+    "sentences": [
+      {"jp": "となりの家に白い猫がいます。", "en": "There's a white cat at the house next door."},
+      {"jp": "名前はユキです。", "en": "Her name is Yuki."},
+      {"jp": "ユキは毎朝、私の庭に来ます。", "en": "Every morning, Yuki comes into my garden."},
+      {"jp": "花の下で、ゆっくり寝ます。", "en": "She sleeps lazily under the flowers."},
+      {"jp": "私はユキに水をあげます。", "en": "I give Yuki some water."},
+      {"jp": "ユキは何も言いませんが、とてもかわいいです。", "en": "Yuki doesn't say anything, but she's very cute."},
+      {"jp": "夕方、ユキは自分の家に帰ります。", "en": "In the evening, Yuki goes back to her own home."},
+      {"jp": "明日もまた来るでしょう。", "en": "She'll probably come again tomorrow."}
+    ]
+  },
+  {
+    "id": "kissaten",
+    "title": "駅の前の喫茶店",
+    "en": "The Café by the Station",
+    "level": "N5",
+    "sentences": [
+      {"jp": "駅の前に小さい喫茶店があります。", "en": "There's a small café in front of the station."},
+      {"jp": "古い店ですが、とても静かです。", "en": "It's an old place, but very quiet."},
+      {"jp": "私は毎週土曜日にここへ来ます。", "en": "I come here every Saturday."},
+      {"jp": "いつもコーヒーとケーキを頼みます。", "en": "I always order coffee and cake."},
+      {"jp": "店のおじいさんはとてもやさしいです。", "en": "The old man who runs the shop is very kind."},
+      {"jp": "今日、おじいさんが「いつもありがとう」と言いました。", "en": "Today the old man said, \"Thanks for always coming.\""},
+      {"jp": "私はうれしくて、少し笑いました。", "en": "I was happy and smiled a little."}
+    ]
+  },
+  {
+    "id": "hajimete-no-sushi",
+    "title": "はじめてのすし",
+    "en": "My First Sushi",
+    "level": "N5",
+    "sentences": [
+      {"jp": "去年、はじめて日本へ行きました。", "en": "Last year, I went to Japan for the first time."},
+      {"jp": "東京で友達とすし屋に入りました。", "en": "In Tokyo, I went into a sushi restaurant with a friend."},
+      {"jp": "すしが小さい皿の上で回っていました。", "en": "The sushi was going around on little plates."},
+      {"jp": "私はどれを取るか分かりませんでした。", "en": "I didn't know which one to take."},
+      {"jp": "友達が「これを食べてみて」と言いました。", "en": "My friend said, \"Try this one.\""},
+      {"jp": "それはサーモンでした。", "en": "It was salmon."},
+      {"jp": "本当においしかったです。", "en": "It was really delicious."},
+      {"jp": "その日、私は十皿も食べました。", "en": "That day, I ate a whole ten plates."}
+    ]
+  },
+  {
+    "id": "kyoto",
+    "title": "京都旅行",
+    "en": "A Trip to Kyoto",
+    "level": "N4",
+    "sentences": [
+      {"jp": "先週、友達と京都へ旅行する予定を立てました。", "en": "Last week, I made plans with a friend to travel to Kyoto."},
+      {"jp": "朝早く、駅から出発しました。", "en": "We set off from the station early in the morning."},
+      {"jp": "京都はとても静かで、有名なお寺がたくさんあります。", "en": "Kyoto is very peaceful, and has lots of famous temples."},
+      {"jp": "私たちは古いお寺を見て、写真をたくさん撮りました。", "en": "We looked at old temples and took lots of photos."},
+      {"jp": "窓から見える景色も珍しくて、きれいでした。", "en": "The view from the windows was unusual and beautiful too."},
+      {"jp": "それから、京都の文化について少し勉強しました。", "en": "After that, we learned a little about Kyoto's culture."},
+      {"jp": "おいしい料理も食べました。", "en": "We ate delicious food, too."},
+      {"jp": "夜、ホテルで友達といろいろな話をしました。", "en": "At night, my friend and I talked about all sorts of things at the hotel."},
+      {"jp": "楽しい旅行でした。", "en": "It was a fun trip."}
+    ]
+  },
+  {
+    "id": "ame",
+    "title": "雨の日",
+    "en": "A Rainy Day",
+    "level": "N4",
+    "sentences": [
+      {"jp": "最近、雨の日が多いです。", "en": "There have been a lot of rainy days lately."},
+      {"jp": "今朝も、起きたら雨が降っていました。", "en": "This morning, too, it was raining when I got up."},
+      {"jp": "傘を持って、駅まで歩きました。", "en": "I took an umbrella and walked to the station."},
+      {"jp": "少し不便でしたが、頑張りました。", "en": "It was a bit of a hassle, but I pushed through."},
+      {"jp": "電車の中はいつもより混んでいて、少し疲れました。", "en": "The train was more crowded than usual, and I got a little tired."},
+      {"jp": "会社に着いたら、友達がお茶をくれました。", "en": "When I got to the office, a friend gave me some tea."},
+      {"jp": "うれしかったです。", "en": "That made me happy."},
+      {"jp": "午後、雨がやんで、空が明るくなりました。", "en": "In the afternoon, the rain stopped and the sky got brighter."},
+      {"jp": "仕事が終わったあと、久しぶりに友達に会って、一緒に食事をしました。", "en": "After work, I met a friend I hadn't seen in a while, and we ate together."}
+    ]
+  },
+  {
+    "id": "wasuremono",
+    "title": "忘れ物",
+    "en": "The Lost Item",
+    "level": "N4",
+    "sentences": [
+      {"jp": "昨日、電車に財布を忘れてしまいました。", "en": "Yesterday, I left my wallet on the train."},
+      {"jp": "家に着いてから、やっと気がつきました。", "en": "I only noticed after I got home."},
+      {"jp": "とても心配になって、すぐ駅に電話しました。", "en": "I got really worried and called the station right away."},
+      {"jp": "駅の人は丁寧に話を聞いてくれました。", "en": "The station staff listened carefully to me."},
+      {"jp": "次の日、「財布が届きました」と連絡がありました。", "en": "The next day, I got a call saying, \"Your wallet has been turned in.\""},
+      {"jp": "お金もカードも、全部入っていました。", "en": "The money and cards were all still inside."},
+      {"jp": "日本では、忘れ物がよく戻ってくるそうです。", "en": "They say lost things often come back in Japan."},
+      {"jp": "本当にありがたいと思いました。", "en": "I felt truly grateful."}
+    ]
+  },
+  {
+    "id": "nihongo-no-benkyou",
+    "title": "日本語の勉強",
+    "en": "Studying Japanese",
+    "level": "N4",
+    "sentences": [
+      {"jp": "私は去年から日本語を勉強しています。", "en": "I've been studying Japanese since last year."},
+      {"jp": "はじめは、ひらがなを覚えるのも大変でした。", "en": "At first, even memorizing hiragana was hard."},
+      {"jp": "でも、毎日少しずつ続けました。", "en": "But I kept at it a little every day."},
+      {"jp": "最近、簡単な本が読めるようになりました。", "en": "Recently, I've become able to read simple books."},
+      {"jp": "分からない言葉は、すぐ辞書で調べます。", "en": "I look up words I don't know in the dictionary right away."},
+      {"jp": "漢字はまだ難しいですが、面白いです。", "en": "Kanji is still hard, but it's interesting."},
+      {"jp": "将来、日本で働いてみたいと思っています。", "en": "Someday, I'd like to try working in Japan."}
+    ]
+  },
+  {
+    "id": "hikkoshi",
+    "title": "引っ越し",
+    "en": "Moving House",
+    "level": "N4",
+    "sentences": [
+      {"jp": "来月、新しいアパートに引っ越すことになりました。", "en": "It's been decided that I'm moving to a new apartment next month."},
+      {"jp": "今の部屋は駅から遠くて、不便だったからです。", "en": "That's because my current room is far from the station, which was inconvenient."},
+      {"jp": "新しいアパートは駅から歩いて五分です。", "en": "The new apartment is a five-minute walk from the station."},
+      {"jp": "部屋は少し狭いですが、窓から公園が見えます。", "en": "The room is a little small, but you can see a park from the window."},
+      {"jp": "週末、友達が準備を手伝ってくれました。", "en": "On the weekend, a friend helped me get ready."},
+      {"jp": "本や服を箱に入れるのに、一日かかりました。", "en": "It took a whole day to pack my books and clothes into boxes."},
+      {"jp": "お礼に、友達に晩ご飯をごちそうしました。", "en": "To thank my friend, I treated them to dinner."},
+      {"jp": "新しい生活が楽しみです。", "en": "I'm looking forward to my new life."}
+    ]
+  }
+]

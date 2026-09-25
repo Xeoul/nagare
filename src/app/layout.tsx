@@ -16,7 +16,7 @@ const shipporiMincho = Shippori_Mincho({
 
 export const metadata: Metadata = {
   title: "Nagare",
-  description: "A Japanese reader that teaches as you read.",
+  description: "Learn Japanese one swipe at a time.",
 };
 
 export const viewport: Viewport = {

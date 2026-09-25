@@ -1,6 +1,6 @@
 // One-time data-prep script: turns the official JMdict XML into a compact
 // JSON lookup of "common" words, committed as a static asset (see
-// public/dictionary/jmdict-common.json). Not run at app build/runtime —
+// data/dictionary/jmdict-common.json). Not run at app build/runtime —
 // re-run by hand when JMdict updates.
 //
 // Usage: node scripts/build-dictionary.mjs /path/to/JMdict_e
@@ -25,7 +25,7 @@ const LEVEL_RANK = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
 let jlptLevels = {};
 try {
   jlptLevels = JSON.parse(
-    readFileSync(new URL("../public/dictionary/jlpt-levels.json", import.meta.url), "utf-8"),
+    readFileSync(new URL("../data/dictionary/jlpt-levels.json", import.meta.url), "utf-8"),
   );
 } catch {
   console.error("No jlpt-levels.json found — entries will ship without level tags.");
@@ -198,7 +198,7 @@ for (const entry of Object.values(bySurface)) {
 
 Object.assign(bySurface, grammarOverrides);
 
-mkdirSync(new URL("../public/dictionary", import.meta.url), { recursive: true });
-const outPath = new URL("../public/dictionary/jmdict-common.json", import.meta.url);
+mkdirSync(new URL("../data/dictionary", import.meta.url), { recursive: true });
+const outPath = new URL("../data/dictionary/jmdict-common.json", import.meta.url);
 writeFileSync(outPath, JSON.stringify(bySurface));
 console.error(`Wrote ${Object.keys(bySurface).length} surface-form keys to ${outPath.pathname}`);
