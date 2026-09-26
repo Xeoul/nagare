@@ -101,6 +101,12 @@ while ((match = entryRe.exec(xml))) {
   const surfaceForms = [...new Set([...kanjiForms, ...readingForms])];
   const level = lookupLevel(surfaceForms);
 
+  // Per-form priority: whether *this* spelling is itself frequency-tagged,
+  // not just some other spelling of the same entry.
+  const formPriority = {};
+  kanjiForms.forEach((form, i) => (formPriority[form] = hasPriority(kanjiPri[i] ?? [])));
+  readingForms.forEach((form, i) => (formPriority[form] = hasPriority(readingPri[i] ?? [])));
+
   entries.push({
     surface: surfaceForms,
     reading,
@@ -113,6 +119,12 @@ while ((match = entryRe.exec(xml))) {
     // bare-kana surface key, the standalone kana entry is almost always the
     // one a reader means — prefer it, then fall back to priority-tag count.
     hasKanji: kanjiForms.length > 0,
+    // JMdict's "usually written using kana alone" flag (&uk;) on the main
+    // sense — the entries a bare kana spelling like この/する/いる actually
+    // means (此の, 為る, 居る), as opposed to kanji words that merely share
+    // the reading (九, 擦る, 射る).
+    usuallyKana: /<misc>&uk;<\/misc>/.test(senseBlocks[0] ?? ""),
+    formPriority,
     priorityWeight: priorityTags.length,
   });
 }
@@ -177,26 +189,72 @@ console.error(
   `Grammar overrides resolved: ${Object.keys(grammarOverrides).length}/${GRAMMAR_OVERRIDES.length}`,
 );
 
-function isBetter(candidate, incumbent) {
-  if (candidate.hasKanji !== incumbent.hasKanji) return !candidate.hasKanji;
-  return candidate.priorityWeight > incumbent.priorityWeight;
+const HAS_KANJI = /[一-鿿㐀-䶿々]/;
+const LEVEL_RANK_OF = (entry) => (entry.level ? LEVEL_RANK[entry.level] : 9);
+
+// Ranks two entries claiming the same surface key (negative = a is better).
+// For a bare-kana key the old rule (total priority tags across *all* of an
+// entry's spellings) let big multi-reading kanji entries win: この went to
+// 九 ("nine"), する to 擦る ("to rub"), いる to 射る ("to shoot"). A kana key
+// prefers a kana-only headword, then an entry usually written in kana, then
+// one whose own kana spelling is frequency-tagged, then an easier JLPT level.
+function compareEntries(a, b, form) {
+  if (!HAS_KANJI.test(form)) {
+    if (a.hasKanji !== b.hasKanji) return a.hasKanji ? 1 : -1;
+    if (a.usuallyKana !== b.usuallyKana) return a.usuallyKana ? -1 : 1;
+    const aPri = Boolean(a.formPriority[form]);
+    const bPri = Boolean(b.formPriority[form]);
+    if (aPri !== bPri) return aPri ? -1 : 1;
+    if (LEVEL_RANK_OF(a) !== LEVEL_RANK_OF(b)) return LEVEL_RANK_OF(a) - LEVEL_RANK_OF(b);
+  }
+  return b.priorityWeight - a.priorityWeight;
 }
 
-const bySurface = {};
+// Even ranked well, one entry per kana spelling can't serve every use: もの
+// is both a particle and 物, よい both 良い and 宵, くる both 来る and 繰る.
+// So a kana key keeps a few ranked candidates, and the app picks between
+// them at lookup time using the tokenizer's part of speech and verb class
+// (see pickEntry in src/lib/dictionary.ts). A kanji key keeps one candidate
+// per distinct reading (本 is ほん "book" and もと "origin", 人 is ひと and
+// じん "-ian"), since the tokenizer's reading tells them apart; same-reading
+// collisions keep just the best one to keep the file small.
+const KANA_CANDIDATES = 4;
+const KANJI_CANDIDATES = 3;
+
+const candidatesBySurface = {};
 for (const entry of entries) {
   const { surface, ...rest } = entry;
-  for (const form of surface) {
-    const incumbent = bySurface[form];
-    if (!incumbent || isBetter(rest, incumbent)) bySurface[form] = rest;
-  }
+  for (const form of surface) (candidatesBySurface[form] ??= []).push(rest);
 }
 
-for (const entry of Object.values(bySurface)) {
-  delete entry.hasKanji;
-  delete entry.priorityWeight;
+const RANKING_FIELDS = ["hasKanji", "usuallyKana", "formPriority", "priorityWeight"];
+const strip = (entry) =>
+  Object.fromEntries(Object.entries(entry).filter(([key]) => !RANKING_FIELDS.includes(key)));
+
+const bySurface = {};
+for (const [form, candidates] of Object.entries(candidatesBySurface)) {
+  candidates.sort((a, b) => compareEntries(a, b, form));
+  const kept = HAS_KANJI.test(form)
+    ? candidates
+        .filter((c, i) => candidates.findIndex((o) => o.reading === c.reading) === i)
+        .slice(0, KANJI_CANDIDATES)
+        .map(strip)
+    : candidates.slice(0, KANA_CANDIDATES).map(strip);
+  bySurface[form] = kept.length === 1 ? kept[0] : kept;
 }
 
-Object.assign(bySurface, grammarOverrides);
+// Grammar entries go first for their key, ahead of any content words that
+// share the spelling (から particle vs 殻), rather than replacing them.
+for (const [form, entry] of Object.entries(grammarOverrides)) {
+  const existing = bySurface[form];
+  const rest = existing === undefined ? [] : Array.isArray(existing) ? existing : [existing];
+  const merged = [entry, ...rest.filter((e) => e.meanings[0] !== entry.meanings[0])].slice(
+    0,
+    KANA_CANDIDATES,
+  );
+  bySurface[form] = merged.length === 1 ? merged[0] : merged;
+}
+
 
 mkdirSync(new URL("../public/dictionary", import.meta.url), { recursive: true });
 const outPath = new URL("../public/dictionary/jmdict-common.json", import.meta.url);
