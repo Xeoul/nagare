@@ -56,7 +56,7 @@ function pickSpotlight(tokens: Token[], dictionary: JmdictLookup | null, seed: n
         !SKIP_POS_DETAIL.has(c.token.pos_detail_1) &&
         !TOO_COMMON.has(c.key),
     )
-    .map((c) => ({ ...c, entry: lookupDictionary(c.key, c.token.surface_form, dictionary) }))
+    .map((c) => ({ ...c, entry: lookupDictionary(c.key, c.token.surface_form, dictionary, c.token) }))
     .filter((c): c is typeof c & { entry: JmdictEntry } => Boolean(c.entry?.meanings.length));
   if (candidates.length === 0) return null;
   const withKanji = candidates.filter((c) => hasKanji(c.key));
@@ -242,7 +242,7 @@ export default function FeedCardView({
   function selectWord(token: Token) {
     onSelectWord({
       token,
-      entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary),
+      entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary, token),
     });
   }
 

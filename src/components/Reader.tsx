@@ -121,7 +121,7 @@ function Sentence({
                 onSelect({
                   index,
                   token,
-                  entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary),
+                  entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary, token),
                 });
                 activate?.();
               }}
