@@ -31,7 +31,7 @@ export default function ContinueReading() {
   return (
     <section className="px-5">
       <div className="relative overflow-hidden card rounded-[1.5rem] p-4">
-        <Link href={`/read/${item.id}`} className="flex items-center gap-4">
+        <Link href={`/read?id=${encodeURIComponent(item.id)}`} className="flex items-center gap-4">
           <span
             style={coverStyle(item.title)}
             className="relative flex h-20 w-[3.75rem] shrink-0 items-end justify-end overflow-hidden rounded-xl"

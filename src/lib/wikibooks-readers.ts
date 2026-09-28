@@ -1,3 +1,5 @@
+import { assetUrl } from "@/lib/base-path";
+
 export type WikibooksReader = {
   title: string;
   author?: string;
@@ -83,7 +85,7 @@ function stripWikitext(raw: string): string {
 
 /** Reads the bundled text (see scripts/fetch-wikibooks-readers.mjs); falls back to a live Wikibooks fetch if it's ever missing. */
 export async function fetchReaderText(reader: WikibooksReader): Promise<string> {
-  const bundled = await fetch(`/readers/${reader.slug}.txt`);
+  const bundled = await fetch(assetUrl(`/readers/${reader.slug}.txt`));
   if (bundled.ok) return bundled.text();
 
   const url = `https://en.wikibooks.org/w/api.php?action=parse&page=${encodeURIComponent(

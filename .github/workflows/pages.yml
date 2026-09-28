@@ -1,0 +1,60 @@
+# Publishes a live demo of the app to GitHub Pages at
+# https://xeoul.github.io/nagare/ on every push to main.
+#
+# Nagare already runs entirely in the browser, so the demo is a static
+# export (see next.config.ts) pushed to the gh-pages branch. One-time setup,
+# if the site doesn't appear after the first run: Settings -> Pages ->
+# Build and deployment -> Source: Deploy from a branch -> gh-pages / (root).
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build static export
+        run: npm run build
+        env:
+          NAGARE_STATIC_EXPORT: "1"
+          NEXT_PUBLIC_BASE_PATH: /nagare
+
+      # Next writes the generated icon links without the base path, which
+      # would point them at the root of xeoul.github.io instead.
+      - name: Prefix icon links with the base path
+        run: |
+          grep -rlE '"/(apple-)?icon\?' out --include=*.html --include=*.txt \
+            | xargs -r sed -i -E 's#"/(apple-)?icon\?#"/nagare/\1icon?#g'
+
+      # Without this, GitHub Pages runs the files through Jekyll, which
+      # skips anything starting with an underscore - including _next/.
+      - run: touch out/.nojekyll
+
+      - name: Publish to the gh-pages branch
+        working-directory: out
+        run: |
+          git init -q -b gh-pages
+          git add -A
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Deploy ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" gh-pages

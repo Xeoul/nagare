@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { getItem, markOpened, updateProgress, type LibraryItem } from "@/lib/library";
 import {
   getFuriganaPreference,
@@ -15,8 +15,20 @@ import {
 import Reader from "@/components/Reader";
 import { ChevronLeftIcon, LanguagesIcon } from "@/components/icons";
 
+// The item id comes in as ?id= rather than a /read/[id] path segment so the
+// app can be exported as plain static files (the GitHub Pages demo): a
+// static host has no page to serve for an id it never saw at build time.
+// useSearchParams() has to sit under a Suspense boundary for that export.
 export default function ReadPage() {
-  const { id } = useParams<{ id: string }>();
+  return (
+    <Suspense fallback={<p className="p-6 text-sm text-ink-soft">Loading…</p>}>
+      <ReadView />
+    </Suspense>
+  );
+}
+
+function ReadView() {
+  const id = useSearchParams().get("id") ?? "";
   const router = useRouter();
   const [item, setItem] = useState<LibraryItem | null | undefined>(undefined);
   const [showFurigana, setShowFurigana] = useState(getFuriganaPreference);
@@ -25,6 +37,7 @@ export default function ReadPage() {
   const lastSaveRef = useRef(0);
 
   useEffect(() => {
+    if (!id) return;
     void getItem(id).then((found) => setItem(found ?? null));
     void markOpened(id);
   }, [id]);
@@ -60,11 +73,11 @@ export default function ReadPage() {
     void updateProgress(id, progress);
   }
 
-  if (item === undefined) {
+  if (id && item === undefined) {
     return <p className="p-6 text-sm text-ink-soft">Loading…</p>;
   }
 
-  if (item === null) {
+  if (!item) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
         <p>Couldn&apos;t find that item.</p>

@@ -1,3 +1,5 @@
+import { assetUrl } from "@/lib/base-path";
+
 export const AOZORA_BASE = "https://aozorahack.org/aozorabunko_text/";
 
 export type ClassicWork = {
@@ -180,7 +182,7 @@ export function stripAozoraMarkup(raw: string): string {
  * Falls back to a live fetch if the bundled file is ever missing.
  */
 export async function fetchClassicText(work: ClassicWork): Promise<string> {
-  const bundled = await fetch(`/classics/${work.slug}.txt`);
+  const bundled = await fetch(assetUrl(`/classics/${work.slug}.txt`));
   if (bundled.ok) return bundled.text();
 
   const res = await fetch(AOZORA_BASE + work.path);

@@ -19,7 +19,7 @@ export default function ImportPanel() {
     try {
       const parsed = await parseImportedFile(file);
       const item = await addItem(parsed);
-      router.push(`/read/${item.id}`);
+      router.push(`/read?id=${encodeURIComponent(item.id)}`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Couldn't import that file.");
     } finally {

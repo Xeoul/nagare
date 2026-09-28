@@ -27,7 +27,7 @@ export default function ClassicsShelf() {
           kind: "classic",
           text: await fetchClassicText(work),
         }));
-      router.push(`/read/${item.id}`);
+      router.push(`/read?id=${encodeURIComponent(item.id)}`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Couldn't load that one.");
     } finally {
