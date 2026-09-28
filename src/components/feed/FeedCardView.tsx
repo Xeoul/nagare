@@ -84,7 +84,7 @@ function SentenceTokens({
               }
             }}
             className={`cursor-pointer rounded-md transition-colors active:bg-white/15 ${
-              i === highlightIndex ? "text-[#ff7a5c]" : ""
+              i === highlightIndex ? "underline decoration-white/50 decoration-1 underline-offset-[6px]" : ""
             }`}
           >
             <TokenText token={token} showFurigana={showFurigana} />
@@ -234,7 +234,7 @@ export default function FeedCardView({
     "[line-break:strict] [&_rt]:text-[0.42em] [&_rt]:font-normal [&_rt]:text-white/55";
 
   const translationBlock = revealed ? (
-    <p className="mt-6 max-w-md border-l-2 border-[#ff5a3c] pl-3.5 text-[15px] leading-relaxed text-white/80">
+    <p className="mt-6 max-w-md border-l border-white/25 pl-3.5 text-[15px] leading-relaxed text-white/80">
       {translation ??
         (downloadPercent !== null
           ? `Downloading translation model… ${downloadPercent}%`
@@ -273,19 +273,19 @@ export default function FeedCardView({
         {spotlight ? (
           <>
             <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-white/55">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#ff5a3c]" />
+              <span className="h-1 w-1 rounded-full bg-white/50" />
               Word spotlight
             </p>
             <p className="mt-5 min-h-7 text-lg text-white/55">
               {spotlight.entry.reading !== spotlight.key ? spotlight.entry.reading : ""}
             </p>
-            <h2 className="text-[4rem] font-bold leading-none tracking-[-0.02em]">{spotlight.key}</h2>
+            <h2 className="text-[3.5rem] font-semibold leading-none tracking-[-0.02em]">{spotlight.key}</h2>
             <p className="mt-4 text-lg font-medium leading-snug text-white/90">
               {spotlight.entry.meanings.slice(0, 3).join("; ")}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {spotlight.entry.level && (
-                <span className="rounded-full bg-[#ff5a3c] px-2 py-0.5 text-[10px] font-bold">
+                <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-white/85">
                   {spotlight.entry.level}
                 </span>
               )}
@@ -331,7 +331,7 @@ export default function FeedCardView({
       <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] right-3 flex flex-col items-center gap-4">
         <RailButton label={saved ? "Saved" : "Save"} active={saved} onClick={() => void save(false)}>
           <HeartIcon
-            className={`h-6 w-6 transition-colors ${saved ? "text-[#ff5a3c]" : ""}`}
+            className={`h-6 w-6 transition-colors ${saved ? "text-white" : ""}`}
             fill={saved ? "currentColor" : "none"}
           />
         </RailButton>
@@ -348,15 +348,15 @@ export default function FeedCardView({
 
       <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] left-5 right-24">
         <div className="flex items-center gap-2">
-          <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-black">
+          <span className="shrink-0 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-white/85">
             {sentence.source.level}
           </span>
           <p className="min-w-0 truncate text-[15px] font-bold leading-tight">{sentence.source.title}</p>
         </div>
         <p className="mt-1 truncate text-xs text-white/55">{sentence.source.subtitle}</p>
         <div className="mt-2.5 flex items-center gap-2.5">
-          <span className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/15">
-            <span className="block h-full rounded-full bg-white/80" style={{ width: `${progress * 100}%` }} />
+          <span className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/10">
+            <span className="block h-full rounded-full bg-white/50" style={{ width: `${progress * 100}%` }} />
           </span>
           <span className="text-[10px] tabular-nums text-white/50">
             {sentence.index + 1}/{sentence.total}
@@ -374,7 +374,7 @@ export default function FeedCardView({
         <HeartIcon
           key={burst.key}
           onAnimationEnd={() => setBurst(null)}
-          className="heart-pop pointer-events-none absolute h-24 w-24 text-[#ff5a3c] drop-shadow-[0_4px_20px_rgba(255,90,60,0.5)]"
+          className="heart-pop pointer-events-none absolute h-24 w-24 text-white/90 drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
           style={{ left: burst.x - 48, top: burst.y - 48 }}
           fill="currentColor"
           stroke="none"

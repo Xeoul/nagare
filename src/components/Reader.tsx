@@ -107,7 +107,7 @@ function Sentence({
         // a non-form element as tappable; without it taps can silently no-op.
         className={
           vertical && showTranslation
-            ? `cursor-pointer rounded transition-colors ${isActive ? "bg-accent/10" : ""}`
+            ? `cursor-pointer rounded transition-colors ${isActive ? "bg-ink/5" : ""}`
             : ""
         }
       >
@@ -138,9 +138,9 @@ function Sentence({
                   entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary, token),
                 });
               }}
-              className={`cursor-pointer rounded transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 focus-visible:outline-none ${
+              className={`cursor-pointer rounded transition-colors hover:bg-ink/5 focus-visible:bg-ink/5 focus-visible:outline-none ${
                 selectedIndex === index
-                  ? "bg-accent/15 text-accent underline decoration-accent decoration-2 underline-offset-4"
+                  ? "bg-ink/[0.07] underline decoration-ink-soft/60 decoration-1 underline-offset-4"
                   : ""
               }`}
             >
@@ -158,7 +158,7 @@ function Sentence({
         })}
       </span>
       {showTranslation && translatable && !vertical && (
-        <div className="mb-3 mt-0.5 block border-l-2 border-accent/60 pl-3 text-[15px] leading-relaxed text-ink-soft">
+        <div className="mb-3 mt-0.5 block border-l-2 border-line pl-3 text-[15px] leading-relaxed text-ink-soft">
           {status === "error"
             ? "Translation unavailable"
             : status === "done"
@@ -387,7 +387,7 @@ export default function Reader({
         {currentPosition !== null && sentences.length > 0 && (
           <p
             aria-label={`Sentence ${currentPosition} of ${sentences.length}`}
-            className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-ink/85 px-3 py-1 text-[11px] font-semibold tabular-nums text-paper shadow-lg backdrop-blur-md [writing-mode:horizontal-tb]"
+            className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-paper-sunk/90 px-3 py-1 text-[11px] font-medium tabular-nums text-ink-soft backdrop-blur-md [writing-mode:horizontal-tb]"
           >
             {currentPosition} / {sentences.length}
           </p>

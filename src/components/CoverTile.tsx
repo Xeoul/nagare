@@ -26,13 +26,13 @@ export default function CoverTile({
     >
       <span
         style={coverStyle(title)}
-        className="relative flex aspect-[3/4] w-full overflow-hidden rounded-2xl text-white shadow-[0_12px_28px_-14px_rgb(var(--shadow-color)/0.6)] ring-1 ring-black/5"
+        className="relative flex aspect-[3/4] w-full overflow-hidden rounded-2xl text-white shadow-[0_8px_20px_-14px_rgb(var(--shadow-color)/0.5)] ring-1 ring-black/5"
       >
-        <span className="absolute -bottom-6 -right-3 text-[7.5rem] font-bold leading-none text-white/90 mix-blend-overlay">
+        <span className="absolute -bottom-6 -right-3 text-[7.5rem] font-bold leading-none text-white/[0.1]">
           {coverGlyph(title)}
         </span>
         {badge && (
-          <span className="absolute left-2.5 top-2.5 rounded-full bg-black/25 px-2 py-0.5 text-[10px] font-bold tracking-wider backdrop-blur-md">
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-white/85">
             {badge}
           </span>
         )}

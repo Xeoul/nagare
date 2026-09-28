@@ -38,8 +38,8 @@ export default function BottomNav({ variant = "default" }: { variant?: "dark" | 
                 aria-label={label}
                 className={`flex h-11 items-center gap-2 rounded-full text-sm font-semibold transition-all duration-300 ${
                   active
-                    ? `px-4 ${dark ? "bg-white text-black" : "bg-ink text-paper"}`
-                    : "w-12 justify-center opacity-60 hover:opacity-100"
+                    ? `px-4 ${dark ? "bg-white/15 text-white" : "bg-paper-sunk text-ink"}`
+                    : "w-12 justify-center opacity-50 hover:opacity-90"
                 }`}
               >
                 <Icon className="h-[22px] w-[22px] shrink-0" strokeWidth={active ? 2.2 : 1.9} />

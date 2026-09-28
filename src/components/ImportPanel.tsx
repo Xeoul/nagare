@@ -42,10 +42,10 @@ export default function ImportPanel() {
           if (file) void handleFile(file);
         }}
         className={`card card-interactive flex cursor-pointer items-center gap-4 px-4 py-3.5 ${
-          isDragging ? "ring-2 ring-accent" : ""
+          isDragging ? "ring-2 ring-ink/30" : ""
         }`}
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper-sunk text-ink">
           <PlusIcon className="h-5 w-5" strokeWidth={2.4} />
         </span>
         <span className="min-w-0 flex-1">

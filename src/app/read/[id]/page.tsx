@@ -108,7 +108,7 @@ export default function ReadPage() {
               title={label}
               onClick={toggle}
               className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-                on ? "bg-accent text-white" : "text-ink-soft hover:text-ink"
+                on ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
               }`}
             >
               {glyph}
