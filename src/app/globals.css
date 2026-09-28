@@ -35,8 +35,12 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-warm: var(--accent-warm);
-  --font-sans: var(--font-plex-sans);
-  --font-display: var(--font-shippori-mincho);
+  /* The phone's own UI font: San Francisco + Hiragino Sans on iOS/macOS,
+     Roboto + Noto Sans CJK on Android, Segoe UI + Yu Gothic on Windows. */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Segoe UI",
+    Roboto, "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic UI", Meiryo, sans-serif;
+  --font-display: var(--font-sans);
 }
 
 body {
