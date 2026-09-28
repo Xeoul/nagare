@@ -9,6 +9,7 @@ import { isStarred, toggleStarred } from "@/lib/starred";
 import { isSentenceSaved, toggleSavedSentence } from "@/lib/savedSentences";
 import type { FeedCard, FeedSentence } from "@/lib/feed";
 import TokenText from "../TokenText";
+import { auraStyle, coverGlyph, hashText as hash } from "@/lib/cover";
 import { BookOpenIcon, HeartIcon, LanguagesIcon } from "../icons";
 
 export type WordSelection = { token: Token; entry: JmdictEntry | null };
@@ -23,24 +24,6 @@ type Props = {
   onOpenStory: (sentence: FeedSentence) => void;
   downloadPercent: number | null;
 };
-
-// Literal class strings so Tailwind picks them up — one muted, dark
-// gradient per card, chosen by hashing the sentence so a card keeps its
-// look when you scroll back to it.
-const GRADIENTS = [
-  "from-[#1b2a3a] via-[#131d27] to-[#0a0f14]",
-  "from-[#2b1d2e] via-[#1c1420] to-[#0f0a12]",
-  "from-[#1d2b24] via-[#141e19] to-[#0a100d]",
-  "from-[#2e2418] via-[#1f1810] to-[#120e09]",
-  "from-[#1f2233] via-[#161826] to-[#0c0d16]",
-  "from-[#2b1c1c] via-[#1d1414] to-[#110b0b]",
-];
-
-function hash(text: string): number {
-  let h = 0;
-  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
 
 const CONTENT_POS = new Set(["名詞", "動詞", "形容詞", "副詞"]);
 const SKIP_POS_DETAIL = new Set(["非自立", "数", "代名詞", "接尾"]);
@@ -101,7 +84,7 @@ function SentenceTokens({
               }
             }}
             className={`cursor-pointer rounded-md transition-colors active:bg-white/15 ${
-              i === highlightIndex ? "text-amber-300" : ""
+              i === highlightIndex ? "text-[#ff7a5c]" : ""
             }`}
           >
             <TokenText token={token} showFurigana={showFurigana} />
@@ -132,16 +115,16 @@ function RailButton({
         event.stopPropagation();
         onClick();
       }}
-      className="flex flex-col items-center gap-1 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] transition-transform active:scale-90"
+      className="flex flex-col items-center gap-1.5 text-white transition-transform active:scale-90"
     >
       <span
-        className={`flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-sm transition-colors ${
-          active ? "bg-white/25" : "bg-white/10"
+        className={`flex h-12 w-12 items-center justify-center rounded-full ring-1 backdrop-blur-xl transition-colors ${
+          active ? "bg-white/20 ring-white/25" : "bg-white/[0.08] ring-white/10"
         }`}
       >
         {children}
       </span>
-      <span className="text-[10px] font-medium tracking-wide">{label}</span>
+      <span className="text-[10px] font-semibold tracking-wide text-white/75">{label}</span>
     </button>
   );
 }
@@ -246,14 +229,12 @@ export default function FeedCardView({
     });
   }
 
-  const gradient = GRADIENTS[hash(sentence.text) % GRADIENTS.length];
-  const watermark =
-    sentence.text.match(/[一-鿿]/)?.[0] ?? sentence.text.match(/[぀-ヿ]/)?.[0] ?? "";
+  const watermark = coverGlyph(sentence.text);
   const rubyStyle =
     "[line-break:strict] [&_rt]:text-[0.42em] [&_rt]:font-normal [&_rt]:text-white/55";
 
   const translationBlock = revealed ? (
-    <p className="mt-6 max-w-md text-base leading-relaxed text-white/80">
+    <p className="mt-6 max-w-md border-l-2 border-[#ff5a3c] pl-3.5 text-[15px] leading-relaxed text-white/80">
       {translation ??
         (downloadPercent !== null
           ? `Downloading translation model… ${downloadPercent}%`
@@ -266,20 +247,24 @@ export default function FeedCardView({
         event.stopPropagation();
         setRevealed(true);
       }}
-      className="mt-7 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/85 backdrop-blur-sm transition-colors active:bg-white/20"
+      className="mt-7 flex items-center gap-2 self-start rounded-full bg-white/[0.08] px-4 py-2 text-[13px] font-semibold text-white/85 ring-1 ring-white/10 backdrop-blur-xl transition-colors active:bg-white/20"
     >
-      Tap to see translation
+      <LanguagesIcon className="h-4 w-4" />
+      Show translation
     </button>
   );
+
+  const progress = sentence.total > 1 ? (sentence.index + 1) / sentence.total : 1;
 
   return (
     <section
       onClick={handleTap}
-      className={`relative h-dvh w-full cursor-pointer snap-start snap-always select-none overflow-hidden bg-gradient-to-b text-white [touch-action:manipulation] ${gradient}`}
+      style={auraStyle(sentence.text)}
+      className="relative h-dvh w-full cursor-pointer snap-start snap-always select-none overflow-hidden text-white [touch-action:manipulation]"
     >
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute -right-[12vw] top-1/2 -translate-y-1/2 font-display text-[70vw] leading-none text-white/[0.035] sm:text-[40vh]"
+        className="glyph-watermark pointer-events-none absolute -right-[18vw] top-[45%] -translate-y-1/2 text-[80vw] font-bold leading-none sm:text-[45vh]"
       >
         {watermark}
       </span>
@@ -287,25 +272,32 @@ export default function FeedCardView({
       <div className="absolute inset-0 flex flex-col justify-center px-6 pb-44 pr-20 pt-24">
         {spotlight ? (
           <>
-            <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-white/45">
+            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-white/55">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#ff5a3c]" />
               Word spotlight
             </p>
-            <p className="mt-5 min-h-7 text-lg text-white/60">
+            <p className="mt-5 min-h-7 text-lg text-white/55">
               {spotlight.entry.reading !== spotlight.key ? spotlight.entry.reading : ""}
             </p>
-            <h2 className="font-display text-6xl font-bold leading-tight">{spotlight.key}</h2>
-            <p className="mt-3 text-lg leading-snug text-white/90">
+            <h2 className="text-[4rem] font-bold leading-none tracking-[-0.02em]">{spotlight.key}</h2>
+            <p className="mt-4 text-lg font-medium leading-snug text-white/90">
               {spotlight.entry.meanings.slice(0, 3).join("; ")}
             </p>
-            <p className="mt-1.5 text-xs text-white/50">
-              {spotlight.entry.pos}
-              {spotlight.entry.level ? ` · ${spotlight.entry.level}` : ""}
-            </p>
-            <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm">
-              <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {spotlight.entry.level && (
+                <span className="rounded-full bg-[#ff5a3c] px-2 py-0.5 text-[10px] font-bold">
+                  {spotlight.entry.level}
+                </span>
+              )}
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/70">
+                {spotlight.entry.pos.split(",")[0]}
+              </span>
+            </div>
+            <div className="mt-7 rounded-3xl bg-white/[0.06] p-4 ring-1 ring-white/10 backdrop-blur-xl">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
                 In context
               </p>
-              <p className={`font-display text-xl leading-[2.3] ${rubyStyle}`}>
+              <p className={`text-xl leading-[2.3] ${rubyStyle}`}>
                 <SentenceTokens
                   text={sentence.text}
                   tokens={tokens}
@@ -322,7 +314,7 @@ export default function FeedCardView({
         ) : (
           <>
             <p
-              className={`font-display text-[1.75rem] font-medium leading-[2.25] sm:text-4xl sm:leading-[2.2] ${rubyStyle}`}
+              className={`text-[1.75rem] font-semibold leading-[2.25] tracking-[0.01em] sm:text-4xl sm:leading-[2.2] ${rubyStyle}`}
             >
               <SentenceTokens
                 text={sentence.text}
@@ -336,39 +328,44 @@ export default function FeedCardView({
         )}
       </div>
 
-      <div className="absolute bottom-[calc(6.5rem+env(safe-area-inset-bottom))] right-3 flex flex-col items-center gap-5">
+      <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] right-3 flex flex-col items-center gap-4">
         <RailButton label={saved ? "Saved" : "Save"} active={saved} onClick={() => void save(false)}>
           <HeartIcon
-            className={`h-6 w-6 transition-colors ${saved ? "text-rose-500" : ""}`}
+            className={`h-6 w-6 transition-colors ${saved ? "text-[#ff5a3c]" : ""}`}
             fill={saved ? "currentColor" : "none"}
           />
         </RailButton>
         <RailButton label="Translate" active={revealed} onClick={() => setRevealed((r) => !r)}>
-          <LanguagesIcon className="h-6 w-6" />
+          <LanguagesIcon className="h-[22px] w-[22px]" />
         </RailButton>
         <RailButton label="Furigana" active={showFurigana} onClick={onToggleFurigana}>
-          <span className="font-display text-lg font-bold leading-none">あ</span>
+          <span className="text-lg font-bold leading-none">あ</span>
         </RailButton>
         <RailButton label="Story" onClick={() => onOpenStory(sentence)}>
-          <BookOpenIcon className="h-6 w-6" />
+          <BookOpenIcon className="h-[22px] w-[22px]" />
         </RailButton>
       </div>
 
-      <div className="absolute bottom-[calc(5rem+env(safe-area-inset-bottom))] left-5 right-20">
+      <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] left-5 right-24">
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider backdrop-blur-sm">
+          <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-black">
             {sentence.source.level}
           </span>
-          <span className="text-[11px] text-white/55">
-            Line {sentence.index + 1} of {sentence.total}
+          <p className="min-w-0 truncate text-[15px] font-bold leading-tight">{sentence.source.title}</p>
+        </div>
+        <p className="mt-1 truncate text-xs text-white/55">{sentence.source.subtitle}</p>
+        <div className="mt-2.5 flex items-center gap-2.5">
+          <span className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/15">
+            <span className="block h-full rounded-full bg-white/80" style={{ width: `${progress * 100}%` }} />
+          </span>
+          <span className="text-[10px] tabular-nums text-white/50">
+            {sentence.index + 1}/{sentence.total}
           </span>
         </div>
-        <p className="mt-1.5 font-display text-lg leading-tight">{sentence.source.title}</p>
-        <p className="truncate text-xs text-white/55">{sentence.source.subtitle}</p>
       </div>
 
       {isFirst && (
-        <p className="pointer-events-none absolute inset-x-0 top-[4.5rem] animate-pulse text-center text-[11px] tracking-wide text-white/45">
+        <p className="pointer-events-none absolute inset-x-0 top-[5rem] animate-pulse text-center text-[11px] font-medium tracking-wide text-white/45">
           Swipe up for more · double-tap to save
         </p>
       )}
@@ -377,7 +374,7 @@ export default function FeedCardView({
         <HeartIcon
           key={burst.key}
           onAnimationEnd={() => setBurst(null)}
-          className="heart-pop pointer-events-none absolute h-24 w-24 text-rose-500 drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)]"
+          className="heart-pop pointer-events-none absolute h-24 w-24 text-[#ff5a3c] drop-shadow-[0_4px_20px_rgba(255,90,60,0.5)]"
           style={{ left: burst.x - 48, top: burst.y - 48 }}
           fill="currentColor"
           stroke="none"

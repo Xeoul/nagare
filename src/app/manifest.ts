@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "A Japanese reader that teaches as you read.",
     start_url: "/",
     display: "standalone",
-    background_color: "#eef1ec",
-    theme_color: "#2c4a6e",
+    background_color: "#0a0a0b",
+    theme_color: "#0a0a0b",
     icons: [{ src: "/icon", sizes: "512x512", type: "image/png" }],
   };
 }

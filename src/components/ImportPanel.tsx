@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addItem } from "@/lib/library";
 import { parseImportedFile } from "@/lib/importFile";
+import { PlusIcon } from "./icons";
 
 export default function ImportPanel() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function ImportPanel() {
   }
 
   return (
-    <div>
+    <div className="px-5">
       <label
         onDragOver={(event) => {
           event.preventDefault();
@@ -40,16 +41,19 @@ export default function ImportPanel() {
           const file = event.dataTransfer.files[0];
           if (file) void handleFile(file);
         }}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-all duration-200 ${
-          isDragging
-            ? "border-accent bg-paper-raised shadow-[0_10px_28px_-14px_rgb(var(--shadow-color)/0.35)]"
-            : "border-line/80 hover:border-accent-soft hover:bg-paper-raised/50"
+        className={`card card-interactive flex cursor-pointer items-center gap-4 px-4 py-3.5 ${
+          isDragging ? "ring-2 ring-accent" : ""
         }`}
       >
-        <span className="text-sm font-medium">
-          {isImporting ? "Importing…" : "Drop a .txt or .epub file here"}
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+          <PlusIcon className="h-5 w-5" strokeWidth={2.4} />
         </span>
-        <span className="text-xs text-ink-soft">or click to choose a file</span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15px] font-semibold">
+            {isImporting ? "Importing…" : "Import your own"}
+          </span>
+          <span className="block text-xs text-ink-soft">A .txt or .epub file, tap or drop</span>
+        </span>
         <input
           ref={inputRef}
           type="file"

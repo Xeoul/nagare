@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CLASSICS, fetchClassicText, type ClassicWork } from "@/lib/aozora";
 import { addItem, listItems } from "@/lib/library";
+import CoverTile, { Shelf } from "./CoverTile";
 
 const LEVEL_ORDER: ClassicWork["level"][] = ["N3", "N2"];
 
@@ -34,63 +35,42 @@ export default function ClassicsShelf() {
     }
   }
 
+  const works = LEVEL_ORDER.flatMap((level) =>
+    CLASSICS.filter((w) => w.level === level).sort((a, b) => a.density - b.density),
+  );
+
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-xs text-ink-soft">
-        Public-domain Japanese literature from{" "}
-        <a
-          href="https://www.aozora.gr.jp/"
-          target="_blank"
-          rel="noreferrer"
-          className="underline hover:text-accent"
-        >
-          Aozora Bunko
-        </a>
-        . Levels are estimated from vocabulary coverage, not an official
-        grading — and native literature just doesn&apos;t read as true N5/N4,
-        even a children&apos;s story here. Graded readers are a different
-        genre for that; this shelf runs N3–N2.
-      </p>
-      {LEVEL_ORDER.map((level) => {
-        const works = CLASSICS.filter((w) => w.level === level).sort(
-          (a, b) => a.density - b.density,
-        );
-        if (works.length === 0) return null;
-        return (
-          <div key={level} className="flex flex-col gap-2">
-            <h3 className="text-xs font-medium uppercase tracking-[0.1em] text-ink-soft/80">
-              Estimated {level}
-            </h3>
-            <ul className="flex flex-col gap-2">
-              {works.map((work) => (
-                <li
-                  key={work.path}
-                  className="card flex items-center gap-4 px-4 py-3"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-display text-lg">{work.title}</p>
-                    <p className="text-xs text-ink-soft">
-                      {work.author} · {work.note}
-                    </p>
-                    <p className="mt-0.5 text-xs text-ink-soft">
-                      {work.density}% of its vocabulary is outside any JLPT list
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void open(work)}
-                    disabled={loadingTitle !== null}
-                    className="shrink-0 rounded-full border border-line px-3.5 py-1.5 text-xs font-medium text-ink-soft transition-all hover:border-accent hover:text-accent hover:shadow-sm active:scale-95 disabled:opacity-50"
-                  >
-                    {loadingTitle === work.title ? "Loading…" : "Open"}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
-      {error && <p className="text-sm text-accent-warm">{error}</p>}
-    </div>
+    <>
+      <Shelf
+        title="Classics"
+        caption={
+          <>
+            Public-domain literature from{" "}
+            <a
+              href="https://www.aozora.gr.jp/"
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-line underline-offset-2"
+            >
+              Aozora Bunko
+            </a>
+            . Levels are estimated from vocabulary, not official.
+          </>
+        }
+      >
+        {works.map((work) => (
+          <CoverTile
+            key={work.path}
+            title={work.title}
+            badge={`~${work.level}`}
+            subtitle={work.author}
+            loading={loadingTitle === work.title}
+            disabled={loadingTitle !== null}
+            onOpen={() => void open(work)}
+          />
+        ))}
+      </Shelf>
+      {error && <p className="-mt-6 px-5 text-sm text-accent-warm">{error}</p>}
+    </>
   );
 }

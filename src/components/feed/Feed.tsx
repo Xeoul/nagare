@@ -146,7 +146,7 @@ export default function Feed() {
       : null;
 
   return (
-    <div className="fixed inset-0 bg-black text-white">
+    <div className="fixed inset-0 bg-[#08080a] text-white">
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -170,8 +170,8 @@ export default function Feed() {
           ),
         )}
         {status !== "ready" && (
-          <div className="flex h-dvh flex-col items-center justify-center gap-3 px-8 text-center">
-            <p className="font-display text-5xl text-white/80">流れ</p>
+          <div className="flex h-dvh flex-col items-center justify-center gap-5 px-8 text-center">
+            <span className="stamp h-16 w-16 animate-pulse text-3xl">流</span>
             <p className="text-sm text-white/50">
               {status === "loading" ? "Gathering sentences…" : "Nothing at this level yet."}
             </p>
@@ -179,12 +179,20 @@ export default function Feed() {
         )}
       </div>
 
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-20 bg-gradient-to-b from-black/60 via-black/20 to-transparent pb-10 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <div className="relative mx-auto flex max-w-md items-center justify-center px-5">
-          <span className="pointer-events-none absolute left-5 font-display text-lg font-bold text-white/90">
-            流れ
-          </span>
-          <div className="pointer-events-auto flex items-center gap-5" role="tablist">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-20 bg-gradient-to-b from-black/50 to-transparent pb-8 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="mx-auto flex max-w-md items-center justify-between px-4">
+          <span className="stamp h-9 w-9 text-lg">流</span>
+          <div
+            className="pointer-events-auto relative grid grid-cols-3 rounded-full bg-white/10 p-1 ring-1 ring-white/10 backdrop-blur-2xl"
+            role="tablist"
+          >
+            {level && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-white transition-transform duration-300 ease-out"
+                style={{ transform: `translateX(${FEED_LEVELS.indexOf(level) * 100}%)` }}
+              />
+            )}
             {FEED_LEVELS.map((option) => (
               <button
                 key={option}
@@ -192,19 +200,15 @@ export default function Feed() {
                 role="tab"
                 aria-selected={option === level}
                 onClick={() => chooseLevel(option)}
-                className={`relative py-1.5 text-sm font-semibold tracking-wide transition-colors ${
-                  option === level ? "text-white" : "text-white/50 hover:text-white/75"
+                className={`relative z-10 w-14 py-1.5 text-[13px] font-bold transition-colors ${
+                  option === level ? "text-black" : "text-white/70"
                 }`}
               >
                 {option}
-                <span
-                  className={`absolute inset-x-1 -bottom-0.5 h-0.5 rounded-full bg-white transition-opacity ${
-                    option === level ? "opacity-100" : "opacity-0"
-                  }`}
-                />
               </button>
             ))}
           </div>
+          <span className="h-9 w-9" aria-hidden="true" />
         </div>
       </header>
 
