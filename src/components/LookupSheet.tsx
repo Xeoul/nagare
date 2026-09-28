@@ -46,7 +46,7 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
           <>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {entry.level && (
-                <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-white">
+                <span className="rounded-full bg-paper-sunk px-2 py-0.5 text-[11px] font-bold text-ink">
                   {entry.level}
                 </span>
               )}
@@ -79,7 +79,7 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
                 }).then((next) => setStarred(next.some((word) => word.key === lookupKey)));
               }}
               className={`mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold transition-all active:scale-[0.98] ${
-                starred ? "bg-paper-sunk text-ink" : "bg-accent text-white"
+                starred ? "bg-paper-sunk text-ink-soft" : "bg-ink text-paper"
               }`}
             >
               <BookmarkIcon className="h-[18px] w-[18px]" fill={starred ? "currentColor" : "none"} />

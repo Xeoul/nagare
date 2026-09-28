@@ -33,7 +33,7 @@ export default function LibraryPage() {
         {downloadPercent !== null && (
           <div className="mt-4 flex items-center gap-3 text-xs text-ink-soft">
             <span className="h-1 flex-1 overflow-hidden rounded-full bg-paper-sunk">
-              <span className="block h-full rounded-full bg-accent transition-[width]" style={{ width: `${downloadPercent}%` }} />
+              <span className="block h-full rounded-full bg-ink/50 transition-[width]" style={{ width: `${downloadPercent}%` }} />
             </span>
             <span className="shrink-0 tabular-nums">Translation model {downloadPercent}%</span>
           </div>

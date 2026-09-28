@@ -45,7 +45,7 @@ export default function LibraryList() {
                 style={coverStyle(item.title)}
                 className="flex h-14 w-[2.625rem] shrink-0 items-end justify-end overflow-hidden rounded-lg"
               >
-                <span className="-mb-1.5 -mr-0.5 text-3xl font-bold leading-none text-white/90 mix-blend-overlay">
+                <span className="-mb-1.5 -mr-0.5 text-3xl font-bold leading-none text-white/[0.1]">
                   {coverGlyph(item.title)}
                 </span>
               </span>
@@ -57,7 +57,7 @@ export default function LibraryList() {
                 </span>
                 {percent > 0 && (
                   <span className="mt-1.5 block h-[3px] w-full max-w-40 overflow-hidden rounded-full bg-paper-sunk">
-                    <span className="block h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
+                    <span className="block h-full rounded-full bg-ink/50" style={{ width: `${percent}%` }} />
                   </span>
                 )}
               </span>

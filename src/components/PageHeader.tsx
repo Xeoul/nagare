@@ -5,7 +5,7 @@ export default function PageHeader({ title, children }: { title: string; childre
   return (
     <header className="flex flex-col gap-4 pt-[max(0.5rem,env(safe-area-inset-top))]">
       <div className="flex items-center gap-2.5">
-        <span className="stamp h-8 w-8 text-base">流</span>
+        <span className="stamp h-7 w-7 text-sm">流</span>
         <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-soft">
           Nagare
         </span>

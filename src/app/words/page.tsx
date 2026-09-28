@@ -31,7 +31,7 @@ function SavedSentenceCard({
 
   return (
     <li className="card relative overflow-hidden py-4 pl-5 pr-4">
-      <span aria-hidden="true" className="absolute inset-y-4 left-0 w-[3px] rounded-r-full bg-accent" />
+      <span aria-hidden="true" className="absolute inset-y-4 left-0 w-[3px] rounded-r-full bg-line" />
       <p className="text-lg leading-relaxed">{sentence.text}</p>
       {revealed ? (
         <p className="mt-1.5 text-sm leading-snug text-ink-soft">{translation ?? "Translating…"}</p>
@@ -170,7 +170,7 @@ export default function SavedPage() {
 function EmptyState({ glyph, text }: { glyph: string; text: string }) {
   return (
     <div className="flex flex-col items-center gap-4 px-6 py-14 text-center">
-      <span className="stamp h-16 w-16 text-3xl opacity-90">{glyph}</span>
+      <span className="stamp h-14 w-14 text-2xl opacity-15">{glyph}</span>
       <p className="max-w-xs text-sm leading-relaxed text-ink-soft">{text}</p>
     </div>
   );
