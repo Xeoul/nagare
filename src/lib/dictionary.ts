@@ -1,3 +1,5 @@
+import { assetUrl } from "@/lib/base-path";
+
 export type JmdictEntry = {
   reading: string;
   pos: string;
@@ -41,7 +43,7 @@ let jmdictPromise: Promise<JmdictLookup | null> | null = null;
  */
 export function loadDictionary(): Promise<JmdictLookup | null> {
   if (!jmdictPromise) {
-    jmdictPromise = fetch("/dictionary/jmdict-common.json")
+    jmdictPromise = fetch(assetUrl("/dictionary/jmdict-common.json"))
       .then((res) => {
         if (!res.ok) throw new Error(`Dictionary fetch failed: ${res.status}`);
         return res.json() as Promise<JmdictLookup>;

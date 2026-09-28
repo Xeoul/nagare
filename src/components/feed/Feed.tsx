@@ -137,7 +137,7 @@ export default function Feed() {
       (await addItem({ title: source.title, kind: source.kind, text: await loadSourceText(source) }));
     // Land roughly on the sentence you were looking at, not the top.
     await updateProgress(item.id, sentence.total > 1 ? sentence.index / (sentence.total - 1) : 0);
-    router.push(`/read/${item.id}`);
+    router.push(`/read?id=${encodeURIComponent(item.id)}`);
   }
 
   const downloadPercent =

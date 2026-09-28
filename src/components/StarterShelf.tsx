@@ -20,7 +20,7 @@ export default function StarterShelf() {
     const item =
       existing ??
       (await addItem({ title: reading.title, kind: "starter", text: reading.text }));
-    router.push(`/read/${item.id}`);
+    router.push(`/read?id=${encodeURIComponent(item.id)}`);
   }
 
   const readings = LEVEL_ORDER.flatMap((level) => STARTER_READINGS.filter((r) => r.level === level));

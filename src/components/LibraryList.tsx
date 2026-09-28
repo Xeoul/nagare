@@ -40,7 +40,7 @@ export default function LibraryList() {
         const percent = Math.round(item.progress * 100);
         return (
           <li key={item.id} className="flex items-center gap-3.5 border-b border-line px-3.5 py-3 last:border-b-0">
-            <Link href={`/read/${item.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
+            <Link href={`/read?id=${encodeURIComponent(item.id)}`} className="flex min-w-0 flex-1 items-center gap-3.5">
               <span
                 style={coverStyle(item.title)}
                 className="flex h-14 w-[2.625rem] shrink-0 items-end justify-end overflow-hidden rounded-lg"

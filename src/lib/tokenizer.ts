@@ -1,4 +1,5 @@
 import kuromoji, { type IpadicFeatures, type Tokenizer } from "kuromoji";
+import { assetUrl } from "@/lib/base-path";
 
 export type Token = IpadicFeatures;
 
@@ -16,7 +17,7 @@ let tokenizerPromise: Promise<Tokenizer<IpadicFeatures>> | null = null;
 export function getTokenizer(): Promise<Tokenizer<IpadicFeatures>> {
   if (!tokenizerPromise) {
     tokenizerPromise = new Promise((resolve, reject) => {
-      kuromoji.builder({ dicPath: "/dict/" }).build((err, tokenizer) => {
+      kuromoji.builder({ dicPath: assetUrl("/dict/") }).build((err, tokenizer) => {
         if (err) reject(err);
         else resolve(tokenizer);
       });

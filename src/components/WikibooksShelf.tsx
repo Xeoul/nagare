@@ -25,7 +25,7 @@ export default function WikibooksShelf() {
           kind: "reader",
           text: await fetchReaderText(reader),
         }));
-      router.push(`/read/${item.id}`);
+      router.push(`/read?id=${encodeURIComponent(item.id)}`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Couldn't load that one.");
     } finally {
