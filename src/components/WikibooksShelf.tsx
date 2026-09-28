@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { WIKIBOOKS_READERS, fetchReaderText, type WikibooksReader } from "@/lib/wikibooks-readers";
 import { addItem, listItems } from "@/lib/library";
+import CoverTile, { Shelf } from "./CoverTile";
 
 export default function WikibooksShelf() {
   const router = useRouter();
@@ -33,41 +34,37 @@ export default function WikibooksShelf() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-xs text-ink-soft">
-        Real N5-level folk tales from{" "}
-        <a
-          href="https://en.wikibooks.org/wiki/Japanese/Reader"
-          target="_blank"
-          rel="noreferrer"
-          className="underline hover:text-accent"
-        >
-          Wikibooks
-        </a>{" "}
-        (CC BY-SA 4.0) — genuine beginner-friendly native reading, which is
-        hard to come by outside of graded readers.
-      </p>
-      <ul className="flex flex-col gap-2">
-        {WIKIBOOKS_READERS.map((reader) => (
-          <li key={reader.slug} className="card flex items-center gap-4 px-4 py-3">
-            <div className="min-w-0 flex-1">
-              <p className="font-display text-lg">{reader.title}</p>
-              <p className="text-xs text-ink-soft">
-                {reader.author ? `${reader.author} · ${reader.note}` : reader.note}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => void open(reader)}
-              disabled={loadingTitle !== null}
-              className="shrink-0 rounded-full border border-line px-3.5 py-1.5 text-xs font-medium text-ink-soft transition-all hover:border-accent hover:text-accent hover:shadow-sm active:scale-95 disabled:opacity-50"
+    <>
+      <Shelf
+        title="Fairy tales"
+        caption={
+          <>
+            Real N5 folk tales from{" "}
+            <a
+              href="https://en.wikibooks.org/wiki/Japanese/Reader"
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-line underline-offset-2"
             >
-              {loadingTitle === reader.title ? "Loading…" : "Open"}
-            </button>
-          </li>
+              Wikibooks
+            </a>{" "}
+            (CC BY-SA 4.0).
+          </>
+        }
+      >
+        {WIKIBOOKS_READERS.map((reader) => (
+          <CoverTile
+            key={reader.slug}
+            title={reader.title}
+            badge={reader.level}
+            subtitle={reader.author ?? reader.note}
+            loading={loadingTitle === reader.title}
+            disabled={loadingTitle !== null}
+            onOpen={() => void open(reader)}
+          />
         ))}
-      </ul>
-      {error && <p className="text-sm text-accent-warm">{error}</p>}
-    </div>
+      </Shelf>
+      {error && <p className="-mt-6 px-5 text-sm text-accent-warm">{error}</p>}
+    </>
   );
 }

@@ -8,6 +8,7 @@ import StarterShelf from "@/components/StarterShelf";
 import WikibooksShelf from "@/components/WikibooksShelf";
 import ContinueReading from "@/components/ContinueReading";
 import BottomNav from "@/components/BottomNav";
+import PageHeader from "@/components/PageHeader";
 import { onModelProgress, preloadTranslationModel, type ModelProgress } from "@/lib/translate";
 
 export default function LibraryPage() {
@@ -26,56 +27,32 @@ export default function LibraryPage() {
       : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 p-4 pb-28 sm:p-8 sm:pb-28">
-      <header className="border-b border-line/70 pb-6">
-        <p className="font-display text-sm tracking-wide text-ink-soft">
-          流れ — &quot;flow&quot;
-        </p>
-        <h1 className="font-display text-4xl font-bold tracking-tight">Library</h1>
-      </header>
-
-      {downloadPercent !== null && (
-        <p className="-mt-6 text-xs text-ink-soft">
-          Downloading translation model (one-time, ~110MB)… {downloadPercent}%
-        </p>
-      )}
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-9 pb-32 pt-4 sm:pt-8">
+      <div className="px-5">
+        <PageHeader title="Library" />
+        {downloadPercent !== null && (
+          <div className="mt-4 flex items-center gap-3 text-xs text-ink-soft">
+            <span className="h-1 flex-1 overflow-hidden rounded-full bg-paper-sunk">
+              <span className="block h-full rounded-full bg-accent transition-[width]" style={{ width: `${downloadPercent}%` }} />
+            </span>
+            <span className="shrink-0 tabular-nums">Translation model {downloadPercent}%</span>
+          </div>
+        )}
+      </div>
 
       <ContinueReading />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">Import</h2>
+      <StarterShelf />
+      <WikibooksShelf />
+      <ClassicsShelf />
+
+      <section className="flex flex-col gap-3">
+        <h2 className="px-5 text-xl font-bold tracking-tight">Your shelf</h2>
         <ImportPanel />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
-          Starter readings
-        </h2>
-        <StarterShelf />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
-          Fairy Tales
-        </h2>
-        <WikibooksShelf />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
-          Classics
-        </h2>
-        <ClassicsShelf />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-ink-soft">
-          Library
-        </h2>
         <LibraryList />
       </section>
 
-      <footer className="border-t border-line/70 pt-6 text-xs text-ink-soft">
+      <footer className="mx-5 border-t border-line pt-5 text-[11px] leading-relaxed text-ink-soft/80">
         Dictionary data from{" "}
         <a
           href="https://www.edrdg.org/jmdict/j_jmdict.html"

@@ -114,9 +114,13 @@ function Sentence({
         {sentence.map((token, i) => {
           const index = startIndex + i;
           return isLookupable(token) ? (
-            <button
+            // A truly inline span rather than a <button>: buttons are
+            // inline-block, which puts gaps between words and lets a line
+            // break land before the 。 that follows one.
+            <span
               key={index}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 onSelect({
                   index,
@@ -125,14 +129,23 @@ function Sentence({
                 });
                 activate?.();
               }}
-              className={`rounded px-0.5 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 ${
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                onSelect({
+                  index,
+                  token,
+                  entry: lookupDictionary(lookupKey(token), token.surface_form, dictionary, token),
+                });
+              }}
+              className={`cursor-pointer rounded transition-colors hover:bg-accent/10 focus-visible:bg-accent/10 focus-visible:outline-none ${
                 selectedIndex === index
-                  ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
+                  ? "bg-accent/15 text-accent underline decoration-accent decoration-2 underline-offset-4"
                   : ""
               }`}
             >
               <TokenText token={token} showFurigana={showFurigana} />
-            </button>
+            </span>
           ) : (
             <span
               key={index}
@@ -145,7 +158,7 @@ function Sentence({
         })}
       </span>
       {showTranslation && translatable && !vertical && (
-        <div className="mb-2 block text-sm text-ink-soft">
+        <div className="mb-3 mt-0.5 block border-l-2 border-accent/60 pl-3 text-[15px] leading-relaxed text-ink-soft">
           {status === "error"
             ? "Translation unavailable"
             : status === "done"
@@ -181,7 +194,7 @@ function TranslationCaption({ text }: { text: string | null }) {
   const label = result?.text !== text ? "Translating…" : (result.translation ?? "Translation unavailable");
 
   return (
-    <div className="absolute inset-x-0 bottom-0 max-h-[40%] overflow-y-auto rounded-b-2xl border-t border-line/70 bg-paper/95 px-4 py-2.5 text-sm text-ink-soft backdrop-blur-sm [writing-mode:horizontal-tb]">
+    <div className="absolute inset-x-0 bottom-0 max-h-[40%] overflow-y-auto rounded-b-[1.75rem] border-t border-line bg-paper-raised/95 px-5 py-3 pb-10 text-sm text-ink-soft backdrop-blur-md [writing-mode:horizontal-tb]">
       {label}
     </div>
   );
@@ -326,7 +339,7 @@ export default function Reader({
   }
 
   if (!tokens) {
-    return <p className="text-sm text-ink-soft">Reading through the text…</p>;
+    return <p className="px-2 text-sm text-ink-soft">Reading through the text…</p>;
   }
 
   const downloadPercent =
@@ -345,7 +358,7 @@ export default function Reader({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className={`h-full w-full rounded-2xl border border-line/70 bg-paper-raised/60 p-6 text-xl shadow-sm [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+          className={`h-full w-full rounded-[1.75rem] bg-paper-raised px-6 py-7 text-[1.3rem] shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.05),0_12px_32px_-16px_rgb(var(--shadow-color)/0.25)] [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
             showFurigana ? "leading-[2.6]" : "leading-loose"
           } ${
             vertical
@@ -374,7 +387,7 @@ export default function Reader({
         {currentPosition !== null && sentences.length > 0 && (
           <p
             aria-label={`Sentence ${currentPosition} of ${sentences.length}`}
-            className="pointer-events-none absolute right-3 top-3 rounded-full border border-line/50 bg-paper/90 px-2.5 py-1 text-xs text-ink-soft shadow-sm backdrop-blur-sm"
+            className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-ink/85 px-3 py-1 text-[11px] font-semibold tabular-nums text-paper shadow-lg backdrop-blur-md [writing-mode:horizontal-tb]"
           >
             {currentPosition} / {sentences.length}
           </p>
