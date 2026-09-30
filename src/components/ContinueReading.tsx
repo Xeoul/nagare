@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listItems, type LibraryItem } from "@/lib/library";
-import { coverGlyph, coverStyle } from "@/lib/cover";
 import { PlayIcon, XIcon } from "./icons";
 import { getDismissedContinueReading, setDismissedContinueReading } from "@/lib/preferences";
 
@@ -32,14 +31,6 @@ export default function ContinueReading() {
     <section className="px-5">
       <div className="relative overflow-hidden card rounded-[1.5rem] p-4">
         <Link href={`/read?id=${encodeURIComponent(item.id)}`} className="flex items-center gap-4">
-          <span
-            style={coverStyle(item.title)}
-            className="relative flex h-20 w-[3.75rem] shrink-0 items-end justify-end overflow-hidden rounded-xl"
-          >
-            <span className="-mb-2 -mr-1 text-5xl font-bold leading-none text-white/[0.1]">
-              {coverGlyph(item.title)}
-            </span>
-          </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">
               Continue reading

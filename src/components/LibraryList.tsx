@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listItems, removeItem, type LibraryItem } from "@/lib/library";
-import { coverGlyph, coverStyle } from "@/lib/cover";
 import { TrashIcon } from "./icons";
 
 const KIND_LABEL: Record<LibraryItem["kind"], string> = {
@@ -39,16 +38,8 @@ export default function LibraryList() {
       {items.map((item) => {
         const percent = Math.round(item.progress * 100);
         return (
-          <li key={item.id} className="flex items-center gap-3.5 border-b border-line px-3.5 py-3 last:border-b-0">
+          <li key={item.id} className="flex items-center gap-3.5 border-b border-line py-3 pl-4 pr-2.5 last:border-b-0">
             <Link href={`/read?id=${encodeURIComponent(item.id)}`} className="flex min-w-0 flex-1 items-center gap-3.5">
-              <span
-                style={coverStyle(item.title)}
-                className="flex h-14 w-[2.625rem] shrink-0 items-end justify-end overflow-hidden rounded-lg"
-              >
-                <span className="-mb-1.5 -mr-0.5 text-3xl font-bold leading-none text-white/[0.1]">
-                  {coverGlyph(item.title)}
-                </span>
-              </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px] font-semibold">{item.title}</span>
                 <span className="block text-xs text-ink-soft">

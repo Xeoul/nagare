@@ -93,15 +93,6 @@ body {
   display: none;
 }
 
-/* The big watermark glyph on feed cards: a faint fill that fades out
-   toward the bottom. (A text-stroke outline shows every overlapping
-   contour inside CJK glyphs, so it's a fill.) */
-.glyph-watermark {
-  color: rgb(255 255 255 / 0.035);
-  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 95%);
-  mask-image: linear-gradient(to bottom, #000 30%, transparent 95%);
-}
-
 /* The double-tap-to-save heart: pops in, then floats up and fades. */
 @keyframes heart-pop {
   0% {

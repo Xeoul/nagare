@@ -9,7 +9,7 @@ import { isStarred, toggleStarred } from "@/lib/starred";
 import { isSentenceSaved, toggleSavedSentence } from "@/lib/savedSentences";
 import type { FeedCard, FeedSentence } from "@/lib/feed";
 import TokenText from "../TokenText";
-import { auraStyle, coverGlyph, hashText as hash } from "@/lib/cover";
+import { auraStyle, hashText as hash } from "@/lib/cover";
 import { BookOpenIcon, HeartIcon, LanguagesIcon } from "../icons";
 
 export type WordSelection = { token: Token; entry: JmdictEntry | null };
@@ -229,7 +229,6 @@ export default function FeedCardView({
     });
   }
 
-  const watermark = coverGlyph(sentence.text);
   const rubyStyle =
     "[line-break:strict] [&_rt]:text-[0.42em] [&_rt]:font-normal [&_rt]:text-white/55";
 
@@ -262,13 +261,6 @@ export default function FeedCardView({
       style={auraStyle(sentence.text)}
       className="relative h-dvh w-full cursor-pointer snap-start snap-always select-none overflow-hidden text-white [touch-action:manipulation]"
     >
-      <span
-        aria-hidden="true"
-        className="glyph-watermark pointer-events-none absolute -right-[18vw] top-[45%] -translate-y-1/2 text-[80vw] font-bold leading-none sm:text-[45vh]"
-      >
-        {watermark}
-      </span>
-
       <div className="absolute inset-0 flex flex-col justify-center px-6 pb-44 pr-20 pt-24">
         {spotlight ? (
           <>
