@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { coverGlyph, coverStyle } from "@/lib/cover";
+import { coverStyle } from "@/lib/cover";
 
 /** A book cover with generated art — the tile every shelf is built from. */
 export default function CoverTile({
@@ -28,8 +28,8 @@ export default function CoverTile({
         style={coverStyle(title)}
         className="relative flex aspect-[3/4] w-full overflow-hidden rounded-2xl text-white shadow-[0_8px_20px_-14px_rgb(var(--shadow-color)/0.5)] ring-1 ring-black/5"
       >
-        <span className="absolute -bottom-6 -right-3 text-[7.5rem] font-bold leading-none text-white/[0.1]">
-          {coverGlyph(title)}
+        <span className="absolute inset-x-3 bottom-3 line-clamp-3 text-[17px] font-semibold leading-snug tracking-tight text-white/95">
+          {title}
         </span>
         {badge && (
           <span className="absolute left-2.5 top-2.5 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-white/85">
@@ -42,10 +42,7 @@ export default function CoverTile({
           </span>
         )}
       </span>
-      <span className="min-w-0 px-0.5">
-        <span className="block truncate text-[15px] font-semibold leading-tight">{title}</span>
-        {subtitle && <span className="mt-0.5 block truncate text-xs text-ink-soft">{subtitle}</span>}
-      </span>
+      {subtitle && <span className="block truncate px-0.5 text-xs text-ink-soft">{subtitle}</span>}
     </button>
   );
 }

@@ -17,11 +17,6 @@ function huePair(text: string): [number, number] {
   return [first, second === first ? (first + 40) % 360 : second];
 }
 
-/** The character a cover or card is "about": its first kanji, else its first character. */
-export function coverGlyph(text: string): string {
-  return text.match(/[一-鿿々]/)?.[0] ?? text.match(/[぀-ヿ]/)?.[0] ?? text.trim().charAt(0);
-}
-
 /** Generated cover art for a book tile: a muted tone with a gentle sheen. */
 export function coverStyle(title: string): CSSProperties {
   const [a] = huePair(title);

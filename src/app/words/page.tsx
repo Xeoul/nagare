@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
-import { TrashIcon, XIcon } from "@/components/icons";
+import { BookmarkIcon, HeartIcon, TrashIcon, XIcon } from "@/components/icons";
 import { getStarred, toggleStarred, type StarredWord } from "@/lib/starred";
 import {
   getSavedSentences,
@@ -109,7 +109,7 @@ export default function SavedPage() {
           <p className="text-sm text-ink-soft">Loading…</p>
         ) : sentences.length === 0 ? (
           <EmptyState
-            glyph="文"
+            icon={<HeartIcon className="h-6 w-6" />}
             text="Double-tap a card in the feed, or tap its heart, to keep a sentence here."
           />
         ) : (
@@ -133,7 +133,7 @@ export default function SavedPage() {
           <p className="text-sm text-ink-soft">Loading…</p>
         ) : words.length === 0 ? (
           <EmptyState
-            glyph="語"
+            icon={<BookmarkIcon className="h-6 w-6" />}
             text="Save a word spotlight in the feed, or tap any word while reading and add it."
           />
         ) : (
@@ -167,10 +167,12 @@ export default function SavedPage() {
   );
 }
 
-function EmptyState({ glyph, text }: { glyph: string; text: string }) {
+function EmptyState({ icon, text }: { icon: ReactNode; text: string }) {
   return (
     <div className="flex flex-col items-center gap-4 px-6 py-14 text-center">
-      <span className="stamp h-14 w-14 text-2xl opacity-15">{glyph}</span>
+      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-paper-sunk text-ink-soft">
+        {icon}
+      </span>
       <p className="max-w-xs text-sm leading-relaxed text-ink-soft">{text}</p>
     </div>
   );
