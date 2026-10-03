@@ -27,6 +27,7 @@ import { onModelProgress, preloadTranslationModel, type ModelProgress } from "@/
 import LookupSheet from "../LookupSheet";
 import BottomNav from "../BottomNav";
 import FeedCardView, { type WordSelection } from "./FeedCardView";
+import QuizCardView from "./QuizCardView";
 
 /** Cards within this distance of the visible one are mounted; the rest are empty snap slots. */
 const RENDER_RADIUS = 2;
@@ -154,17 +155,21 @@ export default function Feed() {
       >
         {cards.map((card, i) =>
           Math.abs(i - current) <= RENDER_RADIUS ? (
-            <FeedCardView
-              key={card.id}
-              card={card}
-              isFirst={i === 0 && current === 0}
-              dictionary={dictionary}
-              showFurigana={showFurigana}
-              onToggleFurigana={toggleFurigana}
-              onSelectWord={setSelected}
-              onOpenStory={(sentence) => void openStory(sentence)}
-              downloadPercent={downloadPercent}
-            />
+            card.kind === "quiz" ? (
+              <QuizCardView key={card.id} card={card} dictionary={dictionary} />
+            ) : (
+              <FeedCardView
+                key={card.id}
+                card={card}
+                isFirst={i === 0 && current === 0}
+                dictionary={dictionary}
+                showFurigana={showFurigana}
+                onToggleFurigana={toggleFurigana}
+                onSelectWord={setSelected}
+                onOpenStory={(sentence) => void openStory(sentence)}
+                downloadPercent={downloadPercent}
+              />
+            )
           ) : (
             <section key={card.id} className="h-dvh w-full snap-start snap-always" />
           ),
@@ -223,6 +228,7 @@ export default function Feed() {
           surfaceForm={selected.token.surface_form}
           lookupKey={lookupKey(selected.token)}
           entry={selected.entry}
+          reading={selected.token.reading}
           onClose={() => setSelected(null)}
         />
       )}

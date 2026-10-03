@@ -25,7 +25,8 @@ export type FeedSentence = {
 
 export type FeedCard =
   | { kind: "sentence"; id: string; sentence: FeedSentence }
-  | { kind: "word"; id: string; sentence: FeedSentence };
+  | { kind: "word"; id: string; sentence: FeedSentence }
+  | { kind: "quiz"; id: string; sentence: FeedSentence };
 
 const SOURCES: FeedSource[] = [
   ...STARTER_READINGS.map(
@@ -123,9 +124,10 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 const WORD_CARD_EVERY = 4;
+const QUIZ_CARD_EVERY = 7;
 let nextCardId = 0;
 
-/** One shuffled pass over every sentence, with a vocab spotlight every few cards. */
+/** One shuffled pass over every sentence, with a vocab spotlight and a quiz every few cards. */
 export function buildBatch(sentences: FeedSentence[]): FeedCard[] {
   const order = shuffle(sentences);
   const spotlights = shuffle(sentences);
@@ -134,6 +136,10 @@ export function buildBatch(sentences: FeedSentence[]): FeedCard[] {
     cards.push({ kind: "sentence", id: `c${nextCardId++}`, sentence });
     if ((i + 1) % WORD_CARD_EVERY === 0 && spotlights.length > 0) {
       cards.push({ kind: "word", id: `c${nextCardId++}`, sentence: spotlights[i % spotlights.length] });
+    }
+    if ((i + 1) % QUIZ_CARD_EVERY === 0 && spotlights.length > 0) {
+      const quizSentence = spotlights[(i * 7 + 3) % spotlights.length];
+      cards.push({ kind: "quiz", id: `c${nextCardId++}`, sentence: quizSentence });
     }
   });
   return cards;

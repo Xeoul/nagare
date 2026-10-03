@@ -3,16 +3,21 @@
 import { useEffect, useState } from "react";
 import type { JmdictEntry } from "@/lib/dictionary";
 import { isStarred, toggleStarred } from "@/lib/starred";
-import { BookmarkIcon, XIcon } from "./icons";
+import { speak } from "@/lib/speech";
+import { BookmarkIcon, SpeakerIcon, XIcon } from "./icons";
 
 type Props = {
   surfaceForm: string;
   lookupKey: string;
   entry: JmdictEntry | null;
+  /** How the word is read where it appears (kuromoji's katakana reading), for read-aloud. */
+  reading?: string;
+  /** The sentence the word sits in, offered as a second thing to listen to. */
+  sentence?: string;
   onClose: () => void;
 };
 
-export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: Props) {
+export default function LookupSheet({ surfaceForm, lookupKey, entry, reading, sentence, onClose }: Props) {
   const [starred, setStarred] = useState(false);
 
   useEffect(() => {
@@ -32,6 +37,14 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
             )}
             <p className="text-[2rem] font-bold leading-tight tracking-tight">{surfaceForm}</p>
           </div>
+          <button
+            type="button"
+            onClick={() => speak(reading || surfaceForm)}
+            className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-paper-sunk text-ink-soft transition-colors hover:text-ink"
+            aria-label="Listen"
+          >
+            <SpeakerIcon className="h-4 w-4" />
+          </button>
           <button
             type="button"
             onClick={onClose}
@@ -57,6 +70,16 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, onClose }: 
                 <span className="rounded-full bg-paper-sunk px-2 py-0.5 text-[11px] font-medium text-ink-soft">
                   from {lookupKey}
                 </span>
+              )}
+              {sentence && (
+                <button
+                  type="button"
+                  onClick={() => speak(sentence)}
+                  className="flex items-center gap-1 rounded-full bg-paper-sunk px-2 py-0.5 text-[11px] font-medium text-ink-soft transition-colors hover:text-ink"
+                >
+                  <SpeakerIcon className="h-3 w-3" />
+                  Sentence
+                </button>
               )}
             </div>
             <ol className="mt-3 flex flex-col gap-1">

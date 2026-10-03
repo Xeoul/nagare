@@ -128,3 +128,30 @@ export function ColumnsIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function SpeakerIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </Icon>
+  );
+}
+
+export function CheckIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M20 6 9 17l-5-5" />
+    </Icon>
+  );
+}
+
+export function CardsIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="6" width="14" height="15" rx="2" />
+      <path d="M7 3h12a2 2 0 0 1 2 2v12" />
+    </Icon>
+  );
+}

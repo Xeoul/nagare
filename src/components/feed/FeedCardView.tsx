@@ -3,14 +3,15 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
 import { lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
-import { hasKanji } from "@/lib/furigana";
+import { pickSpotlight } from "@/lib/spotlight";
+import { speak } from "@/lib/speech";
 import { translateSentence } from "@/lib/translate";
 import { isStarred, toggleStarred } from "@/lib/starred";
 import { isSentenceSaved, toggleSavedSentence } from "@/lib/savedSentences";
 import type { FeedCard, FeedSentence } from "@/lib/feed";
 import TokenText from "../TokenText";
 import { auraStyle, hashText as hash } from "@/lib/cover";
-import { BookOpenIcon, HeartIcon, LanguagesIcon } from "../icons";
+import { BookOpenIcon, HeartIcon, LanguagesIcon, SpeakerIcon } from "../icons";
 
 export type WordSelection = { token: Token; entry: JmdictEntry | null };
 
@@ -24,28 +25,6 @@ type Props = {
   onOpenStory: (sentence: FeedSentence) => void;
   downloadPercent: number | null;
 };
-
-const CONTENT_POS = new Set(["名詞", "動詞", "形容詞", "副詞"]);
-const SKIP_POS_DETAIL = new Set(["非自立", "数", "代名詞", "接尾"]);
-const TOO_COMMON = new Set(["する", "ある", "いる", "なる", "いう", "できる", "くる", "来る", "こと", "もの", "よう", "とき"]);
-
-/** The word a spotlight card features: a content word the dictionary knows, preferring ones with kanji. */
-function pickSpotlight(tokens: Token[], dictionary: JmdictLookup | null, seed: number) {
-  const candidates = tokens
-    .map((token, index) => ({ token, index, key: lookupKey(token) }))
-    .filter(
-      (c) =>
-        CONTENT_POS.has(c.token.pos) &&
-        !SKIP_POS_DETAIL.has(c.token.pos_detail_1) &&
-        !TOO_COMMON.has(c.key),
-    )
-    .map((c) => ({ ...c, entry: lookupDictionary(c.key, c.token.surface_form, dictionary, c.token) }))
-    .filter((c): c is typeof c & { entry: JmdictEntry } => Boolean(c.entry?.meanings.length));
-  if (candidates.length === 0) return null;
-  const withKanji = candidates.filter((c) => hasKanji(c.key));
-  const pool = withKanji.length > 0 ? withKanji : candidates;
-  return pool[seed % pool.length];
-}
 
 function SentenceTokens({
   text,
@@ -320,7 +299,7 @@ export default function FeedCardView({
         )}
       </div>
 
-      <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] right-3 flex flex-col items-center gap-4">
+      <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] right-3 flex flex-col items-center gap-3">
         <RailButton label={saved ? "Saved" : "Save"} active={saved} onClick={() => void save(false)}>
           <HeartIcon
             className={`h-6 w-6 transition-colors ${saved ? "text-white" : ""}`}
@@ -332,6 +311,9 @@ export default function FeedCardView({
         </RailButton>
         <RailButton label="Furigana" active={showFurigana} onClick={onToggleFurigana}>
           <span className="text-lg font-bold leading-none">あ</span>
+        </RailButton>
+        <RailButton label="Listen" onClick={() => speak(sentence.text)}>
+          <SpeakerIcon className="h-[22px] w-[22px]" />
         </RailButton>
         <RailButton label="Story" onClick={() => onOpenStory(sentence)}>
           <BookOpenIcon className="h-[22px] w-[22px]" />
