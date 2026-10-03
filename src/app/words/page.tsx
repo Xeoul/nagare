@@ -3,7 +3,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
-import { BookmarkIcon, HeartIcon, TrashIcon, XIcon } from "@/components/icons";
+import Link from "next/link";
+import { BookmarkIcon, CardsIcon, HeartIcon, SpeakerIcon, TrashIcon, XIcon } from "@/components/icons";
+import { countDue } from "@/lib/review";
+import { speak } from "@/lib/speech";
 import { getStarred, toggleStarred, type StarredWord } from "@/lib/starred";
 import {
   getSavedSentences,
@@ -45,9 +48,17 @@ function SavedSentenceCard({
         </button>
       )}
       <div className="mt-3 flex items-center justify-between gap-3 text-xs text-ink-soft">
-        <span className="truncate">
+        <span className="min-w-0 flex-1 truncate">
           <span className="font-semibold text-ink">{sentence.level}</span> · {sentence.sourceTitle}
         </span>
+        <button
+          type="button"
+          onClick={() => speak(sentence.text)}
+          aria-label="Listen"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-soft/70 transition-colors hover:bg-paper-sunk hover:text-ink"
+        >
+          <SpeakerIcon className="h-4 w-4" />
+        </button>
         <button
           type="button"
           onClick={onRemove}
@@ -64,11 +75,13 @@ function SavedSentenceCard({
 export default function SavedPage() {
   const [sentences, setSentences] = useState<SavedSentence[] | null>(null);
   const [words, setWords] = useState<StarredWord[] | null>(null);
+  const [due, setDue] = useState<number | null>(null);
   const [tab, setTab] = useState<"sentences" | "words">("sentences");
 
   useEffect(() => {
     void getSavedSentences().then(setSentences);
     void getStarred().then(setWords);
+    void countDue().then(setDue);
   }, []);
 
   const tabs = [
@@ -81,6 +94,29 @@ export default function SavedPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-5 pb-32 pt-4 sm:pt-8">
       <PageHeader title="Saved" />
+
+      {words && words.length > 0 && (
+        <Link href="/review" className="card card-interactive flex items-center gap-4 px-4 py-3.5">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper-sunk">
+            <CardsIcon className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold">Review words</span>
+            <span className="block text-xs text-ink-soft">
+              {due === null
+                ? "\u00a0"
+                : due > 0
+                  ? `${due} ${due === 1 ? "word" : "words"} due now`
+                  : "All caught up — nothing due"}
+            </span>
+          </span>
+          {due !== null && due > 0 && (
+            <span className="rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold tabular-nums text-paper">
+              {due}
+            </span>
+          )}
+        </Link>
+      )}
 
       <div className="relative grid grid-cols-2 rounded-full bg-paper-sunk p-1" role="tablist">
         <span
@@ -151,7 +187,10 @@ export default function SavedPage() {
                   type="button"
                   aria-label={`Remove ${word.key}`}
                   onClick={() => {
-                    void toggleStarred(word).then(setWords);
+                    void toggleStarred(word)
+                      .then(setWords)
+                      .then(() => countDue())
+                      .then(setDue);
                   }}
                   className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-ink-soft/60 transition-colors hover:bg-paper-sunk hover:text-accent-warm"
                 >

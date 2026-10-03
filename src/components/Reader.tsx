@@ -317,6 +317,16 @@ export default function Reader({
       ? Math.min(sentences.length, Math.max(1, Math.round(scrollFraction * (sentences.length - 1)) + 1))
       : null;
 
+  // The sentence holding the tapped word, so the lookup sheet can read it aloud.
+  const selectedSentence = useMemo(() => {
+    if (!selected) return null;
+    const match = sentences.find(
+      ({ sentence, startIndex }) =>
+        selected.index >= startIndex && selected.index < startIndex + sentence.length,
+    );
+    return match ? sentenceText(match.sentence) : null;
+  }, [selected, sentences]);
+
   const activeSentenceText = useMemo(() => {
     if (!vertical || !showTranslation || activeIndex === null) return null;
     const active = sentences.find((s) => s.startIndex === activeIndex);
@@ -399,6 +409,8 @@ export default function Reader({
           surfaceForm={selected.token.surface_form}
           lookupKey={lookupKey(selected.token)}
           entry={selected.entry}
+          reading={selected.token.reading}
+          sentence={selectedSentence ?? undefined}
           onClose={() => setSelected(null)}
         />
       )}
