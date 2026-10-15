@@ -16,7 +16,9 @@ export type ClassicWork = {
    * grading (Aozora Bunko isn't learner material and carries no JLPT
    * tagging of its own). See NOTICE.md / README for the method.
    */
-  level: "N3" | "N2";
+  level: "N3" | "N2" | "N1";
+  /** A full-length book, read a chapter at a time and kept out of the feed. */
+  novel?: boolean;
   /** % of unique content words found in NO JLPT list at all (rounded). Higher = denser. */
   density: number;
 };
@@ -139,6 +141,202 @@ export const CLASSICS: ClassicWork[] = [
     level: "N3",
     density: 45,
   },
+  {
+    title: "手袋を買いに",
+    author: "新美南吉",
+    path: "cards/000121/files/637_ruby_4095/637_ruby_4095.txt",
+    slug: "tebukuro-wo-kai-ni",
+    note: "Niimi — Buying Mittens",
+    level: "N3",
+    density: 50,
+  },
+  {
+    title: "赤い蝋燭と人魚",
+    author: "小川未明",
+    path: "cards/001475/files/54372_ruby_46181/54372_ruby_46181.txt",
+    slug: "akai-rosoku-to-ningyo",
+    note: "Ogawa — The Red Candles and the Mermaid",
+    level: "N3",
+    density: 39,
+  },
+  {
+    title: "雪渡り",
+    author: "宮沢賢治",
+    path: "cards/000081/files/45679_ruby_21992/45679_ruby_21992.txt",
+    slug: "yukiwatari",
+    note: "Miyazawa — Snow Crossing",
+    level: "N3",
+    density: 48,
+  },
+  {
+    title: "セロ弾きのゴーシュ",
+    author: "宮沢賢治",
+    path: "cards/000081/files/470_ruby_3987/470_ruby_3987.txt",
+    slug: "sero-hiki-no-goshu",
+    note: "Miyazawa — Gauche the Cellist",
+    level: "N3",
+    density: 55,
+  },
+  {
+    title: "よだかの星",
+    author: "宮沢賢治",
+    path: "cards/000081/files/473_ruby_467/473_ruby_467.txt",
+    slug: "yodaka-no-hoshi",
+    note: "Miyazawa — The Nighthawk Star",
+    level: "N3",
+    density: 52,
+  },
+  {
+    title: "風の又三郎",
+    author: "宮沢賢治",
+    path: "cards/000081/files/462_ruby_716/462_ruby_716.txt",
+    slug: "kaze-no-matasaburo",
+    note: "Miyazawa — Matasaburō of the Wind",
+    level: "N3",
+    density: 59,
+  },
+  {
+    title: "トロッコ",
+    author: "芥川龍之介",
+    path: "cards/000879/files/43016_ruby_16663/43016_ruby_16663.txt",
+    slug: "torokko",
+    note: "Akutagawa — The Handcart",
+    level: "N3",
+    density: 43,
+  },
+  {
+    title: "蜜柑",
+    author: "芥川龍之介",
+    path: "cards/000879/files/43017_ruby_17394/43017_ruby_17394.txt",
+    slug: "mikan",
+    note: "Akutagawa — Tangerines",
+    level: "N3",
+    density: 46,
+  },
+  {
+    title: "魔術",
+    author: "芥川龍之介",
+    path: "cards/000879/files/95_ruby_885/95_ruby_885.txt",
+    slug: "majutsu",
+    note: "Akutagawa — Magic",
+    level: "N3",
+    density: 45,
+  },
+  {
+    title: "白",
+    author: "芥川龍之介",
+    path: "cards/000879/files/149_ruby_1581/149_ruby_1581.txt",
+    slug: "shiro",
+    note: "Akutagawa — Shiro the Dog",
+    level: "N3",
+    density: 45,
+  },
+  {
+    title: "桃太郎",
+    author: "芥川龍之介",
+    path: "cards/000879/files/100_ruby_1154/100_ruby_1154.txt",
+    slug: "momotaro-akutagawa",
+    note: "Akutagawa — his retelling of Momotarō",
+    level: "N3",
+    density: 47,
+  },
+  {
+    title: "檸檬",
+    author: "梶井基次郎",
+    path: "cards/000074/files/424_ruby_19825/424_ruby_19825.txt",
+    slug: "remon",
+    note: "Kajii — Lemon",
+    level: "N2",
+    density: 46,
+  },
+  {
+    title: "葉桜と魔笛",
+    author: "太宰治",
+    path: "cards/000035/files/42376_ruby_15517/42376_ruby_15517.txt",
+    slug: "hazakura-to-mateki",
+    note: "Dazai — Cherry Leaves and the Whistler",
+    level: "N3",
+    density: 46,
+  },
+  {
+    title: "一房の葡萄",
+    author: "有島武郎",
+    path: "cards/000025/files/211_ruby_20471/211_ruby_20471.txt",
+    slug: "hitofusa-no-budo",
+    note: "Arishima — A Bunch of Grapes",
+    level: "N3",
+    density: 41,
+  },
+  {
+    title: "河童",
+    author: "芥川龍之介",
+    path: "cards/000879/files/69_ruby_1321/69_ruby_1321.txt",
+    slug: "kappa",
+    note: "Akutagawa — Kappa (novella)",
+    level: "N2",
+    density: 49,
+    novel: true,
+  },
+  {
+    title: "坊っちゃん",
+    author: "夏目漱石",
+    path: "cards/000148/files/752_ruby_2438/752_ruby_2438.txt",
+    slug: "botchan",
+    note: "Sōseki — Botchan",
+    level: "N2",
+    density: 59,
+    novel: true,
+  },
+  {
+    title: "人間失格",
+    author: "太宰治",
+    path: "cards/000035/files/301_ruby_5915/301_ruby_5915.txt",
+    slug: "ningen-shikkaku",
+    note: "Dazai — No Longer Human",
+    level: "N2",
+    density: 57,
+    novel: true,
+  },
+  {
+    title: "斜陽",
+    author: "太宰治",
+    path: "cards/000035/files/1565_ruby_8220/1565_ruby_8220.txt",
+    slug: "shayo",
+    note: "Dazai — The Setting Sun",
+    level: "N2",
+    density: 58,
+    novel: true,
+  },
+  {
+    title: "三四郎",
+    author: "夏目漱石",
+    path: "cards/000148/files/794_ruby_4237/794_ruby_4237.txt",
+    slug: "sanshiro",
+    note: "Sōseki — Sanshirō",
+    level: "N2",
+    density: 58,
+    novel: true,
+  },
+  {
+    title: "こころ",
+    author: "夏目漱石",
+    path: "cards/000148/files/773_ruby_5968/773_ruby_5968.txt",
+    slug: "kokoro",
+    note: "Sōseki — Kokoro",
+    level: "N2",
+    density: 55,
+    novel: true,
+  },
+  {
+    title: "吾輩は猫である",
+    author: "夏目漱石",
+    path: "cards/000148/files/789_ruby_5639/789_ruby_5639.txt",
+    slug: "wagahai-wa-neko-de-aru",
+    note: "Sōseki — I Am a Cat",
+    level: "N1",
+    density: 71,
+    novel: true,
+  },
 ];
 
 /**
@@ -167,6 +365,12 @@ export function stripAozoraMarkup(raw: string): string {
 
   return lines
     .slice(start, end)
+    // Chapter headings become "§ heading" marker lines (src/lib/chapters.ts)
+    // so long works can be read a chapter at a time.
+    .map((line) => {
+      const heading = line.match(/［＃「([^」]+)」は[大中]見出し］/);
+      return heading ? `§ ${heading[1].replace(/\s+/g, " ")}` : line;
+    })
     .join("\n")
     .replace(/［＃[^］]*］/g, "")
     .replace(/｜/g, "")

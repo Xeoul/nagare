@@ -46,6 +46,7 @@ export default function LibraryPage() {
         <StarterShelf />
         <WikibooksShelf />
         <ClassicsShelf />
+        <ClassicsShelf novels />
 
         <section className="flex flex-col gap-3">
           <h2 className="px-5 text-xl font-bold tracking-tight">Your shelf</h2>
