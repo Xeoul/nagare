@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type UIEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type UIEvent } from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
 import { loadDictionary, lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
 import { isTranslatable, sentenceText, splitIntoSentences } from "@/lib/sentences";
@@ -15,6 +15,8 @@ type Props = {
   showFurigana: boolean;
   showTranslation: boolean;
   vertical: boolean;
+  /** Shown after the last sentence in place of the "おわり · END" marker (e.g. a next-chapter button). */
+  endSlot?: ReactNode;
 };
 
 type Selected = { index: number; token: Token; entry: JmdictEntry | null };
@@ -207,6 +209,7 @@ export default function Reader({
   showFurigana,
   showTranslation,
   vertical,
+  endSlot,
 }: Props) {
   const [tokens, setTokens] = useState<Token[] | null>(null);
   const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
@@ -408,7 +411,10 @@ export default function Reader({
               isActive={activeIndex === startIndex}
             />
           ))}
-          {sentences.length > 0 && (
+          {sentences.length > 0 && endSlot && (
+            <div className="mt-10 flex justify-center [writing-mode:horizontal-tb]">{endSlot}</div>
+          )}
+          {sentences.length > 0 && !endSlot && (
             <p className="mt-10 text-center text-xs tracking-[0.2em] text-ink-soft/70 [writing-mode:horizontal-tb]">
               おわり · END
             </p>

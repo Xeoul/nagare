@@ -24,6 +24,29 @@ const CLASSICS = [
   { path: "cards/000121/files/628_ruby_649/628_ruby_649.txt", slug: "gongitsune" },
   { path: "cards/000119/files/624_ruby_5668/624_ruby_5668.txt", slug: "sangetsuki" },
   { path: "cards/000129/files/45245_ruby_21882/45245_ruby_21882.txt", slug: "takasebune" },
+  // Short stories
+  { path: "cards/000121/files/637_ruby_4095/637_ruby_4095.txt", slug: "tebukuro-wo-kai-ni" },
+  { path: "cards/001475/files/54372_ruby_46181/54372_ruby_46181.txt", slug: "akai-rosoku-to-ningyo" },
+  { path: "cards/000081/files/45679_ruby_21992/45679_ruby_21992.txt", slug: "yukiwatari" },
+  { path: "cards/000081/files/470_ruby_3987/470_ruby_3987.txt", slug: "sero-hiki-no-goshu" },
+  { path: "cards/000081/files/473_ruby_467/473_ruby_467.txt", slug: "yodaka-no-hoshi" },
+  { path: "cards/000081/files/462_ruby_716/462_ruby_716.txt", slug: "kaze-no-matasaburo" },
+  { path: "cards/000879/files/43016_ruby_16663/43016_ruby_16663.txt", slug: "torokko" },
+  { path: "cards/000879/files/43017_ruby_17394/43017_ruby_17394.txt", slug: "mikan" },
+  { path: "cards/000879/files/95_ruby_885/95_ruby_885.txt", slug: "majutsu" },
+  { path: "cards/000879/files/149_ruby_1581/149_ruby_1581.txt", slug: "shiro" },
+  { path: "cards/000879/files/100_ruby_1154/100_ruby_1154.txt", slug: "momotaro-akutagawa" },
+  { path: "cards/000074/files/424_ruby_19825/424_ruby_19825.txt", slug: "remon" },
+  { path: "cards/000035/files/42376_ruby_15517/42376_ruby_15517.txt", slug: "hazakura-to-mateki" },
+  { path: "cards/000025/files/211_ruby_20471/211_ruby_20471.txt", slug: "hitofusa-no-budo" },
+  // Novels
+  { path: "cards/000879/files/69_ruby_1321/69_ruby_1321.txt", slug: "kappa" },
+  { path: "cards/000148/files/752_ruby_2438/752_ruby_2438.txt", slug: "botchan" },
+  { path: "cards/000035/files/301_ruby_5915/301_ruby_5915.txt", slug: "ningen-shikkaku" },
+  { path: "cards/000035/files/1565_ruby_8220/1565_ruby_8220.txt", slug: "shayo" },
+  { path: "cards/000148/files/794_ruby_4237/794_ruby_4237.txt", slug: "sanshiro" },
+  { path: "cards/000148/files/773_ruby_5968/773_ruby_5968.txt", slug: "kokoro" },
+  { path: "cards/000148/files/789_ruby_5639/789_ruby_5639.txt", slug: "wagahai-wa-neko-de-aru" },
 ];
 
 /** Mirrors stripAozoraMarkup in src/lib/aozora.ts (kept standalone here). */
@@ -46,6 +69,12 @@ function stripAozoraMarkup(raw) {
 
   return lines
     .slice(start, end)
+    // Chapter headings become "§ heading" marker lines (src/lib/chapters.ts)
+    // so long works can be read a chapter at a time.
+    .map((line) => {
+      const heading = line.match(/［＃「([^」]+)」は[大中]見出し］/);
+      return heading ? `§ ${heading[1].replace(/\s+/g, " ")}` : line;
+    })
     .join("\n")
     .replace(/［＃[^］]*］/g, "")
     .replace(/｜/g, "")
