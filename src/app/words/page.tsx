@@ -92,116 +92,118 @@ export default function SavedPage() {
   const activeIndex = tabs.findIndex((t) => t.id === tab);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-5 pb-32 pt-4 sm:pt-8">
-      <PageHeader title="Saved" />
+    <div className="flex flex-1 flex-col lg:pl-60">
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-5 pb-32 pt-4 sm:pt-8 lg:max-w-6xl lg:px-11 lg:pb-16 lg:pt-12">
+        <PageHeader title="Saved" />
 
-      {words && words.length > 0 && (
-        <Link href="/review" className="card card-interactive flex items-center gap-4 px-4 py-3.5">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper-sunk">
-            <CardsIcon className="h-5 w-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">Review words</span>
-            <span className="block text-xs text-ink-soft">
-              {due === null
-                ? "\u00a0"
-                : due > 0
-                  ? `${due} ${due === 1 ? "word" : "words"} due now`
-                  : "All caught up — nothing due"}
+        {words && words.length > 0 && (
+          <Link href="/review" className="card card-interactive flex items-center gap-4 px-4 py-3.5 lg:max-w-md">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper-sunk">
+              <CardsIcon className="h-5 w-5" />
             </span>
-          </span>
-          {due !== null && due > 0 && (
-            <span className="rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold tabular-nums text-paper">
-              {due}
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold">Review words</span>
+              <span className="block text-xs text-ink-soft">
+                {due === null
+                  ? "\u00a0"
+                  : due > 0
+                    ? `${due} ${due === 1 ? "word" : "words"} due now`
+                    : "All caught up — nothing due"}
+              </span>
             </span>
-          )}
-        </Link>
-      )}
+            {due !== null && due > 0 && (
+              <span className="rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold tabular-nums text-paper">
+                {due}
+              </span>
+            )}
+          </Link>
+        )}
 
-      <div className="relative grid grid-cols-2 rounded-full bg-paper-sunk p-1" role="tablist">
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-paper-thumb shadow-[0_2px_8px_-2px_rgb(var(--shadow-color)/0.2)] transition-transform duration-300 ease-out"
-          style={{ transform: `translateX(${activeIndex * 100}%)` }}
-        />
-        {tabs.map(({ id, label, count }) => (
-          <button
-            key={id}
-            type="button"
-            role="tab"
-            aria-selected={tab === id}
-            onClick={() => setTab(id)}
-            className={`relative z-10 py-2 text-sm font-semibold transition-colors ${
-              tab === id ? "text-ink" : "text-ink-soft"
-            }`}
-          >
-            {label} <span className="ml-0.5 tabular-nums opacity-50">{count}</span>
-          </button>
-        ))}
-      </div>
-
-      {tab === "sentences" &&
-        (sentences === null ? (
-          <p className="text-sm text-ink-soft">Loading…</p>
-        ) : sentences.length === 0 ? (
-          <EmptyState
-            icon={<HeartIcon className="h-6 w-6" />}
-            text="Double-tap a card in the feed, or tap its heart, to keep a sentence here."
+        <div className="relative grid grid-cols-2 rounded-full bg-paper-sunk p-1 lg:max-w-sm" role="tablist">
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-paper-thumb shadow-[0_2px_8px_-2px_rgb(var(--shadow-color)/0.2)] transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(${activeIndex * 100}%)` }}
           />
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {sentences.map((sentence) => (
-              <SavedSentenceCard
-                key={sentence.text}
-                sentence={sentence}
-                onRemove={() => {
-                  void toggleSavedSentence(sentence).then(() =>
-                    setSentences((current) => current?.filter((s) => s.text !== sentence.text) ?? null),
-                  );
-                }}
-              />
-            ))}
-          </ul>
-        ))}
+          {tabs.map(({ id, label, count }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              onClick={() => setTab(id)}
+              className={`relative z-10 py-2 text-sm font-semibold transition-colors ${
+                tab === id ? "text-ink" : "text-ink-soft"
+              }`}
+            >
+              {label} <span className="ml-0.5 tabular-nums opacity-50">{count}</span>
+            </button>
+          ))}
+        </div>
 
-      {tab === "words" &&
-        (words === null ? (
-          <p className="text-sm text-ink-soft">Loading…</p>
-        ) : words.length === 0 ? (
-          <EmptyState
-            icon={<BookmarkIcon className="h-6 w-6" />}
-            text="Save a word spotlight in the feed, or tap any word while reading and add it."
-          />
-        ) : (
-          <ul className="grid grid-cols-2 gap-3">
-            {words.map((word) => (
-              <li key={word.key} className="card relative flex min-h-36 flex-col p-4">
-                <p className="text-xs text-ink-soft">{word.reading !== word.key ? word.reading : "\u00a0"}</p>
-                <p className="mt-0.5 break-all text-[1.75rem] font-bold leading-tight tracking-tight">
-                  {word.key}
-                </p>
-                <p className="mt-auto line-clamp-2 pt-2 text-[13px] leading-snug text-ink-soft">
-                  {word.meanings.slice(0, 2).join("; ")}
-                </p>
-                <button
-                  type="button"
-                  aria-label={`Remove ${word.key}`}
-                  onClick={() => {
-                    void toggleStarred(word)
-                      .then(setWords)
-                      .then(() => countDue())
-                      .then(setDue);
+        {tab === "sentences" &&
+          (sentences === null ? (
+            <p className="text-sm text-ink-soft">Loading…</p>
+          ) : sentences.length === 0 ? (
+            <EmptyState
+              icon={<HeartIcon className="h-6 w-6" />}
+              text="Double-tap a card in the feed, or tap its heart, to keep a sentence here."
+            />
+          ) : (
+            <ul className="grid gap-3 lg:grid-cols-2">
+              {sentences.map((sentence) => (
+                <SavedSentenceCard
+                  key={sentence.text}
+                  sentence={sentence}
+                  onRemove={() => {
+                    void toggleSavedSentence(sentence).then(() =>
+                      setSentences((current) => current?.filter((s) => s.text !== sentence.text) ?? null),
+                    );
                   }}
-                  className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-ink-soft/60 transition-colors hover:bg-paper-sunk hover:text-accent-warm"
-                >
-                  <XIcon className="h-3.5 w-3.5" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        ))}
+                />
+              ))}
+            </ul>
+          ))}
 
-      <BottomNav />
+        {tab === "words" &&
+          (words === null ? (
+            <p className="text-sm text-ink-soft">Loading…</p>
+          ) : words.length === 0 ? (
+            <EmptyState
+              icon={<BookmarkIcon className="h-6 w-6" />}
+              text="Save a word spotlight in the feed, or tap any word while reading and add it."
+            />
+          ) : (
+            <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+              {words.map((word) => (
+                <li key={word.key} className="card relative flex min-h-36 flex-col p-4">
+                  <p className="text-xs text-ink-soft">{word.reading !== word.key ? word.reading : "\u00a0"}</p>
+                  <p className="mt-0.5 break-all text-[1.75rem] font-bold leading-tight tracking-tight">
+                    {word.key}
+                  </p>
+                  <p className="mt-auto line-clamp-2 pt-2 text-[13px] leading-snug text-ink-soft">
+                    {word.meanings.slice(0, 2).join("; ")}
+                  </p>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${word.key}`}
+                    onClick={() => {
+                      void toggleStarred(word)
+                        .then(setWords)
+                        .then(() => countDue())
+                        .then(setDue);
+                    }}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-ink-soft/60 transition-colors hover:bg-paper-sunk hover:text-accent-warm"
+                  >
+                    <XIcon className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ))}
+
+        <BottomNav />
+      </div>
     </div>
   );
 }

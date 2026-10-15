@@ -147,7 +147,7 @@ export default function Feed() {
       : null;
 
   return (
-    <div className="fixed inset-0 bg-[#08080a] text-white">
+    <div className="fixed inset-0 bg-[#08080a] text-white lg:left-60">
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -186,9 +186,9 @@ export default function Feed() {
         )}
       </div>
 
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-20 bg-gradient-to-b from-black/50 to-transparent pb-8 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-20 lg:left-60 bg-gradient-to-b from-black/50 to-transparent pb-8 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <div className="mx-auto flex max-w-md items-center justify-between px-4">
-          <span className="flex h-8 w-8 items-center justify-center rounded-[0.55rem] bg-white/10 text-sm font-bold text-white/90 ring-1 ring-white/10 backdrop-blur-xl">
+          <span className="flex h-8 w-8 items-center justify-center rounded-[0.55rem] bg-white/10 lg:invisible text-sm font-bold text-white/90 ring-1 ring-white/10 backdrop-blur-xl">
             流
           </span>
           <div

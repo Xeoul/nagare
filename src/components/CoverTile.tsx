@@ -22,7 +22,7 @@ export default function CoverTile({
       type="button"
       onClick={onOpen}
       disabled={disabled}
-      className="group flex w-[9.5rem] shrink-0 snap-start flex-col gap-2 text-left transition-transform active:scale-[0.97] disabled:opacity-60"
+      className="group flex w-[9.5rem] shrink-0 snap-start lg:w-auto flex-col gap-2 text-left transition-transform active:scale-[0.97] disabled:opacity-60"
     >
       <span
         style={coverStyle(title)}
@@ -63,7 +63,7 @@ export function Shelf({
         <h2 className="text-xl font-bold tracking-tight">{title}</h2>
         {caption && <p className="mt-0.5 text-[13px] leading-snug text-ink-soft">{caption}</p>}
       </div>
-      <div className="no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto scroll-px-5 px-5 pb-2">
+      <div className="no-scrollbar flex snap-x snap-mandatory gap-3.5 overflow-x-auto scroll-px-5 px-5 pb-2 lg:grid lg:grid-cols-5 lg:gap-5 lg:overflow-visible xl:grid-cols-6">
         {children}
       </div>
     </section>

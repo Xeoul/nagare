@@ -384,7 +384,7 @@ export default function Reader({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className={`h-full w-full rounded-[1.75rem] bg-paper-raised px-6 py-7 text-[1.3rem] shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.05),0_12px_32px_-16px_rgb(var(--shadow-color)/0.25)] [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+          className={`h-full w-full rounded-[1.75rem] bg-paper-raised px-6 py-7 text-[1.3rem] lg:px-14 lg:py-12 lg:text-[1.5rem] shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.05),0_12px_32px_-16px_rgb(var(--shadow-color)/0.25)] [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
             showFurigana ? "leading-[2.6]" : "leading-loose"
           } ${
             vertical
