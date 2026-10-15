@@ -1,5 +1,6 @@
 import { STARTER_READINGS } from "@/data/starter-readings";
 import { CLASSICS, fetchClassicText } from "./aozora";
+import { stripChapterMarkers } from "./chapters";
 import { WIKIBOOKS_READERS, fetchReaderText } from "./wikibooks-readers";
 import type { LibraryItem } from "./library";
 
@@ -49,7 +50,9 @@ const SOURCES: FeedSource[] = [
       loadText: () => fetchReaderText(r),
     }),
   ),
-  ...CLASSICS.map(
+  // Novels are left out: the feed loads every source in full, and a whole
+  // book is a lot to download for a few sentences.
+  ...CLASSICS.filter((w) => !w.novel).map(
     (w): FeedSource => ({
       key: `classic:${w.slug}`,
       title: w.title,
@@ -102,7 +105,7 @@ export async function loadSentences(level: FeedLevel): Promise<FeedSentence[]> {
   const perSource = await Promise.all(
     sources.map(async (source) => {
       try {
-        const all = splitSentences(await loadSourceText(source));
+        const all = splitSentences(stripChapterMarkers(await loadSourceText(source)));
         return all
           .map((text, index) => ({ text, source, index, total: all.length }))
           .filter((s) => s.text.length >= MIN_CHARS && s.text.length <= MAX_CHARS);

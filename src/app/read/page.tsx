@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { getItem, markOpened, updateProgress, type LibraryItem } from "@/lib/library";
 import {
   getFuriganaPreference,
@@ -15,6 +15,7 @@ import {
 import Reader from "@/components/Reader";
 import BottomNav from "@/components/BottomNav";
 import { ChevronLeftIcon, LanguagesIcon } from "@/components/icons";
+import { splitChapters } from "@/lib/chapters";
 
 // The item id comes in as ?id= rather than a /read/[id] path segment so the
 // app can be exported as plain static files (the GitHub Pages demo): a
@@ -36,6 +37,9 @@ function ReadView() {
   const [showTranslation, setShowTranslation] = useState(getTranslationPreference);
   const [vertical, setVertical] = useState(getVerticalPreference);
   const lastSaveRef = useRef(0);
+  // null until you pick a chapter: the saved progress decides where to open.
+  const [chosenChapter, setChosenChapter] = useState<number | null>(null);
+  const chapters = useMemo(() => (item ? splitChapters(item.text) : []), [item]);
 
   useEffect(() => {
     if (!id) return;
@@ -67,11 +71,26 @@ function ReadView() {
     });
   }
 
+  // Progress through the whole work: a book's chapter index plus how far
+  // into that chapter, so "Continue reading" percentages stay meaningful.
+  const chapterCount = Math.max(1, chapters.length);
+  const savedPosition = (item?.progress ?? 0) * chapterCount;
+  const chapterIndex = chosenChapter ?? Math.min(chapterCount - 1, Math.floor(savedPosition));
+  const initialChapterProgress =
+    chosenChapter === null ? Math.min(1, Math.max(0, savedPosition - chapterIndex)) : 0;
+
   function handleProgressChange(progress: number) {
     const now = Date.now();
     if (now - lastSaveRef.current < 1000) return;
     lastSaveRef.current = now;
-    void updateProgress(id, progress);
+    void updateProgress(id, (chapterIndex + progress) / chapterCount);
+  }
+
+  function goToChapter(index: number) {
+    if (index < 0 || index >= chapterCount) return;
+    setChosenChapter(index);
+    lastSaveRef.current = Date.now();
+    void updateProgress(id, index / chapterCount);
   }
 
   if (id && item === undefined) {
@@ -131,9 +150,58 @@ function ReadView() {
             ))}
           </div>
         </div>
+        {chapters.length > 1 && (
+          <div className="mb-3 flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              aria-label="Previous chapter"
+              disabled={chapterIndex === 0}
+              onClick={() => goToChapter(chapterIndex - 1)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper-raised text-ink-soft transition-colors hover:text-ink disabled:opacity-30"
+            >
+              <ChevronLeftIcon className="h-4 w-4" strokeWidth={2.2} />
+            </button>
+            <label className="relative min-w-0 flex-1">
+              <span className="sr-only">Chapter</span>
+              <select
+                value={chapterIndex}
+                onChange={(event) => goToChapter(Number(event.target.value))}
+                className="h-9 w-full cursor-pointer appearance-none truncate rounded-full bg-paper-raised px-4 text-center text-[13px] font-semibold text-ink outline-none"
+              >
+                {chapters.map((chapter, i) => (
+                  <option key={i} value={i}>
+                    Chapter {i + 1} of {chapters.length}
+                    {chapter.title ? ` · ${chapter.title}` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              aria-label="Next chapter"
+              disabled={chapterIndex === chapterCount - 1}
+              onClick={() => goToChapter(chapterIndex + 1)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper-raised text-ink-soft transition-colors hover:text-ink disabled:opacity-30"
+            >
+              <ChevronLeftIcon className="h-4 w-4 rotate-180" strokeWidth={2.2} />
+            </button>
+          </div>
+        )}
         <Reader
-          text={item.text}
-          initialProgress={item.progress}
+          key={chapterIndex}
+          text={chapters[chapterIndex]?.text ?? item.text}
+          endSlot={
+            chapterIndex < chapterCount - 1 ? (
+              <button
+                type="button"
+                onClick={() => goToChapter(chapterIndex + 1)}
+                className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper transition-transform active:scale-95"
+              >
+                Next chapter →
+              </button>
+            ) : undefined
+          }
+          initialProgress={initialChapterProgress}
           onProgressChange={handleProgressChange}
           showFurigana={showFurigana}
           showTranslation={showTranslation}

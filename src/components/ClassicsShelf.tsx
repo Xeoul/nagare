@@ -6,9 +6,10 @@ import { CLASSICS, fetchClassicText, type ClassicWork } from "@/lib/aozora";
 import { addItem, listItems } from "@/lib/library";
 import CoverTile, { Shelf } from "./CoverTile";
 
-const LEVEL_ORDER: ClassicWork["level"][] = ["N3", "N2"];
+const LEVEL_ORDER: ClassicWork["level"][] = ["N3", "N2", "N1"];
 
-export default function ClassicsShelf() {
+/** Aozora Bunko works: the short stories, or (with `novels`) the full-length books. */
+export default function ClassicsShelf({ novels = false }: { novels?: boolean }) {
   const router = useRouter();
   const [loadingTitle, setLoadingTitle] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,16 +37,18 @@ export default function ClassicsShelf() {
   }
 
   const works = LEVEL_ORDER.flatMap((level) =>
-    CLASSICS.filter((w) => w.level === level).sort((a, b) => a.density - b.density),
+    CLASSICS.filter((w) => w.level === level && Boolean(w.novel) === novels).sort(
+      (a, b) => a.density - b.density,
+    ),
   );
 
   return (
     <>
       <Shelf
-        title="Classics"
+        title={novels ? "Novels" : "Short stories"}
         caption={
           <>
-            Public-domain literature from{" "}
+            {novels ? "Full-length books" : "Public-domain short stories"} from{" "}
             <a
               href="https://www.aozora.gr.jp/"
               target="_blank"
@@ -54,7 +57,8 @@ export default function ClassicsShelf() {
             >
               Aozora Bunko
             </a>
-            . Levels are estimated from vocabulary, not official.
+            {novels ? ", read a chapter at a time." : "."} Levels are estimated from vocabulary, not
+            official.
           </>
         }
       >
