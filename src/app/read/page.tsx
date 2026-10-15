@@ -13,6 +13,7 @@ import {
   setVerticalPreference,
 } from "@/lib/preferences";
 import Reader from "@/components/Reader";
+import BottomNav from "@/components/BottomNav";
 import { ChevronLeftIcon, LanguagesIcon } from "@/components/icons";
 
 // The item id comes in as ?id= rather than a /read/[id] path segment so the
@@ -95,48 +96,51 @@ function ReadView() {
   ];
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
-      <div className="flex shrink-0 items-center gap-2 pb-3">
-        <button
-          type="button"
-          aria-label="Back"
-          onClick={() => {
-            // Stories open from both the feed and the library — go back to
-            // whichever it was, falling back to the library on a direct visit.
-            if (window.history.length > 1) router.back();
-            else router.push("/library");
-          }}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-paper-raised shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.06),0_4px_12px_-6px_rgb(var(--shadow-color)/0.3)] transition-transform active:scale-90"
-        >
-          <ChevronLeftIcon className="h-5 w-5" strokeWidth={2.2} />
-        </button>
-        <h1 className="min-w-0 flex-1 truncate px-1 text-[15px] font-bold">{item.title}</h1>
-        <div className="flex shrink-0 items-center gap-0.5 rounded-full bg-paper-raised p-1 shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.06),0_4px_12px_-6px_rgb(var(--shadow-color)/0.3)]">
-          {toggles.map(({ label, on, toggle, glyph }) => (
-            <button
-              key={label}
-              type="button"
-              aria-label={label}
-              aria-pressed={on}
-              title={label}
-              onClick={toggle}
-              className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-                on ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
-              }`}
-            >
-              {glyph}
-            </button>
-          ))}
+    <div className="lg:pl-60">
+      <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:max-w-4xl lg:pb-6 lg:pt-6">
+        <div className="flex shrink-0 items-center gap-2 pb-3">
+          <button
+            type="button"
+            aria-label="Back"
+            onClick={() => {
+              // Stories open from both the feed and the library — go back to
+              // whichever it was, falling back to the library on a direct visit.
+              if (window.history.length > 1) router.back();
+              else router.push("/library");
+            }}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-paper-raised shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.06),0_4px_12px_-6px_rgb(var(--shadow-color)/0.3)] transition-transform active:scale-90"
+          >
+            <ChevronLeftIcon className="h-5 w-5" strokeWidth={2.2} />
+          </button>
+          <h1 className="min-w-0 flex-1 truncate px-1 text-[15px] font-bold">{item.title}</h1>
+          <div className="flex shrink-0 items-center gap-0.5 rounded-full bg-paper-raised p-1 shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.06),0_4px_12px_-6px_rgb(var(--shadow-color)/0.3)]">
+            {toggles.map(({ label, on, toggle, glyph }) => (
+              <button
+                key={label}
+                type="button"
+                aria-label={label}
+                aria-pressed={on}
+                title={label}
+                onClick={toggle}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                  on ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
+                }`}
+              >
+                {glyph}
+              </button>
+            ))}
+          </div>
         </div>
+        <Reader
+          text={item.text}
+          initialProgress={item.progress}
+          onProgressChange={handleProgressChange}
+          showFurigana={showFurigana}
+          showTranslation={showTranslation}
+          vertical={vertical}
+        />
       </div>
-      <Reader
-        text={item.text}
-        initialProgress={item.progress}
-        onProgressChange={handleProgressChange}
-        showFurigana={showFurigana}
-        showTranslation={showTranslation}
-        vertical={vertical}
-      />
+      <BottomNav mobile={false} />
     </div>
   );
 }

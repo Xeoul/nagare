@@ -15,40 +15,97 @@ const TABS = [
  * the others stay icon-only. "dark" floats over the full-bleed feed;
  * "default" follows the app theme.
  */
-export default function BottomNav({ variant = "default" }: { variant?: "dark" | "default" }) {
+export default function BottomNav({
+  variant = "default",
+  mobile = true,
+}: {
+  variant?: "dark" | "default";
+  /** false for full-screen pages (the reader) that only want the desktop sidebar. */
+  mobile?: boolean;
+}) {
   const pathname = usePathname();
   const dark = variant === "dark";
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-      <ul
-        className={`pointer-events-auto flex items-center gap-1 rounded-full p-1.5 backdrop-blur-2xl ${
-          dark
-            ? "bg-white/10 text-white shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] ring-1 ring-white/10"
-            : "bg-paper-raised/80 text-ink shadow-[0_10px_30px_-10px_rgb(var(--shadow-color)/0.35)] ring-1 ring-line"
+    <>
+      {/* Phones and tablets: the floating capsule at the bottom. */}
+      {mobile && (
+        <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden">
+          <ul
+            className={`pointer-events-auto flex items-center gap-1 rounded-full p-1.5 backdrop-blur-2xl ${
+              dark
+                ? "bg-white/10 text-white shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] ring-1 ring-white/10"
+                : "bg-paper-raised/80 text-ink shadow-[0_10px_30px_-10px_rgb(var(--shadow-color)/0.35)] ring-1 ring-line"
+            }`}
+          >
+            {TABS.map(({ href, label, Icon }) => {
+              const active = pathname === href;
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    aria-label={label}
+                    className={`flex h-11 items-center gap-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                      active
+                        ? `px-4 ${dark ? "bg-white/15 text-white" : "bg-paper-sunk text-ink"}`
+                        : "w-12 justify-center opacity-50 hover:opacity-90"
+                    }`}
+                  >
+                    <Icon className="h-[22px] w-[22px] shrink-0" strokeWidth={active ? 2.2 : 1.9} />
+                    {active && <span>{label}</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      )}
+
+      {/* Desktop: a sidebar down the left, so pages can use the full width. */}
+      <nav
+        className={`fixed inset-y-0 left-0 z-30 hidden w-60 flex-col gap-8 border-r px-4 py-7 lg:flex ${
+          dark ? "border-white/[0.06] bg-[#08080a] text-white" : "border-line bg-paper text-ink"
         }`}
       >
-        {TABS.map(({ href, label, Icon }) => {
-          const active = pathname === href;
-          return (
-            <li key={href}>
-              <Link
-                href={href}
-                aria-current={active ? "page" : undefined}
-                aria-label={label}
-                className={`flex h-11 items-center gap-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                  active
-                    ? `px-4 ${dark ? "bg-white/15 text-white" : "bg-paper-sunk text-ink"}`
-                    : "w-12 justify-center opacity-50 hover:opacity-90"
-                }`}
-              >
-                <Icon className="h-[22px] w-[22px] shrink-0" strokeWidth={active ? 2.2 : 1.9} />
-                {active && <span>{label}</span>}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+        <div className="flex items-center gap-2.5 px-3">
+          <span
+            className={`flex h-8 w-8 items-center justify-center rounded-[0.55rem] text-sm font-bold ${
+              dark ? "bg-white/10 text-white" : "bg-ink text-paper"
+            }`}
+          >
+            流
+          </span>
+          <span className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${dark ? "text-white/60" : "text-ink-soft"}`}>
+            Nagare
+          </span>
+        </div>
+        <ul className="flex flex-col gap-1">
+          {TABS.map(({ href, label, Icon }) => {
+            const active = pathname === href;
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold transition-colors ${
+                    active
+                      ? dark
+                        ? "bg-white/10 text-white"
+                        : "bg-paper-sunk text-ink"
+                      : dark
+                        ? "text-white/50 hover:bg-white/[0.05] hover:text-white"
+                        : "text-ink-soft hover:bg-paper-sunk/60 hover:text-ink"
+                  }`}
+                >
+                  <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.2 : 1.9} />
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </>
   );
 }

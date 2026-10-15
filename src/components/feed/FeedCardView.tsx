@@ -240,107 +240,113 @@ export default function FeedCardView({
       style={auraStyle(sentence.text)}
       className="relative h-dvh w-full cursor-pointer snap-start snap-always select-none overflow-hidden text-white [touch-action:manipulation]"
     >
-      <div className="absolute inset-0 flex flex-col justify-center px-6 pb-44 pr-20 pt-24">
-        {spotlight ? (
-          <>
-            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-white/55">
-              <span className="h-1 w-1 rounded-full bg-white/50" />
-              Word spotlight
-            </p>
-            <p className="mt-5 min-h-7 text-lg text-white/55">
-              {spotlight.entry.reading !== spotlight.key ? spotlight.entry.reading : ""}
-            </p>
-            <h2 className="text-[3.5rem] font-semibold leading-none tracking-[-0.02em]">{spotlight.key}</h2>
-            <p className="mt-4 text-lg font-medium leading-snug text-white/90">
-              {spotlight.entry.meanings.slice(0, 3).join("; ")}
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {spotlight.entry.level && (
-                <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-white/85">
-                  {spotlight.entry.level}
-                </span>
-              )}
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/70">
-                {spotlight.entry.pos.split(",")[0]}
-              </span>
-            </div>
-            <div className="mt-7 rounded-3xl bg-white/[0.06] p-4 ring-1 ring-white/10 backdrop-blur-xl">
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
-                In context
+      {/* On a wide screen the card's content sits in a centred column, with
+          the action rail beside it, instead of stretching edge to edge. */}
+      <div className="relative mx-auto h-full w-full max-w-3xl">
+        <div className="absolute inset-0 flex flex-col justify-center px-6 pb-44 pr-20 pt-24 lg:px-10 lg:pb-32 lg:pr-28">
+          {spotlight ? (
+            <>
+              <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-white/55">
+                <span className="h-1 w-1 rounded-full bg-white/50" />
+                Word spotlight
               </p>
-              <p className={`text-xl leading-[2.3] ${rubyStyle}`}>
+              <p className="mt-5 min-h-7 text-lg text-white/55">
+                {spotlight.entry.reading !== spotlight.key ? spotlight.entry.reading : ""}
+              </p>
+              <h2 className="text-[3.5rem] font-semibold leading-none tracking-[-0.02em]">{spotlight.key}</h2>
+              <p className="mt-4 text-lg font-medium leading-snug text-white/90">
+                {spotlight.entry.meanings.slice(0, 3).join("; ")}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {spotlight.entry.level && (
+                  <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-white/85">
+                    {spotlight.entry.level}
+                  </span>
+                )}
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/70">
+                  {spotlight.entry.pos.split(",")[0]}
+                </span>
+              </div>
+              <div className="mt-7 rounded-3xl bg-white/[0.06] p-4 ring-1 ring-white/10 backdrop-blur-xl">
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+                  In context
+                </p>
+                <p className={`text-xl leading-[2.3] ${rubyStyle}`}>
+                  <SentenceTokens
+                    text={sentence.text}
+                    tokens={tokens}
+                    showFurigana={showFurigana}
+                    highlightIndex={spotlight.index}
+                    onWord={selectWord}
+                  />
+                </p>
+              </div>
+              {translationBlock}
+            </>
+          ) : spotlightPending ? (
+            <p className="text-sm text-white/50">Finding a word…</p>
+          ) : (
+            <>
+              <p
+                className={`text-[1.75rem] font-semibold leading-[2.25] tracking-[0.01em] sm:text-4xl sm:leading-[2.2] ${rubyStyle}`}
+              >
                 <SentenceTokens
                   text={sentence.text}
                   tokens={tokens}
                   showFurigana={showFurigana}
-                  highlightIndex={spotlight.index}
                   onWord={selectWord}
                 />
               </p>
-            </div>
-            {translationBlock}
-          </>
-        ) : spotlightPending ? (
-          <p className="text-sm text-white/50">Finding a word…</p>
-        ) : (
-          <>
-            <p
-              className={`text-[1.75rem] font-semibold leading-[2.25] tracking-[0.01em] sm:text-4xl sm:leading-[2.2] ${rubyStyle}`}
-            >
-              <SentenceTokens
-                text={sentence.text}
-                tokens={tokens}
-                showFurigana={showFurigana}
-                onWord={selectWord}
-              />
-            </p>
-            {translationBlock}
-          </>
-        )}
-      </div>
-
-      <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] right-3 flex flex-col items-center gap-3">
-        <RailButton label={saved ? "Saved" : "Save"} active={saved} onClick={() => void save(false)}>
-          <HeartIcon
-            className={`h-6 w-6 transition-colors ${saved ? "text-white" : ""}`}
-            fill={saved ? "currentColor" : "none"}
-          />
-        </RailButton>
-        <RailButton label="Translate" active={revealed} onClick={() => setRevealed((r) => !r)}>
-          <LanguagesIcon className="h-[22px] w-[22px]" />
-        </RailButton>
-        <RailButton label="Furigana" active={showFurigana} onClick={onToggleFurigana}>
-          <span className="text-lg font-bold leading-none">あ</span>
-        </RailButton>
-        <RailButton label="Listen" onClick={() => speak(sentence.text)}>
-          <SpeakerIcon className="h-[22px] w-[22px]" />
-        </RailButton>
-        <RailButton label="Story" onClick={() => onOpenStory(sentence)}>
-          <BookOpenIcon className="h-[22px] w-[22px]" />
-        </RailButton>
-      </div>
-
-      <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] left-5 right-24">
-        <div className="flex items-center gap-2">
-          <span className="shrink-0 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-white/85">
-            {sentence.source.level}
-          </span>
-          <p className="min-w-0 truncate text-[15px] font-bold leading-tight">{sentence.source.title}</p>
+              {translationBlock}
+            </>
+          )}
         </div>
-        <p className="mt-1 truncate text-xs text-white/55">{sentence.source.subtitle}</p>
-        <div className="mt-2.5 flex items-center gap-2.5">
-          <span className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/10">
-            <span className="block h-full rounded-full bg-white/50" style={{ width: `${progress * 100}%` }} />
-          </span>
-          <span className="text-[10px] tabular-nums text-white/50">
-            {sentence.index + 1}/{sentence.total}
-          </span>
+
+        <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] right-3 flex lg:bottom-10 lg:right-6 flex-col items-center gap-3">
+          <RailButton label={saved ? "Saved" : "Save"} active={saved} onClick={() => void save(false)}>
+            <HeartIcon
+              className={`h-6 w-6 transition-colors ${saved ? "text-white" : ""}`}
+              fill={saved ? "currentColor" : "none"}
+            />
+          </RailButton>
+          <RailButton label="Translate" active={revealed} onClick={() => setRevealed((r) => !r)}>
+            <LanguagesIcon className="h-[22px] w-[22px]" />
+          </RailButton>
+          <RailButton label="Furigana" active={showFurigana} onClick={onToggleFurigana}>
+            <span className="text-lg font-bold leading-none">あ</span>
+          </RailButton>
+          <RailButton label="Listen" onClick={() => speak(sentence.text)}>
+            <SpeakerIcon className="h-[22px] w-[22px]" />
+          </RailButton>
+          <RailButton label="Story" onClick={() => onOpenStory(sentence)}>
+            <BookOpenIcon className="h-[22px] w-[22px]" />
+          </RailButton>
         </div>
+
+        <div className="absolute bottom-[calc(6rem+env(safe-area-inset-bottom))] left-5 right-24 lg:bottom-10 lg:left-10 lg:right-28">
+          <div className="flex items-center gap-2">
+            <span className="shrink-0 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-white/85">
+              {sentence.source.level}
+            </span>
+            <p className="min-w-0 truncate text-[15px] font-bold leading-tight">{sentence.source.title}</p>
+          </div>
+          <p className="mt-1 truncate text-xs text-white/55">{sentence.source.subtitle}</p>
+          <div className="mt-2.5 flex items-center gap-2.5">
+            <span className="h-[2px] flex-1 overflow-hidden rounded-full bg-white/10">
+              <span className="block h-full rounded-full bg-white/50" style={{ width: `${progress * 100}%` }} />
+            </span>
+            <span className="text-[10px] tabular-nums text-white/50">
+              {sentence.index + 1}/{sentence.total}
+            </span>
+          </div>
+        </div>
+
       </div>
 
       {isFirst && (
         <p className="pointer-events-none absolute inset-x-0 top-[5rem] animate-pulse text-center text-[11px] font-medium tracking-wide text-white/45">
-          Swipe up for more · double-tap to save
+          <span className="lg:hidden">Swipe up for more · double-tap to save</span>
+          <span className="hidden lg:inline">Scroll or press ↓ for more · double-click to save</span>
         </p>
       )}
 

@@ -27,9 +27,9 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, reading, se
   const meanings = entry?.meanings.slice(0, 4) ?? [];
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
+    <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] lg:inset-x-auto lg:bottom-6 lg:right-6 lg:w-[24rem] lg:p-0">
       <div className="w-full max-w-lg rounded-[1.75rem] bg-paper-raised/95 px-5 pb-5 pt-2.5 text-ink shadow-[0_-4px_40px_-8px_rgb(var(--shadow-color)/0.45)] ring-1 ring-line backdrop-blur-2xl">
-        <div className="mx-auto h-1 w-9 rounded-full bg-line" />
+        <div className="mx-auto h-1 w-9 rounded-full bg-line lg:hidden" />
         <div className="mt-3 flex items-start gap-3">
           <div className="min-w-0 flex-1">
             {entry && entry.reading !== surfaceForm && (
