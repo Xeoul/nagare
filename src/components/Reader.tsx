@@ -312,6 +312,22 @@ export default function Reader({
   // above) so it starts at 1 and moves monotonically with how far you've
   // scrolled, rather than jumping to wherever a sentence geometrically sits.
   const [scrollFraction, setScrollFraction] = useState(initialProgress);
+  // The counter only means something when there's somewhere to scroll to; a
+  // story that fits on one screen would otherwise sit at "1 of N" forever,
+  // which reads like a page number with a next page you can't reach.
+  const [scrollable, setScrollable] = useState(false);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      setScrollable(
+        vertical ? el.scrollWidth > el.clientWidth + 4 : el.scrollHeight > el.clientHeight + 4,
+      );
+    });
+    observer.observe(el);
+    for (const child of el.children) observer.observe(child);
+    return () => observer.disconnect();
+  }, [vertical, sentences, showFurigana, showTranslation]);
   const currentPosition =
     sentences.length > 0
       ? Math.min(sentences.length, Math.max(1, Math.round(scrollFraction * (sentences.length - 1)) + 1))
@@ -392,14 +408,19 @@ export default function Reader({
               isActive={activeIndex === startIndex}
             />
           ))}
+          {sentences.length > 0 && (
+            <p className="mt-10 text-center text-xs tracking-[0.2em] text-ink-soft/70 [writing-mode:horizontal-tb]">
+              おわり · END
+            </p>
+          )}
         </div>
         {vertical && <TranslationCaption text={activeSentenceText} />}
-        {currentPosition !== null && sentences.length > 0 && (
+        {scrollable && currentPosition !== null && sentences.length > 0 && (
           <p
             aria-label={`Sentence ${currentPosition} of ${sentences.length}`}
             className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-paper-sunk/90 px-3 py-1 text-[11px] font-medium tabular-nums text-ink-soft backdrop-blur-md [writing-mode:horizontal-tb]"
           >
-            {currentPosition} / {sentences.length}
+            Sentence {currentPosition} of {sentences.length}
           </p>
         )}
       </div>
