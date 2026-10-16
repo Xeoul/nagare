@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { listItems, type LibraryItem } from "@/lib/library";
+import { listItems, type LibraryMeta } from "@/lib/library";
 import { PlayIcon, XIcon } from "./icons";
 import { getDismissedContinueReading, setDismissedContinueReading } from "@/lib/preferences";
 
@@ -10,7 +10,7 @@ import { getDismissedContinueReading, setDismissedContinueReading } from "@/lib/
 const UNFINISHED_CEILING = 0.98;
 
 export default function ContinueReading() {
-  const [item, setItem] = useState<LibraryItem | null>(null);
+  const [item, setItem] = useState<LibraryMeta | null>(null);
 
   useEffect(() => {
     void listItems().then((items) => {

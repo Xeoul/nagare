@@ -34,9 +34,9 @@ const SOURCES: FeedSource[] = [
     (r): FeedSource => ({
       key: `starter:${r.title}`,
       title: r.title,
-      subtitle: "Starter reading",
+      subtitle: "Graded reading",
       kind: "starter",
-      level: r.level,
+      level: r.level === "N5" || r.level === "N4" ? r.level : "N3+",
       loadText: async () => r.text,
     }),
   ),

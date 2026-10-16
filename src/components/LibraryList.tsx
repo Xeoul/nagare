@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { listItems, removeItem, type LibraryItem } from "@/lib/library";
+import { listItems, removeItem, type LibraryItem, type LibraryMeta } from "@/lib/library";
 import { TrashIcon } from "./icons";
 
 const KIND_LABEL: Record<LibraryItem["kind"], string> = {
@@ -10,12 +10,12 @@ const KIND_LABEL: Record<LibraryItem["kind"], string> = {
   epub: "EPUB",
   sample: "Sample",
   classic: "Aozora Bunko",
-  starter: "Starter reading",
+  starter: "Graded reading",
   reader: "Wikibooks",
 };
 
 export default function LibraryList() {
-  const [items, setItems] = useState<LibraryItem[] | null>(null);
+  const [items, setItems] = useState<LibraryMeta[] | null>(null);
 
   useEffect(() => {
     void listItems().then(setItems);
