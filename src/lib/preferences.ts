@@ -78,3 +78,37 @@ export function setFeedLevelPreference(level: "N5" | "N4" | "N3+"): void {
   window.localStorage.setItem(FEED_LEVEL_KEY, level);
   for (const listener of feedLevelListeners) listener();
 }
+
+export type ReaderTheme = "auto" | "light" | "sepia" | "dark";
+export type ReaderPrefs = {
+  /** Turn pages like an e-reader, or scroll continuously. */
+  paged: boolean;
+  /** Step into FONT_SCALES. */
+  fontStep: number;
+  spacing: "compact" | "normal" | "relaxed";
+  theme: ReaderTheme;
+};
+
+export const FONT_SCALES = [0.8, 0.9, 1, 1.15, 1.3, 1.5];
+export const SPACING_FACTORS: Record<ReaderPrefs["spacing"], number> = {
+  compact: 0.85,
+  normal: 1,
+  relaxed: 1.18,
+};
+
+const READER_PREFS_KEY = "nagare:reader-prefs";
+const DEFAULT_READER_PREFS: ReaderPrefs = { paged: true, fontStep: 2, spacing: "normal", theme: "auto" };
+
+export function getReaderPrefs(): ReaderPrefs {
+  if (typeof window === "undefined") return DEFAULT_READER_PREFS;
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(READER_PREFS_KEY) ?? "{}") as Partial<ReaderPrefs>;
+    return { ...DEFAULT_READER_PREFS, ...stored };
+  } catch {
+    return DEFAULT_READER_PREFS;
+  }
+}
+
+export function setReaderPrefs(prefs: ReaderPrefs): void {
+  window.localStorage.setItem(READER_PREFS_KEY, JSON.stringify(prefs));
+}

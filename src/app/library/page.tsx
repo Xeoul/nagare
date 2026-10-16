@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ImportPanel from "@/components/ImportPanel";
 import LibraryList from "@/components/LibraryList";
 import ClassicsShelf from "@/components/ClassicsShelf";
+import AozoraSearch from "@/components/AozoraSearch";
 import StarterShelf from "@/components/StarterShelf";
 import TadokuShelf from "@/components/TadokuShelf";
 import WikibooksShelf from "@/components/WikibooksShelf";
@@ -50,6 +51,7 @@ export default function LibraryPage() {
         <StarterShelf range="advanced" />
         <ClassicsShelf />
         <ClassicsShelf novels />
+        <AozoraSearch />
 
         <section className="flex flex-col gap-3">
           <h2 className="px-5 text-xl font-bold tracking-tight">Your shelf</h2>

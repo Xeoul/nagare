@@ -1,6 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type UIEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+  type UIEvent,
+  type WheelEvent,
+} from "react";
 import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokenizer";
 import { loadDictionary, lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
 import { isTranslatable, sentenceText, splitIntoSentences } from "@/lib/sentences";
@@ -17,7 +29,22 @@ type Props = {
   vertical: boolean;
   /** Shown after the last sentence in place of the "おわり · END" marker (e.g. a next-chapter button). */
   endSlot?: ReactNode;
+  /** Turn pages like an e-reader instead of scrolling. */
+  paged?: boolean;
+  /** Text size multiplier (1 = default). */
+  fontScale?: number;
+  /** Line-height multiplier from the reader's spacing setting (1 = default). */
+  spacingFactor?: number;
+  /** A tap in the middle of a page (not on a word) — shows or hides the reader's controls. */
+  onCenterTap?: () => void;
+  /** Called whenever a page is turned. */
+  onPageTurn?: () => void;
 };
+
+/** Space between pages in paged mode (only ever seen mid-turn, never on screen). */
+const PAGE_GAP = 48;
+/** A learner's reading pace, in characters a minute, for "min left in chapter". */
+const CHARS_PER_MINUTE = 250;
 
 type Selected = { index: number; token: Token; entry: JmdictEntry | null };
 
@@ -210,6 +237,11 @@ export default function Reader({
   showTranslation,
   vertical,
   endSlot,
+  paged = false,
+  fontScale = 1,
+  spacingFactor = 1,
+  onCenterTap,
+  onPageTurn,
 }: Props) {
   const [tokens, setTokens] = useState<Token[] | null>(null);
   const [dictionary, setDictionary] = useState<JmdictLookup | null>(null);
@@ -217,6 +249,7 @@ export default function Reader({
   const [modelProgress, setModelProgress] = useState<ModelProgress>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const hasRestoredScroll = useRef(false);
   const sentenceEls = useRef(new Map<number, HTMLElement>());
 
@@ -251,7 +284,7 @@ export default function Reader({
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!tokens || !el || hasRestoredScroll.current) return;
+    if (paged || !tokens || !el || hasRestoredScroll.current) return;
     hasRestoredScroll.current = true;
     if (vertical) {
       const max = el.scrollWidth - el.clientWidth;
@@ -261,7 +294,7 @@ export default function Reader({
     } else {
       el.scrollTop = (el.scrollHeight - el.clientHeight) * initialProgress;
     }
-  }, [tokens, initialProgress, vertical]);
+  }, [paged, tokens, initialProgress, vertical]);
 
   // Switching orientation mid-read changes the scroll axis entirely —
   // rather than try to preserve the exact spot, just scroll back to the start.
@@ -336,6 +369,156 @@ export default function Reader({
       ? Math.min(sentences.length, Math.max(1, Math.round(scrollFraction * (sentences.length - 1)) + 1))
       : null;
 
+  // ── Paged mode ──────────────────────────────────────────────────────────
+  // Horizontal text is laid out in CSS columns exactly one page wide
+  // (column-width: 100vw always rounds down to one column per page), and a
+  // page turn scrolls by one column. Vertical text already flows sideways,
+  // so its pages are a whole number of lines wide — a page never cuts a
+  // line in half — and a turn scrolls by that much.
+  const lineHeight = (showFurigana ? 2.6 : 2) * spacingFactor;
+  const [pageState, setPageState] = useState({ page: 0, pages: 1, step: 0 });
+  const fractionRef = useRef(initialProgress);
+
+  const measure = useCallback(() => {
+    const el = scrollRef.current;
+    const frame = frameRef.current;
+    if (!paged || !el || !frame) return;
+    let step: number;
+    let pages: number;
+    if (vertical) {
+      const style = getComputedStyle(frame);
+      const available = frame.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const pitch = parseFloat(getComputedStyle(el).lineHeight) || 40;
+      step = Math.max(1, Math.floor(available / pitch)) * pitch;
+      pages = Math.max(1, Math.ceil((el.scrollWidth - 1) / step));
+    } else {
+      step = el.clientWidth + PAGE_GAP;
+      pages = Math.max(1, Math.round((el.scrollWidth + PAGE_GAP) / step));
+    }
+    const page = Math.min(pages - 1, Math.round(fractionRef.current * (pages - 1)));
+    setPageState((prev) =>
+      prev.page === page && prev.pages === pages && prev.step === step ? prev : { page, pages, step },
+    );
+  }, [paged, vertical]);
+
+  // Re-measure whenever the layout can change: a resize, new settings, or
+  // content arriving (translations load in after the text).
+  useEffect(() => {
+    if (!paged) return;
+    const el = scrollRef.current;
+    const frame = frameRef.current;
+    if (!el || !frame) return;
+    let raf = requestAnimationFrame(measure);
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(measure);
+    };
+    const resize = new ResizeObserver(schedule);
+    resize.observe(frame);
+    const mutations = new MutationObserver(schedule);
+    mutations.observe(el, { childList: true, subtree: true, characterData: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      resize.disconnect();
+      mutations.disconnect();
+    };
+  }, [paged, measure, sentences, showFurigana, showTranslation, fontScale, spacingFactor]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!paged || !el) return;
+    const offset = pageState.page * pageState.step;
+    el.scrollLeft = vertical ? -offset : offset;
+  }, [paged, vertical, pageState]);
+
+  const pageStateRef = useRef(pageState);
+  useEffect(() => {
+    pageStateRef.current = pageState;
+  }, [pageState]);
+
+  const turn = useCallback(
+    (delta: number) => {
+      const prev = pageStateRef.current;
+      const page = Math.min(prev.pages - 1, Math.max(0, prev.page + delta));
+      if (page === prev.page) return;
+      fractionRef.current = prev.pages > 1 ? page / (prev.pages - 1) : 1;
+      const next = { ...prev, page };
+      pageStateRef.current = next;
+      setPageState(next);
+      onProgressChange(fractionRef.current);
+      onPageTurn?.();
+    },
+    [onProgressChange, onPageTurn],
+  );
+
+  // Arrow keys / Page Up / Page Down / Space. In vertical text the book reads
+  // right to left, so the left arrow goes forward.
+  useEffect(() => {
+    if (!paged) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select")) return;
+      const forward = ["PageDown", " ", vertical ? "ArrowLeft" : "ArrowRight", "ArrowDown"];
+      const back = ["PageUp", vertical ? "ArrowRight" : "ArrowLeft", "ArrowUp"];
+      if (forward.includes(event.key)) turn(1);
+      else if (back.includes(event.key)) turn(-1);
+      else return;
+      event.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [paged, vertical, turn]);
+
+  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const swiped = useRef(false);
+  const lastWheel = useRef(0);
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    pointerStart.current = { x: event.clientX, y: event.clientY };
+    swiped.current = false;
+  }
+
+  function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
+    const start = pointerStart.current;
+    pointerStart.current = null;
+    if (!start) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    swiped.current = true;
+    // Swipe left for the next page — or right, in a right-to-left vertical book.
+    turn((dx < 0) !== vertical ? 1 : -1);
+  }
+
+  function handlePageClick(event: MouseEvent<HTMLDivElement>) {
+    if (swiped.current) {
+      swiped.current = false;
+      return;
+    }
+    const target = event.target as HTMLElement;
+    if (target.closest("[role=button], button, a, select, input")) return;
+    if (selected) {
+      setSelected(null);
+      return;
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    if (x < 0.3) turn(vertical ? 1 : -1);
+    else if (x > 0.7) turn(vertical ? -1 : 1);
+    else onCenterTap?.();
+  }
+
+  function handleWheel(event: WheelEvent<HTMLDivElement>) {
+    const now = Date.now();
+    if (Math.abs(event.deltaY) < 20 || now - lastWheel.current < 350) return;
+    lastWheel.current = now;
+    turn(event.deltaY > 0 ? 1 : -1);
+  }
+
+  const fontScaleVar = { "--fs": fontScale } as CSSProperties;
+  const pageFraction = pageState.pages > 1 ? pageState.page / (pageState.pages - 1) : 1;
+  const minutesLeft = Math.ceil((text.length * (1 - pageFraction)) / CHARS_PER_MINUTE);
+
   // The sentence holding the tapped word, so the lookup sheet can read it aloud.
   const selectedSentence = useMemo(() => {
     if (!selected) return null;
@@ -383,53 +566,116 @@ export default function Reader({
           Downloading translation model (one-time, ~110MB)… {downloadPercent}%
         </p>
       )}
-      <div className="relative min-h-0 flex-1">
+      {paged ? (
         <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className={`h-full w-full rounded-[1.75rem] bg-paper-raised px-6 py-7 text-[1.3rem] lg:px-14 lg:py-12 lg:text-[1.5rem] shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.05),0_12px_32px_-16px_rgb(var(--shadow-color)/0.25)] [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
-            showFurigana ? "leading-[2.6]" : "leading-loose"
-          } ${
-            vertical
-              ? "overflow-x-auto overflow-y-hidden [writing-mode:vertical-rl]"
-              : "overflow-y-auto overflow-x-hidden"
-          } ${vertical && activeSentenceText ? "pb-14" : ""}`}
+          ref={frameRef}
+          onClick={handlePageClick}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onWheel={handleWheel}
+          className="relative min-h-0 flex-1 px-7 pb-12 pt-4 lg:px-16 lg:pb-14 lg:pt-8"
         >
-          {sentences.map(({ sentence, startIndex }) => (
-            <Sentence
-              key={startIndex}
-              sentence={sentence}
-              startIndex={startIndex}
-              showFurigana={showFurigana}
-              showTranslation={showTranslation}
-              vertical={vertical}
-              dictionary={dictionary}
-              selectedIndex={selected?.index ?? null}
-              onSelect={setSelected}
-              registerRef={registerSentenceRef}
-              onActivate={setActiveIndex}
-              isActive={activeIndex === startIndex}
-            />
-          ))}
-          {sentences.length > 0 && endSlot && (
-            <div className="mt-10 flex justify-center [writing-mode:horizontal-tb]">{endSlot}</div>
-          )}
-          {sentences.length > 0 && !endSlot && (
-            <p className="mt-10 text-center text-xs tracking-[0.2em] text-ink-soft/70 [writing-mode:horizontal-tb]">
-              おわり · END
+          <div
+            ref={scrollRef}
+            style={{
+              ...fontScaleVar,
+              lineHeight,
+              ...(vertical
+                ? { width: pageState.step || undefined }
+                : { columnWidth: "100vw", columnGap: PAGE_GAP, columnFill: "auto" }),
+            }}
+            className={`h-full overflow-hidden text-[calc(1.3rem*var(--fs))] [line-break:strict] lg:text-[calc(1.5rem*var(--fs))] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+              vertical ? "mx-auto [writing-mode:vertical-rl]" : "w-full"
+            }`}
+          >
+            {sentences.map(({ sentence, startIndex }) => (
+              <Sentence
+                key={startIndex}
+                sentence={sentence}
+                startIndex={startIndex}
+                showFurigana={showFurigana}
+                showTranslation={showTranslation}
+                vertical={vertical}
+                dictionary={dictionary}
+                selectedIndex={selected?.index ?? null}
+                onSelect={setSelected}
+                registerRef={registerSentenceRef}
+                onActivate={setActiveIndex}
+                isActive={activeIndex === startIndex}
+              />
+            ))}
+            {sentences.length > 0 && endSlot && (
+              <div className="mt-10 flex justify-center [writing-mode:horizontal-tb]">{endSlot}</div>
+            )}
+            {sentences.length > 0 && !endSlot && (
+              <p className="mt-10 text-center text-xs tracking-[0.2em] text-ink-soft/70 [writing-mode:horizontal-tb]">
+                おわり · END
+              </p>
+            )}
+          </div>
+          {vertical && <TranslationCaption text={activeSentenceText} />}
+          <div className="pointer-events-none absolute inset-x-7 bottom-4 flex justify-between text-[11px] tabular-nums text-ink-soft/80 lg:inset-x-16">
+            <span>
+              Page {pageState.page + 1} of {pageState.pages}
+            </span>
+            <span>
+              {pageState.page >= pageState.pages - 1
+                ? "End of chapter"
+                : minutesLeft <= 1
+                  ? "Under a minute left"
+                  : `${minutesLeft} min left in chapter`}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="relative min-h-0 flex-1">
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            style={{ ...fontScaleVar, lineHeight }}
+            className={`h-full w-full rounded-[1.75rem] bg-paper-raised px-6 py-7 text-[calc(1.3rem*var(--fs))] lg:px-14 lg:py-12 lg:text-[calc(1.5rem*var(--fs))] shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.05),0_12px_32px_-16px_rgb(var(--shadow-color)/0.25)] [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+              vertical
+                ? "overflow-x-auto overflow-y-hidden [writing-mode:vertical-rl]"
+                : "overflow-y-auto overflow-x-hidden"
+            } ${vertical && activeSentenceText ? "pb-14" : ""}`}
+          >
+            {sentences.map(({ sentence, startIndex }) => (
+              <Sentence
+                key={startIndex}
+                sentence={sentence}
+                startIndex={startIndex}
+                showFurigana={showFurigana}
+                showTranslation={showTranslation}
+                vertical={vertical}
+                dictionary={dictionary}
+                selectedIndex={selected?.index ?? null}
+                onSelect={setSelected}
+                registerRef={registerSentenceRef}
+                onActivate={setActiveIndex}
+                isActive={activeIndex === startIndex}
+              />
+            ))}
+            {sentences.length > 0 && endSlot && (
+              <div className="mt-10 flex justify-center [writing-mode:horizontal-tb]">{endSlot}</div>
+            )}
+            {sentences.length > 0 && !endSlot && (
+              <p className="mt-10 text-center text-xs tracking-[0.2em] text-ink-soft/70 [writing-mode:horizontal-tb]">
+                おわり · END
+              </p>
+            )}
+          </div>
+          {vertical && <TranslationCaption text={activeSentenceText} />}
+          {scrollable && currentPosition !== null && sentences.length > 0 && (
+            <p
+              aria-label={`Sentence ${currentPosition} of ${sentences.length}`}
+              className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-paper-sunk/90 px-3 py-1 text-[11px] font-medium tabular-nums text-ink-soft backdrop-blur-md [writing-mode:horizontal-tb]"
+            >
+              Sentence {currentPosition} of {sentences.length}
             </p>
           )}
         </div>
-        {vertical && <TranslationCaption text={activeSentenceText} />}
-        {scrollable && currentPosition !== null && sentences.length > 0 && (
-          <p
-            aria-label={`Sentence ${currentPosition} of ${sentences.length}`}
-            className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-paper-sunk/90 px-3 py-1 text-[11px] font-medium tabular-nums text-ink-soft backdrop-blur-md [writing-mode:horizontal-tb]"
-          >
-            Sentence {currentPosition} of {sentences.length}
-          </p>
-        )}
-      </div>
+
+      )}
 
       {selected && (
         <LookupSheet

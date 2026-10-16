@@ -119,3 +119,42 @@ body {
 .heart-pop {
   animation: heart-pop 900ms ease-out forwards;
 }
+
+/* Reader page colours, chosen in the reader's Aa settings. "auto" follows
+   the app theme; these override the paper/ink tokens for the reader only. */
+[data-reader-theme="light"] {
+  --paper: #fbfaf7;
+  --paper-raised: #ffffff;
+  --paper-sunk: #efede7;
+  --paper-thumb: #ffffff;
+  --ink: #18181a;
+  --ink-soft: #6d6b66;
+  --line: #e4e1da;
+  --accent: #2b2b2e;
+  --shadow-color: 18 18 20;
+  color-scheme: light;
+}
+[data-reader-theme="sepia"] {
+  --paper: #f3e9d4;
+  --paper-raised: #f8f0de;
+  --paper-sunk: #e9dcc0;
+  --paper-thumb: #fbf4e4;
+  --ink: #3a2f22;
+  --ink-soft: #7d6c56;
+  --line: #ddcfb2;
+  --accent: #3a2f22;
+  --shadow-color: 70 50 20;
+  color-scheme: light;
+}
+[data-reader-theme="dark"] {
+  --paper: #0f0f10;
+  --paper-raised: #18181a;
+  --paper-sunk: #222225;
+  --paper-thumb: #34343a;
+  --ink: #d9d6cf;
+  --ink-soft: #8f8c86;
+  --line: #2a2a2e;
+  --accent: #e6e4de;
+  --shadow-color: 0 0 0;
+  color-scheme: dark;
+}
