@@ -1,10 +1,11 @@
 import JSZip from "jszip";
 import { CHAPTER_PREFIX } from "./chapters";
+import { pdfItemsToText, type PdfPage } from "./pdfText";
 
 export type ParsedImport = {
   title: string;
   text: string;
-  kind: "txt" | "epub";
+  kind: "txt" | "epub" | "pdf";
 };
 
 export async function parseImportedFile(file: File): Promise<ParsedImport> {
@@ -16,6 +17,16 @@ export async function parseImportedFile(file: File): Promise<ParsedImport> {
       text: await extractEpubText(file),
     };
   }
+  if (lowerName.endsWith(".pdf")) {
+    const text = await extractPdfText(file);
+    // A graded reader's first line is its title page; fall back to the file name.
+    const firstLine = text.split("\n")[0]?.trim() ?? "";
+    return {
+      title: firstLine && firstLine.length <= 30 ? firstLine : file.name.replace(/\.pdf$/i, ""),
+      kind: "pdf",
+      text,
+    };
+  }
   if (lowerName.endsWith(".txt")) {
     return {
       title: file.name.replace(/\.txt$/i, ""),
@@ -23,7 +34,7 @@ export async function parseImportedFile(file: File): Promise<ParsedImport> {
       text: await file.text(),
     };
   }
-  throw new Error("Nagare can import .txt or .epub files for now.");
+  throw new Error("Nagare can import .txt, .epub or .pdf files.");
 }
 
 /**
@@ -81,4 +92,45 @@ async function extractEpubText(file: File): Promise<string> {
     throw new Error("Couldn't find any readable chapters in that EPUB.");
   }
   return chapters.join("\n\n");
+}
+
+/**
+ * Pulls the text out of a PDF with pdf.js (loaded only when a PDF is
+ * imported — it's large) and rebuilds it as prose: see src/lib/pdfText.ts.
+ * Only works for PDFs with real text in them, not scanned page images.
+ */
+async function extractPdfText(file: File): Promise<string> {
+  const pdfjs = await import("pdfjs-dist");
+  if (!pdfjs.GlobalWorkerOptions.workerPort) {
+    pdfjs.GlobalWorkerOptions.workerPort = new Worker(
+      new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url),
+      { type: "module" },
+    );
+  }
+  const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const pages: PdfPage[] = [];
+  for (let n = 1; n <= doc.numPages; n++) {
+    const page = await doc.getPage(n);
+    const { width, height } = page.getViewport({ scale: 1 });
+    const content = await page.getTextContent();
+    const items = content.items.flatMap((item) =>
+      "str" in item
+        ? [
+            {
+              str: item.str,
+              x: item.transform[4],
+              y: item.transform[5],
+              size: Math.hypot(item.transform[2], item.transform[3]),
+            },
+          ]
+        : [],
+    );
+    pages.push({ width, height, items });
+  }
+  await doc.cleanup();
+  const text = pdfItemsToText(pages);
+  if (!text.trim()) {
+    throw new Error("Couldn't find any Japanese text in that PDF — it may be scanned images.");
+  }
+  return text;
 }

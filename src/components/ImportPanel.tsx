@@ -52,12 +52,12 @@ export default function ImportPanel() {
           <span className="block text-[15px] font-semibold">
             {isImporting ? "Importing…" : "Import your own"}
           </span>
-          <span className="block text-xs text-ink-soft">A .txt or .epub file, tap or drop</span>
+          <span className="block text-xs text-ink-soft">A .txt, .epub or .pdf file, tap or drop</span>
         </span>
         <input
           ref={inputRef}
           type="file"
-          accept=".txt,.epub"
+          accept=".txt,.epub,.pdf"
           className="sr-only"
           onChange={(event) => {
             const file = event.target.files?.[0];
