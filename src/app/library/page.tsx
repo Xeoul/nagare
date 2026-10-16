@@ -5,6 +5,7 @@ import ImportPanel from "@/components/ImportPanel";
 import LibraryList from "@/components/LibraryList";
 import ClassicsShelf from "@/components/ClassicsShelf";
 import StarterShelf from "@/components/StarterShelf";
+import TadokuShelf from "@/components/TadokuShelf";
 import WikibooksShelf from "@/components/WikibooksShelf";
 import ContinueReading from "@/components/ContinueReading";
 import BottomNav from "@/components/BottomNav";
@@ -45,6 +46,7 @@ export default function LibraryPage() {
 
         <StarterShelf range="beginner" />
         <WikibooksShelf />
+        <TadokuShelf />
         <StarterShelf range="advanced" />
         <ClassicsShelf />
         <ClassicsShelf novels />

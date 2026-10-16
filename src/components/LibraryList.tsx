@@ -8,6 +8,7 @@ import { TrashIcon } from "./icons";
 const KIND_LABEL: Record<LibraryItem["kind"], string> = {
   txt: "Text",
   epub: "EPUB",
+  pdf: "PDF",
   sample: "Sample",
   classic: "Aozora Bunko",
   starter: "Graded reading",
