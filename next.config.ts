@@ -19,7 +19,7 @@ const nextConfig: NextConfig = staticExport
   : {
       basePath,
       async headers() {
-        return ["/dict/:path*", "/dictionary/:path*", "/classics/:path*", "/readers/:path*"].map(
+        return ["/dict/:path*", "/dictionary/:path*", "/classics/:path*", "/readers/:path*", "/aozora/:path*"].map(
           (source) => ({ source, headers: [{ key: "Cache-Control", value: STATIC_DATA_CACHE }] }),
         );
       },
