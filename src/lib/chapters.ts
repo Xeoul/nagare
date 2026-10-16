@@ -7,9 +7,32 @@ export const CHAPTER_PREFIX = "§ ";
 
 export type Chapter = { title: string; text: string };
 
+/** Unmarked text longer than this (an imported .txt, say) is split into parts of about this size. */
+const PART_CHARS = 10000;
+
+function splitIntoParts(text: string): Chapter[] {
+  if (text.length <= PART_CHARS * 1.5) return [{ title: "", text }];
+  const parts: Chapter[] = [];
+  let current: string[] = [];
+  let size = 0;
+  // Break only between paragraphs, so no sentence is cut in half.
+  for (const paragraph of text.split("\n")) {
+    current.push(paragraph);
+    size += paragraph.length + 1;
+    if (size >= PART_CHARS) {
+      parts.push({ title: `Part ${parts.length + 1}`, text: current.join("\n").trim() });
+      current = [];
+      size = 0;
+    }
+  }
+  const rest = current.join("\n").trim();
+  if (rest) parts.push({ title: `Part ${parts.length + 1}`, text: rest });
+  return parts;
+}
+
 /**
  * Splits text at chapter markers. Text with no markers is one untitled
- * chapter. A heading with nothing under it (a part title right before its
+ * chapter, or numbered parts if it's long. A heading with nothing under it (a part title right before its
  * first chapter, like こころ's 「上　先生と私」 then 「一」) folds into the next.
  */
 export function splitChapters(text: string): Chapter[] {
@@ -34,7 +57,7 @@ export function splitChapters(text: string): Chapter[] {
     }
   }
   flush();
-  return chapters.length > 0 ? chapters : [{ title: "", text: text.trim() }];
+  return chapters.length > 0 ? chapters : splitIntoParts(text.trim());
 }
 
 /** The text with chapter marker lines removed — for anything that reads it as plain prose. */

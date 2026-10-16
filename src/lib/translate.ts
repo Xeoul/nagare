@@ -4,6 +4,10 @@
 // event loop free to fire, same as the thing hanging), but a worker can be
 // terminated from outside regardless of what it's doing.
 const TIMEOUT_MS = 20000;
+// Until the model has loaded, a request also waits on the ~110MB first-time
+// download — on a slow phone connection that alone can take minutes, and
+// timing out then would kill the worker mid-download and start it over.
+const LOADING_TIMEOUT_MS = 10 * 60 * 1000;
 
 type PendingRequest = {
   resolve: (value: string) => void;
@@ -17,6 +21,7 @@ type WorkerMessage =
   | { type: "result"; id: number; result?: string; error?: string };
 
 let worker: Worker | null = null;
+let modelReady = false;
 let nextId = 0;
 const pending = new Map<number, PendingRequest>();
 
@@ -62,6 +67,7 @@ function failAllPending(err: Error) {
 function terminateWorker() {
   worker?.terminate();
   worker = null;
+  modelReady = false;
 }
 
 function getWorker(): Worker {
@@ -75,6 +81,7 @@ function getWorker(): Worker {
       return;
     }
     if (data.type === "warmed") {
+      modelReady = true;
       setProgress(null);
       return;
     }
@@ -86,6 +93,7 @@ function getWorker(): Worker {
     if (error) req.reject(new Error(error));
     else {
       // The model is fully loaded once any translation completes.
+      modelReady = true;
       setProgress(null);
       req.resolve(result ?? "");
     }
@@ -117,12 +125,15 @@ export function translateSentence(text: string): Promise<string> {
 
   const promise = new Promise<string>((resolve, reject) => {
     const id = nextId++;
+    const timeout = modelReady ? TIMEOUT_MS : LOADING_TIMEOUT_MS;
     const timer = setTimeout(() => {
       pending.delete(id);
-      // The worker is stuck — kill it outright so the next request starts fresh.
+      // The worker is stuck — kill it outright so the next request starts
+      // fresh, and fail anything else still waiting on it.
       terminateWorker();
-      reject(new Error(`Translation timed out after ${TIMEOUT_MS}ms`));
-    }, TIMEOUT_MS);
+      failAllPending(new Error("Translation worker was restarted"));
+      reject(new Error(`Translation timed out after ${timeout}ms`));
+    }, timeout);
     pending.set(id, { resolve, reject, timer });
     getWorker().postMessage({ type: "translate", id, text });
   });

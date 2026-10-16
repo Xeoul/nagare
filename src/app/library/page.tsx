@@ -43,8 +43,9 @@ export default function LibraryPage() {
 
         <ContinueReading />
 
-        <StarterShelf />
+        <StarterShelf range="beginner" />
         <WikibooksShelf />
+        <StarterShelf range="advanced" />
         <ClassicsShelf />
         <ClassicsShelf novels />
 

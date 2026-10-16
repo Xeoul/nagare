@@ -37,14 +37,34 @@ function ReadView() {
   const [showTranslation, setShowTranslation] = useState(getTranslationPreference);
   const [vertical, setVertical] = useState(getVerticalPreference);
   const lastSaveRef = useRef(0);
-  // null until you pick a chapter: the saved progress decides where to open.
-  const [chosenChapter, setChosenChapter] = useState<number | null>(null);
+  // Unset until you pick a chapter: the saved progress decides where to
+  // open. Tied to the item id so a choice never carries over to another book.
+  const [chapterChoice, setChapterChoice] = useState<{ id: string; index: number } | null>(null);
+  const chosenChapter = chapterChoice?.id === id ? chapterChoice.index : null;
+  // The latest position, saved at most once a second while scrolling and
+  // once more on the way out so the last second of reading isn't lost.
+  const pendingProgress = useRef<number | null>(null);
   const chapters = useMemo(() => (item ? splitChapters(item.text) : []), [item]);
 
   useEffect(() => {
     if (!id) return;
     void getItem(id).then((found) => setItem(found ?? null));
     void markOpened(id);
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    const flush = () => {
+      if (pendingProgress.current === null) return;
+      void updateProgress(id, pendingProgress.current);
+      pendingProgress.current = null;
+    };
+    // pagehide covers closing the tab or app; the cleanup covers navigating away.
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
   }, [id]);
 
   function toggleFurigana() {
@@ -80,16 +100,19 @@ function ReadView() {
     chosenChapter === null ? Math.min(1, Math.max(0, savedPosition - chapterIndex)) : 0;
 
   function handleProgressChange(progress: number) {
+    pendingProgress.current = (chapterIndex + progress) / chapterCount;
     const now = Date.now();
     if (now - lastSaveRef.current < 1000) return;
     lastSaveRef.current = now;
-    void updateProgress(id, (chapterIndex + progress) / chapterCount);
+    void updateProgress(id, pendingProgress.current);
+    pendingProgress.current = null;
   }
 
   function goToChapter(index: number) {
     if (index < 0 || index >= chapterCount) return;
-    setChosenChapter(index);
+    setChapterChoice({ id, index });
     lastSaveRef.current = Date.now();
+    pendingProgress.current = null;
     void updateProgress(id, index / chapterCount);
   }
 

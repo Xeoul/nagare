@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import { CHAPTER_PREFIX } from "./chapters";
 
 export type ParsedImport = {
   title: string;
@@ -68,7 +69,12 @@ async function extractEpubText(file: File): Promise<string> {
     const html = await entry.async("text");
     const doc = new DOMParser().parseFromString(html, "text/html");
     const text = doc.body?.textContent?.trim();
-    if (text) chapters.push(text);
+    if (!text) continue;
+    // Each spine document becomes a chapter (see src/lib/chapters.ts), named
+    // by its first heading when it has a short one.
+    const heading = doc.querySelector("h1, h2, h3")?.textContent?.replace(/\s+/g, " ").trim();
+    const title = heading && heading.length <= 40 ? heading : `Chapter ${chapters.length + 1}`;
+    chapters.push(`${CHAPTER_PREFIX}${title}\n${text}`);
   }
 
   if (chapters.length === 0) {
