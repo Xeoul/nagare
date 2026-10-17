@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import type { JmdictEntry } from "@/lib/dictionary";
+import { isSentenceSaved, toggleSavedSentence } from "@/lib/savedSentences";
 import { isStarred, toggleStarred } from "@/lib/starred";
 import { speak } from "@/lib/speech";
-import { BookmarkIcon, SpeakerIcon, XIcon } from "./icons";
+import { BookmarkIcon, HeartIcon, SpeakerIcon, XIcon } from "./icons";
 
 type Props = {
   surfaceForm: string;
@@ -14,15 +15,22 @@ type Props = {
   reading?: string;
   /** The sentence the word sits in, offered as a second thing to listen to. */
   sentence?: string;
+  /** Where the sentence is from, kept with it when it's saved. */
+  sourceTitle?: string;
   onClose: () => void;
 };
 
-export default function LookupSheet({ surfaceForm, lookupKey, entry, reading, sentence, onClose }: Props) {
+export default function LookupSheet({ surfaceForm, lookupKey, entry, reading, sentence, sourceTitle, onClose }: Props) {
   const [starred, setStarred] = useState(false);
+  const [sentenceSaved, setSentenceSaved] = useState(false);
 
   useEffect(() => {
     void isStarred(lookupKey).then(setStarred);
   }, [lookupKey]);
+
+  useEffect(() => {
+    if (sentence) void isSentenceSaved(sentence).then(setSentenceSaved);
+  }, [sentence]);
 
   const meanings = entry?.meanings.slice(0, 4) ?? [];
 
@@ -79,6 +87,23 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, reading, se
                 >
                   <SpeakerIcon className="h-3 w-3" />
                   Sentence
+                </button>
+              )}
+              {sentence && (
+                <button
+                  type="button"
+                  aria-pressed={sentenceSaved}
+                  onClick={() => {
+                    void toggleSavedSentence({ text: sentence, sourceTitle: sourceTitle ?? "", level: "" }).then(
+                      setSentenceSaved,
+                    );
+                  }}
+                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                    sentenceSaved ? "bg-ink text-paper" : "bg-paper-sunk text-ink-soft hover:text-ink"
+                  }`}
+                >
+                  <HeartIcon className="h-3 w-3" fill={sentenceSaved ? "currentColor" : "none"} />
+                  {sentenceSaved ? "Sentence saved" : "Save sentence"}
                 </button>
               )}
             </div>

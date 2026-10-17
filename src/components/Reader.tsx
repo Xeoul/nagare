@@ -29,6 +29,8 @@ type Props = {
   vertical: boolean;
   /** Shown after the last sentence in place of the "おわり · END" marker (e.g. a next-chapter button). */
   endSlot?: ReactNode;
+  /** The book's title, saved alongside a sentence saved from the lookup sheet. */
+  sourceTitle?: string;
   /** Turn pages like an e-reader instead of scrolling. */
   paged?: boolean;
   /** Text size multiplier (1 = default). */
@@ -237,6 +239,7 @@ export default function Reader({
   showTranslation,
   vertical,
   endSlot,
+  sourceTitle,
   paged = false,
   fontScale = 1,
   spacingFactor = 1,
@@ -684,6 +687,7 @@ export default function Reader({
           entry={selected.entry}
           reading={selected.token.reading}
           sentence={selectedSentence ?? undefined}
+          sourceTitle={sourceTitle}
           onClose={() => setSelected(null)}
         />
       )}

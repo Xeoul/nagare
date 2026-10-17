@@ -23,14 +23,3 @@ export function coverStyle(title: string): CSSProperties {
   return { background: `linear-gradient(160deg, hsl(${a} 9% 40%), hsl(${a} 8% 24%))` };
 }
 
-/** The feed's full-screen backdrop: near-black with a faint coloured aura. */
-export function auraStyle(text: string): CSSProperties {
-  const [a, b] = huePair(text);
-  return {
-    background: [
-      `radial-gradient(70% 45% at 90% 8%, hsl(${a} 25% 45% / 0.12), transparent 70%)`,
-      `radial-gradient(80% 50% at 0% 100%, hsl(${b} 25% 40% / 0.1), transparent 70%)`,
-      "#08080a",
-    ].join(", "),
-  };
-}

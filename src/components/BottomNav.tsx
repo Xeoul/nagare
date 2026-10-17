@@ -2,29 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookmarkIcon, HomeIcon, LibraryIcon } from "./icons";
+import { BookmarkIcon, LibraryIcon } from "./icons";
 
 const TABS = [
-  { href: "/", label: "Feed", Icon: HomeIcon },
-  { href: "/library", label: "Library", Icon: LibraryIcon },
+  { href: "/", label: "Library", Icon: LibraryIcon },
   { href: "/words", label: "Saved", Icon: BookmarkIcon },
 ] as const;
 
+/** /library was the library's address before it became the home page. */
+const isActive = (pathname: string, href: string) =>
+  pathname === href || (href === "/" && pathname.replace(/\/$/, "") === "/library");
+
 /**
  * A floating glass capsule. The active tab grows into a pill with its label;
- * the others stay icon-only. "dark" floats over the full-bleed feed;
- * "default" follows the app theme.
+ * the others stay icon-only.
  */
 export default function BottomNav({
-  variant = "default",
   mobile = true,
 }: {
-  variant?: "dark" | "default";
   /** false for full-screen pages (the reader) that only want the desktop sidebar. */
   mobile?: boolean;
 }) {
   const pathname = usePathname();
-  const dark = variant === "dark";
 
   return (
     <>
@@ -32,14 +31,10 @@ export default function BottomNav({
       {mobile && (
         <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden">
           <ul
-            className={`pointer-events-auto flex items-center gap-1 rounded-full p-1.5 backdrop-blur-2xl ${
-              dark
-                ? "bg-white/10 text-white shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] ring-1 ring-white/10"
-                : "bg-paper-raised/80 text-ink shadow-[0_10px_30px_-10px_rgb(var(--shadow-color)/0.35)] ring-1 ring-line"
-            }`}
+            className="pointer-events-auto flex items-center gap-1 rounded-full bg-paper-raised/80 p-1.5 text-ink shadow-[0_10px_30px_-10px_rgb(var(--shadow-color)/0.35)] ring-1 ring-line backdrop-blur-2xl"
           >
             {TABS.map(({ href, label, Icon }) => {
-              const active = pathname === href;
+              const active = isActive(pathname, href);
               return (
                 <li key={href}>
                   <Link
@@ -48,7 +43,7 @@ export default function BottomNav({
                     aria-label={label}
                     className={`flex h-11 items-center gap-2 rounded-full text-sm font-semibold transition-all duration-300 ${
                       active
-                        ? `px-4 ${dark ? "bg-white/15 text-white" : "bg-paper-sunk text-ink"}`
+                        ? "bg-paper-sunk px-4 text-ink"
                         : "w-12 justify-center opacity-50 hover:opacity-90"
                     }`}
                   >
@@ -64,38 +59,26 @@ export default function BottomNav({
 
       {/* Desktop: a sidebar down the left, so pages can use the full width. */}
       <nav
-        className={`fixed inset-y-0 left-0 z-30 hidden w-60 flex-col gap-8 border-r px-4 py-7 lg:flex ${
-          dark ? "border-white/[0.06] bg-[#08080a] text-white" : "border-line bg-paper text-ink"
-        }`}
+        className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col gap-8 border-r border-line bg-paper px-4 py-7 text-ink lg:flex"
       >
         <div className="flex items-center gap-2.5 px-3">
-          <span
-            className={`flex h-8 w-8 items-center justify-center rounded-[0.55rem] text-sm font-bold ${
-              dark ? "bg-white/10 text-white" : "bg-ink text-paper"
-            }`}
-          >
+          <span className="flex h-8 w-8 items-center justify-center rounded-[0.55rem] bg-ink text-sm font-bold text-paper">
             流
           </span>
-          <span className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${dark ? "text-white/60" : "text-ink-soft"}`}>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-soft">
             Nagare
           </span>
         </div>
         <ul className="flex flex-col gap-1">
           {TABS.map(({ href, label, Icon }) => {
-            const active = pathname === href;
+            const active = isActive(pathname, href);
             return (
               <li key={href}>
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={`flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold transition-colors ${
-                    active
-                      ? dark
-                        ? "bg-white/10 text-white"
-                        : "bg-paper-sunk text-ink"
-                      : dark
-                        ? "text-white/50 hover:bg-white/[0.05] hover:text-white"
-                        : "text-ink-soft hover:bg-paper-sunk/60 hover:text-ink"
+                    active ? "bg-paper-sunk text-ink" : "text-ink-soft hover:bg-paper-sunk/60 hover:text-ink"
                   }`}
                 >
                   <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.2 : 1.9} />
