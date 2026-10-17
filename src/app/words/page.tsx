@@ -49,7 +49,8 @@ function SavedSentenceCard({
       )}
       <div className="mt-3 flex items-center justify-between gap-3 text-xs text-ink-soft">
         <span className="min-w-0 flex-1 truncate">
-          <span className="font-semibold text-ink">{sentence.level}</span> · {sentence.sourceTitle}
+          {sentence.level && <span className="font-semibold text-ink">{sentence.level} · </span>}
+          {sentence.sourceTitle}
         </span>
         <button
           type="button"
@@ -147,7 +148,7 @@ export default function SavedPage() {
           ) : sentences.length === 0 ? (
             <EmptyState
               icon={<HeartIcon className="h-6 w-6" />}
-              text="Double-tap a card in the feed, or tap its heart, to keep a sentence here."
+              text="While reading, tap a word and then “Save sentence” to keep its sentence here."
             />
           ) : (
             <ul className="grid gap-3 lg:grid-cols-2">
@@ -171,7 +172,7 @@ export default function SavedPage() {
           ) : words.length === 0 ? (
             <EmptyState
               icon={<BookmarkIcon className="h-6 w-6" />}
-              text="Save a word spotlight in the feed, or tap any word while reading and add it."
+              text="Tap any word while reading and save it to build your review deck."
             />
           ) : (
             <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">

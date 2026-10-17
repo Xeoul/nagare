@@ -17,7 +17,7 @@ export type ClassicWork = {
    * tagging of its own). See NOTICE.md / README for the method.
    */
   level: "N3" | "N2" | "N1";
-  /** A full-length book, read a chapter at a time and kept out of the feed. */
+  /** A full-length book, read a chapter at a time. */
   novel?: boolean;
   /** % of unique content words found in NO JLPT list at all (rounded). Higher = denser. */
   density: number;
