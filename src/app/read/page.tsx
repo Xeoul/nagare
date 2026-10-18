@@ -273,13 +273,6 @@ function ReadView() {
         <div className="mx-auto flex h-full w-full max-w-2xl flex-col px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:max-w-4xl lg:pb-6 lg:pt-6">
           {prefs.paged ? (
             <>
-              {/* A faint running title, like an e-reader's header line. */}
-              <p className="shrink-0 truncate px-4 pb-1 text-center text-[11px] text-ink-soft/70">
-                {item.title}
-                {chapters.length > 1 && chapters[chapterIndex]?.title
-                  ? ` · ${chapters[chapterIndex].title}`
-                  : ""}
-              </p>
               <div
                 className={`absolute inset-x-0 top-0 z-20 mx-auto w-full max-w-2xl bg-paper/95 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_8px_24px_-16px_rgb(var(--shadow-color)/0.4)] transition-all duration-200 sm:px-6 lg:max-w-4xl lg:pt-6 ${
                   // iOS keeps blurring what's behind an element that's only
