@@ -56,7 +56,7 @@ function ReadView() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   // In page mode the controls float over the page and get out of the way
   // once you start reading; a tap in the middle of the page brings them back.
-  const [chromeVisible, setChromeVisible] = useState(true);
+  const [chromeVisible, setChromeVisible] = useState(false);
   // Where to reopen after switching between pages and scrolling, which
   // remounts the reader: the position within the current chapter.
   const liveFraction = useRef<number | null>(null);
