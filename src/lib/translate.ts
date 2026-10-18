@@ -4,9 +4,10 @@
 // event loop free to fire, same as the thing hanging), but a worker can be
 // terminated from outside regardless of what it's doing.
 const TIMEOUT_MS = 20000;
-// Until the model has loaded, a request also waits on the ~110MB first-time
-// download — on a slow phone connection that alone can take minutes, and
-// timing out then would kill the worker mid-download and start it over.
+// Until the model has loaded, a request also waits on reading the ~110MB model
+// (it ships with the app, but a slow phone connection can still take minutes
+// to fetch it the first time), and timing out then would kill the worker
+// mid-load and start it over.
 const LOADING_TIMEOUT_MS = 10 * 60 * 1000;
 
 type PendingRequest = {
@@ -115,8 +116,8 @@ const cache = new Map<string, Promise<string>>();
 /**
  * Translates one sentence to English using an offline model
  * (Xenova/opus-mt-ja-en) that runs entirely client-side in a Web Worker —
- * nothing is sent to a server, and the ~110MB model is cached by the
- * browser after the first download. Caches by exact text so re-renders and
+ * nothing is sent to a server, and the ~110MB model is served from this
+ * app's own files (public/models), not Hugging Face. Caches by exact text so re-renders and
  * re-visits are free, and results are memoized only on success.
  */
 export function translateSentence(text: string): Promise<string> {

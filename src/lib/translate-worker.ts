@@ -1,4 +1,5 @@
 import { pipeline, env } from "@huggingface/transformers";
+import { basePath } from "./base-path";
 
 type Pipeline = (text: string, options: Record<string, unknown>) => Promise<unknown>;
 let translatorPromise: Promise<Pipeline> | null = null;
@@ -16,6 +17,21 @@ type ProgressEvent = {
 // SharedArrayBuffer, and testing it didn't show a reliable speed win here
 // while adding real complexity — not worth it for this app's scale.
 if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1;
+
+// The model and the ONNX runtime's WASM both ship with the app (public/models
+// and public/ort) instead of being fetched from Hugging Face and jsDelivr,
+// so translation works offline and never waits on a ~110MB first download.
+// The plain WASM build is used everywhere: with a single thread and no GPU
+// it's all this app needs, and it runs on Safari as well as Chromium.
+env.allowRemoteModels = false;
+env.allowLocalModels = true;
+env.localModelPath = `${basePath}/models/`;
+if (env.backends.onnx.wasm) {
+  env.backends.onnx.wasm.wasmPaths = {
+    mjs: `${basePath}/ort/ort-wasm-simd-threaded.mjs`,
+    wasm: `${basePath}/ort/ort-wasm-simd-threaded.wasm`,
+  };
+}
 
 function getTranslator(): Promise<Pipeline> {
   if (!translatorPromise) {
