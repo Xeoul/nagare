@@ -12,6 +12,10 @@ import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
 import { onModelProgress, preloadTranslationModel, type ModelProgress } from "@/lib/translate";
 
+// The commit this build was made from (set by the Pages workflow), shown at the
+// bottom of the page so it's easy to tell which version an installed copy is on.
+const BUILD_ID = (process.env.NEXT_PUBLIC_BUILD_ID ?? "local").slice(0, 7);
+
 export default function LibraryPage() {
   const [modelProgress, setModelProgress] = useState<ModelProgress>(null);
 
@@ -104,6 +108,7 @@ export default function LibraryPage() {
             CC BY-SA 4.0
           </a>
           .
+          <span className="mt-3 block tabular-nums text-ink-soft/60">Build {BUILD_ID}</span>
         </footer>
 
         <BottomNav />

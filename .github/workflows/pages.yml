@@ -37,6 +37,7 @@ jobs:
         env:
           NAGARE_STATIC_EXPORT: "1"
           NEXT_PUBLIC_BASE_PATH: /nagare
+          NEXT_PUBLIC_BUILD_ID: ${{ github.sha }}
 
       # Next writes the generated icon links without the base path, which
       # would point them at the root of xeoul.github.io instead.
