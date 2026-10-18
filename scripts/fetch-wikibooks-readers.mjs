@@ -10,7 +10,7 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 
 const API_BASE = "https://en.wikibooks.org/w/api.php";
-const USER_AGENT = "NagareReadingApp/1.0 (https://nagare-chi.vercel.app; personal-use Japanese learner app)";
+const USER_AGENT = "NagareReadingApp/1.0 (https://xeoul.github.io/nagare/; personal-use Japanese learner app)";
 
 // "The Crab and The Monkey" is excluded even though Wikibooks files it under
 // Children's texts — it's actually Akutagawa's satirical short story about
