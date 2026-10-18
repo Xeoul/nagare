@@ -298,13 +298,13 @@ function ReadView() {
                 </p>
               </div>
               <div
-                className={`absolute inset-x-0 top-0 z-20 mx-auto w-full max-w-2xl bg-paper/95 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_8px_24px_-16px_rgb(var(--shadow-color)/0.4)] transition-all duration-200 sm:px-6 lg:max-w-4xl lg:pt-6 ${
-                  // iOS keeps blurring what's behind an element that's only
-                  // faded out, so the hidden toolbar is also made invisible and
-                  // loses its blur, or it smears the title line above the text.
-                  chromeVisible
-                    ? "translate-y-0 opacity-100 backdrop-blur-md"
-                    : "pointer-events-none invisible -translate-y-3 opacity-0"
+                className={`absolute inset-x-0 top-0 z-20 mx-auto w-full max-w-2xl bg-paper px-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_8px_24px_-16px_rgb(var(--shadow-color)/0.4)] transition-opacity duration-200 sm:px-6 lg:max-w-4xl lg:pt-6 ${
+                  // No backdrop blur and no sliding transform here, on purpose:
+                  // on iOS an element that has both gets drawn at low
+                  // resolution, which made the whole toolbar look fuzzy, and a
+                  // blur that's only faded out keeps smearing what's behind it.
+                  // A solid background that fades, then goes invisible, avoids both.
+                  chromeVisible ? "opacity-100" : "pointer-events-none invisible opacity-0"
                 }`}
               >
                 {controls}
