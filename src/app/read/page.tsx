@@ -273,6 +273,12 @@ function ReadView() {
         <div className="mx-auto flex h-full w-full max-w-2xl flex-col px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:max-w-4xl lg:pb-6 lg:pt-6">
           {prefs.paged ? (
             <>
+              {/* The toolbar floats over this gap, so the first line of text
+                  starts below it instead of being covered when it's showing.
+                  The heights match the toolbar's rows: the controls (h-10 +
+                  pb-3) and, with several chapters, the chapter picker (h-9 +
+                  mb-3). */}
+              <div aria-hidden className={`shrink-0 ${chapters.length > 1 ? "h-[6.25rem]" : "h-[3.25rem]"}`} />
               <div
                 className={`absolute inset-x-0 top-0 z-20 mx-auto w-full max-w-2xl bg-paper/95 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_8px_24px_-16px_rgb(var(--shadow-color)/0.4)] transition-all duration-200 sm:px-6 lg:max-w-4xl lg:pt-6 ${
                   // iOS keeps blurring what's behind an element that's only
