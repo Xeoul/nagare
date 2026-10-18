@@ -278,12 +278,19 @@ function ReadView() {
                   The heights match the toolbar's rows: the controls (h-10 +
                   pb-3) and, with several chapters, the chapter picker (h-9 +
                   mb-3). While the toolbar is hidden, the gap holds a faint
-                  running title, like an e-reader's header line; the toolbar
-                  covers it when it comes back. */}
+                  running title, like an e-reader's header line. The title is
+                  made invisible, not just covered, whenever the toolbar shows:
+                  covered, it ghosts through the toolbar's translucent
+                  background and gets smeared by its blur. */}
               <div
                 className={`flex shrink-0 items-end justify-center ${chapters.length > 1 ? "h-[6.25rem]" : "h-[3.25rem]"}`}
               >
-                <p aria-hidden className="max-w-full truncate px-4 pb-1 text-center text-[11px] text-ink-soft/70">
+                <p
+                  aria-hidden
+                  className={`max-w-full truncate px-4 pb-1 text-center text-[11px] text-ink-soft/70 ${
+                    chromeVisible ? "invisible" : ""
+                  }`}
+                >
                   {item.title}
                   {chapters.length > 1 && chapters[chapterIndex]?.title
                     ? ` · ${chapters[chapterIndex].title}`
