@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored ONNX runtime loader, copied from onnxruntime-web (see translate-worker.ts).
+    "public/ort/**",
   ]),
 ]);
 
