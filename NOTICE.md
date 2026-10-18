@@ -24,16 +24,6 @@ https://aozorahack.org/aozorabunko_text, a mirror of
 https://www.aozora.gr.jp — Japan's public-domain digital library. Usage
 terms: https://www.aozora.gr.jp/guide/kijyunn.html.
 
-## Tadoku free books — NPO 多言語多読
-
-The "Tadoku free books" shelf lists the free graded readers published by
-NPO 多言語多読 at https://tadoku.org/japanese/free-books/ (title, level and
-link only — `src/data/tadoku-books.json`, from `scripts/fetch-tadoku-list.mjs`).
-The books themselves are licensed CC BY-NC-ND 4.0 and are **not**
-redistributed with this app: each tile links to the book's page on
-tadoku.org. A learner may download a PDF there and import it into their own
-copy of Nagare for personal reading.
-
 ## PDF import — pdf.js
 
 PDF import uses [pdf.js](https://github.com/mozilla/pdf.js) (`pdfjs-dist`),
