@@ -20,6 +20,7 @@ import {
 import ReaderSettings from "@/components/ReaderSettings";
 import Reader from "@/components/Reader";
 import BottomNav from "@/components/BottomNav";
+import TopEdgeCover from "@/components/TopEdgeCover";
 import { ChevronLeftIcon, LanguagesIcon } from "@/components/icons";
 import { splitChapters } from "@/lib/chapters";
 
@@ -270,6 +271,8 @@ function ReadView() {
   return (
     <div className="lg:pl-60">
       <div data-reader-theme={themeAttr} className="relative h-dvh bg-paper text-ink">
+        {/* In here so it takes the reader's own theme colours, over the one in the layout. */}
+        <TopEdgeCover />
         <div className="mx-auto flex h-full w-full max-w-2xl flex-col px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:max-w-4xl lg:pb-6 lg:pt-6">
           {prefs.paged ? (
             <>
