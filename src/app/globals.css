@@ -158,3 +158,25 @@ body {
   --shadow-color: 0 0 0;
   color-scheme: dark;
 }
+
+/* iOS 26 draws a blur over the top of an installed web app, covering the
+   status bar and some of the page under it. WebKit skips that blur when a
+   fixed box with a background (taller than ~10px, nearly full width) covers
+   the top edge, and uses the box's colour instead. This bar is that box, in
+   the page colour, so the page's own colours (and the reader's theme, which
+   renders its own bar inside the themed container) show through. Only iOS
+   matches the feature query, so other browsers never see it. */
+.top-edge-cover {
+  display: none;
+}
+@supports (-webkit-touch-callout: none) {
+  .top-edge-cover {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 30;
+    height: max(env(safe-area-inset-top), 12px);
+    background: var(--paper);
+    pointer-events: none;
+  }
+}
