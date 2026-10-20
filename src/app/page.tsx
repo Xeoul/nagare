@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ImportPanel from "@/components/ImportPanel";
 import LibraryList from "@/components/LibraryList";
 import ClassicsShelf from "@/components/ClassicsShelf";
@@ -10,40 +10,25 @@ import WikibooksShelf from "@/components/WikibooksShelf";
 import ContinueReading from "@/components/ContinueReading";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
-import { onModelProgress, preloadTranslationModel, type ModelProgress } from "@/lib/translate";
+import { preloadTranslationModel } from "@/lib/translate";
 
 // The commit this build was made from (set by the Pages workflow), shown at the
 // bottom of the page so it's easy to tell which version an installed copy is on.
 const BUILD_ID = (process.env.NEXT_PUBLIC_BUILD_ID ?? "local").slice(0, 7);
 
 export default function LibraryPage() {
-  const [modelProgress, setModelProgress] = useState<ModelProgress>(null);
-
-  // Start downloading the translation model while you pick something to
-  // read, so it's ready (or nearly) by the time the reader asks for it.
+  // Start loading the translation model in the background while you pick
+  // something to read, so it's ready (or nearly) by the time the reader asks
+  // for it. It loads quietly, with no progress bar on this page.
   useEffect(() => {
     preloadTranslationModel();
-    return onModelProgress(setModelProgress);
   }, []);
-
-  const downloadPercent =
-    modelProgress && modelProgress.total > 0
-      ? Math.min(100, Math.round((modelProgress.loaded / modelProgress.total) * 100))
-      : null;
 
   return (
     <div className="flex flex-1 flex-col lg:pl-60">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-9 pb-32 pt-4 sm:pt-8 lg:max-w-6xl lg:px-6 lg:pb-16 lg:pt-12">
         <div className="px-5">
           <PageHeader title="Library" />
-          {downloadPercent !== null && (
-            <div className="mt-4 flex items-center gap-3 text-xs text-ink-soft">
-              <span className="h-1 flex-1 overflow-hidden rounded-full bg-paper-sunk">
-                <span className="block h-full rounded-full bg-ink/50 transition-[width]" style={{ width: `${downloadPercent}%` }} />
-              </span>
-              <span className="shrink-0 tabular-nums">Translation model {downloadPercent}%</span>
-            </div>
-          )}
         </div>
 
         <ContinueReading />
