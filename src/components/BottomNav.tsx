@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookmarkIcon, LibraryIcon, QuizIcon } from "./icons";
+import { BookmarkIcon, BookOpenIcon, LibraryIcon, QuizIcon } from "./icons";
 
 const TABS = [
   { href: "/", label: "Library", Icon: LibraryIcon },
   { href: "/words", label: "Saved", Icon: BookmarkIcon },
+  { href: "/study", label: "Study", Icon: BookOpenIcon },
   { href: "/quiz", label: "Quiz", Icon: QuizIcon },
 ] as const;
 
