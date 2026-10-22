@@ -165,3 +165,13 @@ export function MoreIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function QuizIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.25c-.7.35-1.1.9-1.1 1.75" />
+      <path d="M12 17h.01" />
+    </Icon>
+  );
+}
