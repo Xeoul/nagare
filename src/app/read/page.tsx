@@ -9,6 +9,8 @@ import {
   setFuriganaPreference,
   getTranslationPreference,
   setTranslationPreference,
+  getGrammarPreference,
+  setGrammarPreference,
   getVerticalPreference,
   setVerticalPreference,
   getReaderPrefs,
@@ -42,6 +44,7 @@ function ReadView() {
   const [item, setItem] = useState<LibraryItem | null | undefined>(undefined);
   const [showFurigana, setShowFurigana] = useState(getFuriganaPreference);
   const [showTranslation, setShowTranslation] = useState(getTranslationPreference);
+  const [showGrammar, setShowGrammar] = useState(getGrammarPreference);
   const [vertical, setVertical] = useState(getVerticalPreference);
   const lastSaveRef = useRef(0);
   const trailingSave = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -98,6 +101,14 @@ function ReadView() {
     setShowTranslation((prev) => {
       const next = !prev;
       setTranslationPreference(next);
+      return next;
+    });
+  }
+
+  function toggleGrammar() {
+    setShowGrammar((prev) => {
+      const next = !prev;
+      setGrammarPreference(next);
       return next;
     });
   }
@@ -173,6 +184,7 @@ function ReadView() {
   const toggles = [
     { label: "Furigana", on: showFurigana, toggle: toggleFurigana, glyph: <span className="text-[15px] font-bold">あ</span> },
     { label: "Translation", on: showTranslation, toggle: toggleTranslation, glyph: <LanguagesIcon className="h-[18px] w-[18px]" /> },
+    { label: "Grammar hints", on: showGrammar, toggle: toggleGrammar, glyph: <span className="text-[15px] font-bold">文</span> },
     { label: "Vertical text", on: vertical, toggle: toggleVertical, glyph: <span className="text-[15px] font-bold">縦</span> },
   ];
 
@@ -273,7 +285,7 @@ function ReadView() {
       <div data-reader-theme={themeAttr} className="relative h-dvh bg-paper text-ink">
         {/* In here so it takes the reader's own theme colours, over the one in the layout. */}
         <TopEdgeCover />
-        <div className="mx-auto flex h-full w-full max-w-2xl flex-col px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:max-w-4xl lg:pb-6 lg:pt-6">
+        <div className="mx-auto flex h-full w-full max-w-2xl flex-col px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:max-w-4xl lg:pb-6 lg:pt-6 xl:max-w-5xl 2xl:max-w-6xl min-[1900px]:max-w-7xl">
           {prefs.paged ? (
             <>
               {/* The toolbar floats over this gap, so the first line of text
@@ -301,7 +313,7 @@ function ReadView() {
                 </p>
               </div>
               <div
-                className={`absolute inset-x-0 top-0 z-20 mx-auto w-full max-w-2xl bg-paper px-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_8px_24px_-16px_rgb(var(--shadow-color)/0.4)] transition-opacity duration-200 sm:px-6 lg:max-w-4xl lg:pt-6 ${
+                className={`absolute inset-x-0 top-0 z-20 mx-auto w-full max-w-2xl bg-paper px-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_8px_24px_-16px_rgb(var(--shadow-color)/0.4)] transition-opacity duration-200 sm:px-6 lg:max-w-4xl lg:pt-6 xl:max-w-5xl 2xl:max-w-6xl min-[1900px]:max-w-7xl ${
                   // No backdrop blur and no sliding transform here, on purpose:
                   // on iOS an element that has both gets drawn at low
                   // resolution, which made the whole toolbar look fuzzy, and a
@@ -339,6 +351,7 @@ function ReadView() {
             onProgressChange={handleProgressChange}
             showFurigana={showFurigana}
             showTranslation={showTranslation}
+            showGrammar={showGrammar}
             vertical={vertical}
             paged={prefs.paged}
             fontScale={FONT_SCALES[prefs.fontStep] ?? 1}
