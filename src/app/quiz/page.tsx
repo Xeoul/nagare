@@ -20,6 +20,7 @@ const MODES: { id: Mode; label: string; hint: string }[] = [
   { id: "vocab", label: "Vocabulary", hint: "Meanings and words in context" },
   { id: "reading", label: "Kanji and writing", hint: "Readings, kanji meanings, which kanji" },
   { id: "grammar", label: "Grammar", hint: "Pick the form that fits" },
+  { id: "passage", label: "Reading comprehension", hint: "Read a passage, answer questions" },
 ];
 
 const PREF_KEY = "nagare:quiz-setup";
@@ -194,11 +195,20 @@ function Runner({ session, onDone, onQuit }: { session: Session; onDone: (report
         )}
       </div>
 
-      <div className="card flex flex-col items-center gap-2 px-5 py-8 text-center lg:py-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-soft">{current.prompt}</p>
+      {current.passage && (
+        <div className="card flex flex-col gap-2 px-5 py-5 lg:px-7">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-soft">{current.prompt}</p>
+          <p className="whitespace-pre-line text-[17px] leading-[2] lg:text-lg" lang="ja">
+            {current.passage}
+          </p>
+        </div>
+      )}
+
+      <div className={`card flex flex-col items-center gap-2 px-5 text-center ${current.passage ? "py-5" : "py-8 lg:py-10"}`}>
+        {!current.passage && <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-soft">{current.prompt}</p>}
         <p
           className={`font-bold leading-relaxed ${
-            current.stem.length > 4 ? "text-2xl lg:text-3xl" : "text-5xl leading-snug lg:text-6xl"
+            current.passage ? "text-xl lg:text-2xl" : current.stem.length > 4 ? "text-2xl lg:text-3xl" : "text-5xl leading-snug lg:text-6xl"
           }`}
           lang="ja"
         >
@@ -503,8 +513,8 @@ export default function QuizPage() {
               </button>
             </div>
             <p className="max-w-xl text-xs leading-relaxed text-ink-soft">
-              Practice: {COUNT} questions with an explanation after each. Mock test: 35 questions in two timed sections, vocabulary then
-              grammar, answers shown at the end. Questions are generated from open JLPT study data, not copied from past exams.
+              Practice: {COUNT} questions with an explanation after each. Mock test: about 40 questions in three timed sections (vocabulary, grammar, reading),
+              answers shown at the end. Questions are generated from open JLPT study data, not copied from past exams.
             </p>
           </section>
         )}
