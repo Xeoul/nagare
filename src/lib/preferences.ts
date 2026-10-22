@@ -11,6 +11,19 @@ export function setFuriganaPreference(show: boolean): void {
   window.localStorage.setItem(FURIGANA_KEY, show ? "1" : "0");
 }
 
+const GRAMMAR_KEY = "nagare:show-grammar";
+
+/** Defaults to on — grammar hints are underlined sparingly, and tapping one explains it. */
+export function getGrammarPreference(): boolean {
+  if (typeof window === "undefined") return true;
+  const stored = window.localStorage.getItem(GRAMMAR_KEY);
+  return stored === null ? true : stored === "1";
+}
+
+export function setGrammarPreference(show: boolean): void {
+  window.localStorage.setItem(GRAMMAR_KEY, show ? "1" : "0");
+}
+
 const TRANSLATION_KEY = "nagare:show-translation";
 
 /** Defaults to off — translation downloads an offline MT model on first use. */

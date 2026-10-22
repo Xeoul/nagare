@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { JmdictEntry } from "@/lib/dictionary";
+import type { GrammarNote } from "@/lib/grammar";
 import { isSentenceSaved, toggleSavedSentence } from "@/lib/savedSentences";
 import { isStarred, toggleStarred } from "@/lib/starred";
 import { speak } from "@/lib/speech";
@@ -17,10 +18,38 @@ type Props = {
   sentence?: string;
   /** Where the sentence is from, kept with it when it's saved. */
   sourceTitle?: string;
+  /** Grammar patterns this word is part of, explained under the meanings. */
+  grammar?: GrammarNote[];
   onClose: () => void;
 };
 
-export default function LookupSheet({ surfaceForm, lookupKey, entry, reading, sentence, sourceTitle, onClose }: Props) {
+/** One grammar pattern: its name, level, what it means and an example. */
+export function GrammarNoteView({ note }: { note: GrammarNote }) {
+  return (
+    <div className="rounded-2xl bg-paper-sunk px-3.5 py-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-[15px] font-bold">{note.title}</span>
+        <span className="rounded-full bg-paper-raised px-2 py-0.5 text-[10px] font-bold text-ink-soft">{note.level}</span>
+      </div>
+      <p className="mt-1 text-[13.5px] leading-snug text-ink-soft">{note.meaning}</p>
+      <p className="mt-1.5 text-[13.5px] leading-snug">
+        {note.example.ja}
+        <span className="block text-ink-soft">{note.example.en}</span>
+      </p>
+    </div>
+  );
+}
+
+export default function LookupSheet({
+  surfaceForm,
+  lookupKey,
+  entry,
+  reading,
+  sentence,
+  sourceTitle,
+  grammar,
+  onClose,
+}: Props) {
   const [starred, setStarred] = useState(false);
   const [sentenceSaved, setSentenceSaved] = useState(false);
 
@@ -36,7 +65,7 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, reading, se
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] lg:inset-x-auto lg:bottom-6 lg:right-6 lg:w-[24rem] lg:p-0">
-      <div className="w-full max-w-lg rounded-[1.75rem] bg-paper-raised/95 px-5 pb-5 pt-2.5 text-ink shadow-[0_-4px_40px_-8px_rgb(var(--shadow-color)/0.45)] ring-1 ring-line backdrop-blur-2xl">
+      <div className="max-h-[75vh] w-full max-w-lg overflow-y-auto rounded-[1.75rem] bg-paper-raised/95 px-5 pb-5 pt-2.5 text-ink shadow-[0_-4px_40px_-8px_rgb(var(--shadow-color)/0.45)] ring-1 ring-line backdrop-blur-2xl">
         <div className="mx-auto h-1 w-9 rounded-full bg-line lg:hidden" />
         <div className="mt-3 flex items-start gap-3">
           <div className="min-w-0 flex-1">
@@ -136,6 +165,17 @@ export default function LookupSheet({ surfaceForm, lookupKey, entry, reading, se
           </>
         ) : (
           <p className="mt-2 text-sm text-ink-soft">Not in the dictionary.</p>
+        )}
+
+        {grammar && grammar.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-soft/80">Grammar</p>
+            <div className="mt-1.5 flex flex-col gap-2">
+              {grammar.map((note) => (
+                <GrammarNoteView key={note.id} note={note} />
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>

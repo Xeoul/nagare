@@ -17,7 +17,9 @@ import { getTokenizer, isLookupable, lookupKey, type Token } from "@/lib/tokeniz
 import { loadDictionary, lookupDictionary, type JmdictEntry, type JmdictLookup } from "@/lib/dictionary";
 import { isTranslatable, sentenceText, splitIntoSentences } from "@/lib/sentences";
 import { onModelProgress, translateSentence, type ModelProgress } from "@/lib/translate";
+import { findGrammar, type GrammarMatch } from "@/lib/grammar";
 import LookupSheet from "./LookupSheet";
+import SelectionCard from "./SelectionCard";
 import TokenText from "./TokenText";
 
 type Props = {
@@ -26,6 +28,8 @@ type Props = {
   onProgressChange: (progress: number) => void;
   showFurigana: boolean;
   showTranslation: boolean;
+  /** Underline grammar patterns (〜ている, 〜たい…); tapping one explains it. */
+  showGrammar?: boolean;
   vertical: boolean;
   /** Shown after the last sentence in place of the "おわり · END" marker (e.g. a next-chapter button). */
   endSlot?: ReactNode;
@@ -55,6 +59,7 @@ function Sentence({
   startIndex,
   showFurigana,
   showTranslation,
+  grammarAt,
   vertical,
   dictionary,
   selectedIndex,
@@ -67,6 +72,8 @@ function Sentence({
   startIndex: number;
   showFurigana: boolean;
   showTranslation: boolean;
+  /** Token index → the grammar pattern covering it, when grammar hints are on. */
+  grammarAt: ReadonlyMap<number, GrammarMatch> | null;
   vertical: boolean;
   dictionary: JmdictLookup | null;
   selectedIndex: number | null;
@@ -172,7 +179,9 @@ function Sentence({
               className={`cursor-pointer rounded transition-colors hover:bg-ink/5 focus-visible:bg-ink/5 focus-visible:outline-none ${
                 selectedIndex === index
                   ? "bg-ink/[0.07] underline decoration-ink-soft/60 decoration-1 underline-offset-4"
-                  : ""
+                  : grammarAt?.has(index)
+                    ? "underline decoration-accent-warm/70 decoration-dotted decoration-[1.5px] underline-offset-[7px]"
+                    : ""
               }`}
             >
               <TokenText token={token} showFurigana={showFurigana} />
@@ -237,6 +246,7 @@ export default function Reader({
   onProgressChange,
   showFurigana,
   showTranslation,
+  showGrammar = true,
   vertical,
   endSlot,
   sourceTitle,
@@ -251,6 +261,8 @@ export default function Reader({
   const [selected, setSelected] = useState<Selected | null>(null);
   const [modelProgress, setModelProgress] = useState<ModelProgress>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // Japanese text the reader has highlighted (without furigana), shown with its translation.
+  const [highlight, setHighlight] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const hasRestoredScroll = useRef(false);
@@ -320,6 +332,52 @@ export default function Reader({
       return { sentence, startIndex };
     });
   }, [tokens]);
+
+  // Grammar patterns, found per sentence so one never spans a full stop, as a
+  // map from token index to the pattern covering it (for the underline).
+  const grammarAt = useMemo(() => {
+    if (!showGrammar) return null;
+    const map = new Map<number, GrammarMatch>();
+    for (const { sentence, startIndex } of sentences) {
+      for (const match of findGrammar(sentence)) {
+        for (let i = match.start; i < match.end; i++) map.set(startIndex + i, match);
+      }
+    }
+    return map;
+  }, [showGrammar, sentences]);
+
+  // Highlighting text (drag with a mouse, or long-press on a phone) shows its
+  // translation. Furigana is stripped so the Japanese reads cleanly, and a
+  // short delay lets a drag settle, and lets a click on the page dismiss it.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onSelectionChange = () => {
+      clearTimeout(timer);
+      const root = scrollRef.current;
+      const selection = window.getSelection();
+      const collapsed = !selection || selection.rangeCount === 0 || selection.isCollapsed;
+      if (!root || collapsed) {
+        timer = setTimeout(() => setHighlight(null), 350);
+        return;
+      }
+      const range = selection.getRangeAt(0);
+      if (!root.contains(range.commonAncestorContainer)) return;
+      timer = setTimeout(() => {
+        const fragment = range.cloneContents();
+        fragment.querySelectorAll("rt, rp").forEach((node) => node.remove());
+        const picked = (fragment.textContent ?? "").replace(/\s+/g, " ").trim();
+        if (picked.length > 0 && picked.length <= 400 && /[぀-ヿ㐀-鿿]/.test(picked)) {
+          setHighlight(picked);
+          setSelected(null);
+        }
+      }, 300);
+    };
+    document.addEventListener("selectionchange", onSelectionChange);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("selectionchange", onSelectionChange);
+    };
+  }, []);
 
   // In vertical mode, track whichever sentence currently sits in a thin band
   // through the center of the reading pane — that's the one the caption bar
@@ -484,7 +542,8 @@ export default function Reader({
   function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
     const start = pointerStart.current;
     pointerStart.current = null;
-    if (!start) return;
+    // A mouse drag is highlighting text, not swiping; so is a touch drag that ends with text selected.
+    if (!start || event.pointerType === "mouse" || !window.getSelection()?.isCollapsed) return;
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
     if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
@@ -500,6 +559,12 @@ export default function Reader({
     }
     const target = event.target as HTMLElement;
     if (target.closest("[role=button], button, a, select, input")) return;
+    // The end of a drag-to-highlight is a click too: don't turn the page for it.
+    if (window.getSelection() && !window.getSelection()!.isCollapsed) return;
+    if (highlight) {
+      setHighlight(null);
+      return;
+    }
     if (selected) {
       setSelected(null);
       return;
@@ -587,7 +652,7 @@ export default function Reader({
                 ? { width: pageState.step || undefined }
                 : { columnWidth: "100vw", columnGap: PAGE_GAP, columnFill: "auto" }),
             }}
-            className={`h-full overflow-hidden text-[calc(1.3rem*var(--fs))] [line-break:strict] lg:text-[calc(1.5rem*var(--fs))] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+            className={`h-full overflow-hidden text-[calc(1.3rem*var(--fs))] [line-break:strict] lg:text-[calc(1.5rem*var(--fs))] 2xl:text-[calc(1.75rem*var(--fs))] min-[1900px]:text-[calc(2rem*var(--fs))] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
               vertical ? "mx-auto [writing-mode:vertical-rl]" : "w-full"
             }`}
           >
@@ -598,6 +663,7 @@ export default function Reader({
                 startIndex={startIndex}
                 showFurigana={showFurigana}
                 showTranslation={showTranslation}
+                grammarAt={grammarAt}
                 vertical={vertical}
                 dictionary={dictionary}
                 selectedIndex={selected?.index ?? null}
@@ -636,7 +702,7 @@ export default function Reader({
             ref={scrollRef}
             onScroll={handleScroll}
             style={{ ...fontScaleVar, lineHeight }}
-            className={`h-full w-full rounded-[1.75rem] bg-paper-raised px-6 py-7 text-[calc(1.3rem*var(--fs))] lg:px-14 lg:py-12 lg:text-[calc(1.5rem*var(--fs))] shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.05),0_12px_32px_-16px_rgb(var(--shadow-color)/0.25)] [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
+            className={`h-full w-full rounded-[1.75rem] bg-paper-raised px-6 py-7 text-[calc(1.3rem*var(--fs))] lg:px-14 lg:py-12 lg:text-[calc(1.5rem*var(--fs))] 2xl:text-[calc(1.75rem*var(--fs))] min-[1900px]:text-[calc(2rem*var(--fs))] shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.05),0_12px_32px_-16px_rgb(var(--shadow-color)/0.25)] [line-break:strict] [&_rt]:text-[0.5em] [&_rt]:font-normal [&_rt]:text-ink-soft ${
               vertical
                 ? "overflow-x-auto overflow-y-hidden [writing-mode:vertical-rl]"
                 : "overflow-y-auto overflow-x-hidden"
@@ -649,6 +715,7 @@ export default function Reader({
                 startIndex={startIndex}
                 showFurigana={showFurigana}
                 showTranslation={showTranslation}
+                grammarAt={grammarAt}
                 vertical={vertical}
                 dictionary={dictionary}
                 selectedIndex={selected?.index ?? null}
@@ -680,7 +747,7 @@ export default function Reader({
 
       )}
 
-      {selected && (
+      {selected && !highlight && (
         <LookupSheet
           surfaceForm={selected.token.surface_form}
           lookupKey={lookupKey(selected.token)}
@@ -688,9 +755,11 @@ export default function Reader({
           reading={selected.token.reading}
           sentence={selectedSentence ?? undefined}
           sourceTitle={sourceTitle}
+          grammar={grammarAt?.has(selected.index) ? [grammarAt.get(selected.index)!.note] : undefined}
           onClose={() => setSelected(null)}
         />
       )}
+      {highlight && <SelectionCard text={highlight} sourceTitle={sourceTitle} onClose={() => setHighlight(null)} />}
     </>
   );
 }
