@@ -1,4 +1,6 @@
 import { GRAMMAR_QUESTIONS } from "@/data/grammar-quiz";
+import { READING_QUESTIONS } from "@/data/reading-quiz";
+import { STARTER_READINGS } from "@/data/starter-readings";
 import {
   loadLevel,
   LEVELS,
@@ -18,15 +20,17 @@ export type { Level };
 // (src/data/grammar-quiz.ts). The JLPT's real test questions are copyrighted,
 // so none are reproduced here.
 
-export type Mode = "mixed" | "vocab" | "reading" | "grammar";
+export type Mode = "mixed" | "vocab" | "reading" | "grammar" | "passage";
 
-type Kind = "meaning" | "context" | "reading" | "orthography" | "kanjiMeaning" | "kanjiReading" | "form" | "gmeaning";
+type Kind = "comprehension" | "meaning" | "context" | "reading" | "orthography" | "kanjiMeaning" | "kanjiReading" | "form" | "gmeaning";
 
 export type Question = {
   kind: Kind;
   /** Which exam section it belongs to, for the mock test's scoring. */
-  section: "vocab" | "grammar";
+  section: "vocab" | "grammar" | "reading";
   level: Level;
+  /** The passage to read first, for reading-comprehension questions. */
+  passage?: string;
   /** What's asked, e.g. "How do you read the underlined word?" */
   prompt: string;
   /** The thing asked about. Text inside [[ ]] is shown underlined, like on the exam. */
@@ -310,7 +314,31 @@ function handwrittenGrammar(level: Level): Question[] {
 
 // ───────── building quizzes ─────────
 
+/** Reading-comprehension questions from the graded readings, whole passages at a time. */
+function comprehension(level: Level, count: number): Question[] {
+  const out: Question[] = [];
+  for (const reading of shuffle(STARTER_READINGS.filter((r) => r.level === level))) {
+    for (const item of READING_QUESTIONS[reading.title] ?? []) {
+      const order = shuffle([0, 1, 2, 3]);
+      out.push({
+        kind: "comprehension",
+        section: "reading",
+        level,
+        passage: reading.text,
+        prompt: reading.title,
+        stem: item.q,
+        choices: order.map((i) => item.choices[i]),
+        answer: order.indexOf(0),
+        explanation: item.why,
+      });
+    }
+    if (out.length >= count) break;
+  }
+  return out;
+}
+
 const GENERATORS: Record<Kind, (d: LevelData) => Question | null> = {
+  comprehension: () => null,
   meaning: meaningQuestion,
   context: contextQuestion,
   reading: readingQuestion,
@@ -325,6 +353,7 @@ const MODE_KINDS: Record<Mode, Kind[]> = {
   vocab: ["meaning", "context", "meaning", "context"],
   reading: ["reading", "orthography", "kanjiMeaning", "reading", "kanjiReading", "orthography"],
   grammar: ["form", "form", "gmeaning"],
+  passage: [],
   mixed: ["meaning", "form", "reading", "context", "form", "orthography", "kanjiMeaning", "gmeaning"],
 };
 
@@ -345,6 +374,10 @@ function fill(d: LevelData, kinds: Kind[], count: number, seed: Question[] = [])
 
 /** A practice round of `count` questions, or null if the level's data couldn't load. */
 export async function buildQuiz(mode: Mode, level: Level, count = 10): Promise<Question[] | null> {
+  if (mode === "passage") {
+    const qs = comprehension(level, count);
+    return qs.length ? qs : null;
+  }
   const data = await loadLevel(level);
   if (!data) return null;
   // Grammar practice starts from the hand-written questions where the level has them.
@@ -353,22 +386,23 @@ export async function buildQuiz(mode: Mode, level: Level, count = 10): Promise<Q
   return out.length ? shuffle(out) : null;
 }
 
-export type MockSection = { id: "vocab" | "grammar"; title: string; minutes: number; questions: Question[] };
+export type MockSection = { id: "vocab" | "grammar" | "reading"; title: string; minutes: number; questions: Question[] };
 
 // Minutes per section, scaled down from the real exam's time limits to the
 // shorter question counts used here.
-const MOCK_MINUTES: Record<Level, { vocab: number; grammar: number }> = {
-  N5: { vocab: 12, grammar: 10 },
-  N4: { vocab: 14, grammar: 12 },
-  N3: { vocab: 17, grammar: 14 },
-  N2: { vocab: 20, grammar: 16 },
-  N1: { vocab: 22, grammar: 18 },
+const MOCK_MINUTES: Record<Level, { vocab: number; grammar: number; reading: number }> = {
+  N5: { vocab: 12, grammar: 10, reading: 8 },
+  N4: { vocab: 14, grammar: 12, reading: 10 },
+  N3: { vocab: 17, grammar: 14, reading: 12 },
+  N2: { vocab: 20, grammar: 16, reading: 14 },
+  N1: { vocab: 22, grammar: 18, reading: 16 },
 };
 
 /**
  * A timed mock test laid out like the exam's Language Knowledge section:
  * vocabulary first (kanji reading, orthography, contextually-defined words,
- * paraphrase-style meanings), then grammar (selecting the right form).
+ * paraphrase-style meanings), then grammar (selecting the right form), then
+ * reading comprehension on short passages.
  */
 export async function buildMock(level: Level): Promise<MockSection[] | null> {
   const data = await loadLevel(level);
@@ -377,8 +411,10 @@ export async function buildMock(level: Level): Promise<MockSection[] | null> {
   const vocab = fill(data, vocabKinds, 20);
   const grammar = fill(data, ["form"], 15, shuffle(handwrittenGrammar(level)).slice(0, 8));
   if (vocab.length < 10 || grammar.length < 5) return null;
+  const reading = comprehension(level, 5);
   return [
     { id: "vocab", title: "Language Knowledge: Vocabulary", minutes: MOCK_MINUTES[level].vocab, questions: vocab },
     { id: "grammar", title: "Language Knowledge: Grammar", minutes: MOCK_MINUTES[level].grammar, questions: grammar },
+    ...(reading.length ? [{ id: "reading" as const, title: "Reading", minutes: MOCK_MINUTES[level].reading, questions: reading }] : []),
   ];
 }
