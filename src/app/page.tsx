@@ -47,52 +47,11 @@ export default function LibraryPage() {
         </section>
 
         <footer className="mx-5 border-t border-line pt-5 text-[11px] leading-relaxed text-ink-soft/80">
-          Dictionary data from{" "}
-          <a
-            href="https://www.edrdg.org/jmdict/j_jmdict.html"
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-accent"
-          >
-            JMdict/EDRDG
-          </a>
-          , used in conformance with the Group&apos;s{" "}
-          <a
-            href="https://www.edrdg.org/edrdg/licence.html"
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-accent"
-          >
-            licence
-          </a>
-          . Sentence translation uses{" "}
-          <a
-            href="https://huggingface.co/Xenova/opus-mt-ja-en"
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-accent"
-          >
-            Xenova/opus-mt-ja-en
-          </a>
-          , run locally in your browser. Fairy tales from{" "}
-          <a
-            href="https://en.wikibooks.org/wiki/Japanese/Reader"
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-accent"
-          >
-            Wikibooks
-          </a>
-          , licensed{" "}
-          <a
-            href="https://creativecommons.org/licenses/by-sa/4.0/"
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-accent"
-          >
-            CC BY-SA 4.0
-          </a>
-          .
+          Dictionary data from JMdict/EDRDG (CC BY-SA 4.0, used in conformance with the EDRDG licence at
+          edrdg.org/edrdg/licence.html). JLPT word, kanji and grammar lists from OpenJLPT (CC BY-SA 4.0), built on Jonathan
+          Waller&apos;s JLPT lists, KANJIDIC2 and Tatoeba example sentences (CC BY 2.0 FR). Sentence translation uses
+          Xenova/opus-mt-ja-en, run locally in your browser. Fairy tales from Wikibooks&apos; Japanese/Reader, licensed CC BY-SA 4.0
+          (creativecommons.org/licenses/by-sa/4.0). Classics from Aozora Bunko.
           <span className="mt-3 block tabular-nums text-ink-soft/60">Build {BUILD_ID}</span>
         </footer>
 
