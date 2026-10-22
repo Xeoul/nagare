@@ -38,3 +38,15 @@ with [transformers.js](https://github.com/huggingface/transformers.js), of
 University of Helsinki), trained on OPUS data with the Marian NMT
 framework. Licensed Apache License 2.0. Runs entirely client-side; nothing
 is sent to a server.
+
+## JLPT study data — `public/jlpt/*.json`
+
+Built by `scripts/build-jlpt-study-data.mjs` from
+[OpenJLPT](https://github.com/evanclan/OpenJLPT) (CC BY-SA 4.0): words, kanji
+and grammar points for N5–N1 with example sentences. OpenJLPT in turn uses
+Jonathan Waller's JLPT lists (https://www.tanos.co.uk/jlpt/, CC BY) for the
+level assignments, JMdict and KANJIDIC2 from the EDRDG (CC BY-SA 4.0), and
+example sentences from [Tatoeba](https://tatoeba.org) (CC BY 2.0 FR; each
+sentence is credited to its contributors on tatoeba.org). The files are
+redistributed under CC BY-SA 4.0. JLPT levels are community consensus, not an
+official list: the JLPT publishes none.
