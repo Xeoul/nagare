@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookmarkIcon, LibraryIcon } from "./icons";
+import { BookmarkIcon, LibraryIcon, QuizIcon } from "./icons";
 
 const TABS = [
   { href: "/", label: "Library", Icon: LibraryIcon },
   { href: "/words", label: "Saved", Icon: BookmarkIcon },
+  { href: "/quiz", label: "Quiz", Icon: QuizIcon },
 ] as const;
 
 /** /library was the library's address before it became the home page. */
