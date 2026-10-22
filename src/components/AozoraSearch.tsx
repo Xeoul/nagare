@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  aozoraCardUrl,
   fetchAozoraWork,
   loadAozoraCatalog,
   searchAozora,
@@ -60,14 +59,7 @@ export default function AozoraSearch() {
         <h2 className="text-xl font-bold tracking-tight">Search Aozora Bunko</h2>
         <p className="mt-0.5 text-[13px] leading-snug text-ink-soft">
           Over 10,000 public-domain books and stories from{" "}
-          <a
-            href="https://www.aozora.gr.jp/"
-            target="_blank"
-            rel="noreferrer"
-            className="underline decoration-line underline-offset-2"
-          >
-            Aozora Bunko
-          </a>
+          Aozora Bunko
           . Search by title or author, in kanji or kana.
         </p>
       </div>
@@ -110,11 +102,6 @@ export default function AozoraSearch() {
       {error && (
         <p className="text-sm text-accent-warm">
           {error.message}{" "}
-          {error.work && (
-            <a href={aozoraCardUrl(error.work)} target="_blank" rel="noreferrer" className="underline">
-              Open on Aozora Bunko ↗
-            </a>
-          )}
         </p>
       )}
 

@@ -40,14 +40,7 @@ export default function WikibooksShelf() {
         caption={
           <>
             Real N5 folk tales from{" "}
-            <a
-              href="https://en.wikibooks.org/wiki/Japanese/Reader"
-              target="_blank"
-              rel="noreferrer"
-              className="underline decoration-line underline-offset-2"
-            >
-              Wikibooks
-            </a>{" "}
+            Wikibooks{" "}
             (CC BY-SA 4.0).
           </>
         }

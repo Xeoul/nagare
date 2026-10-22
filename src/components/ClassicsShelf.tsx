@@ -49,14 +49,7 @@ export default function ClassicsShelf({ novels = false }: { novels?: boolean }) 
         caption={
           <>
             {novels ? "Full-length books" : "Public-domain short stories"} from{" "}
-            <a
-              href="https://www.aozora.gr.jp/"
-              target="_blank"
-              rel="noreferrer"
-              className="underline decoration-line underline-offset-2"
-            >
-              Aozora Bunko
-            </a>
+            Aozora Bunko
             {novels ? ", read a chapter at a time." : "."} Levels are estimated from vocabulary, not
             official.
           </>
