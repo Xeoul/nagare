@@ -13,6 +13,10 @@ import {
   setGrammarPreference,
   getVerticalPreference,
   setVerticalPreference,
+  getToolbarPinnedPreference,
+  setToolbarPinnedPreference,
+  getToolbarHintSeen,
+  setToolbarHintSeen,
   getReaderPrefs,
   setReaderPrefs,
   FONT_SCALES,
@@ -23,7 +27,7 @@ import ReaderSettings from "@/components/ReaderSettings";
 import Reader from "@/components/Reader";
 import BottomNav from "@/components/BottomNav";
 import TopEdgeCover from "@/components/TopEdgeCover";
-import { ChevronLeftIcon, LanguagesIcon } from "@/components/icons";
+import { ChevronLeftIcon, LanguagesIcon, MoreIcon, PinIcon } from "@/components/icons";
 import { splitChapters } from "@/lib/chapters";
 
 // The item id comes in as ?id= rather than a /read/[id] path segment so the
@@ -60,7 +64,29 @@ function ReadView() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   // In page mode the controls float over the page and get out of the way
   // once you start reading; a tap in the middle of the page brings them back.
-  const [chromeVisible, setChromeVisible] = useState(false);
+  const [chromeTapped, setChromeVisible] = useState(false);
+  // Pinned keeps the toolbar on screen (the default on wide screens); unpinned
+  // is the tuck-away behaviour, with a small handle and a one-time hint so it
+  // doesn't depend on knowing the tap.
+  const [pinned, setPinned] = useState(getToolbarPinnedPreference);
+  const [hintSeen, setHintSeen] = useState(getToolbarHintSeen);
+  const chromeVisible = pinned || chromeTapped;
+
+  function dismissHint() {
+    if (hintSeen) return;
+    setToolbarHintSeen();
+    setHintSeen(true);
+  }
+
+  function togglePinned() {
+    setPinned((prev) => {
+      const next = !prev;
+      setToolbarPinnedPreference(next);
+      return next;
+    });
+    setChromeVisible(false);
+    dismissHint();
+  }
   // Where to reopen after switching between pages and scrolling, which
   // remounts the reader: the position within the current chapter.
   const liveFraction = useRef<number | null>(null);
@@ -223,6 +249,20 @@ function ReadView() {
             </button>
           ))}
         </div>
+        {prefs.paged && (
+          <button
+            type="button"
+            aria-label={pinned ? "Unpin toolbar" : "Pin toolbar"}
+            aria-pressed={pinned}
+            title={pinned ? "Toolbar stays on screen (tap to let it hide)" : "Keep the toolbar on screen"}
+            onClick={togglePinned}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.06),0_4px_12px_-6px_rgb(var(--shadow-color)/0.3)] transition-colors ${
+              pinned ? "bg-ink text-paper" : "bg-paper-raised text-ink-soft hover:text-ink"
+            }`}
+          >
+            <PinIcon className="h-[18px] w-[18px]" />
+          </button>
+        )}
         <button
           type="button"
           aria-label="Reading settings"
@@ -298,19 +338,39 @@ function ReadView() {
                   covered, it ghosts through the toolbar's translucent
                   background and gets smeared by its blur. */}
               <div
-                className={`flex shrink-0 items-end justify-center ${chapters.length > 1 ? "h-[6.25rem]" : "h-[3.25rem]"}`}
+                className={`relative flex shrink-0 items-end justify-center ${chapters.length > 1 ? "h-[6.25rem]" : "h-[3.25rem]"}`}
               >
                 <p
                   aria-hidden
-                  className={`max-w-full truncate px-4 pb-1 text-center text-[11px] text-ink-soft/70 ${
+                  className={`max-w-full truncate px-12 pb-1 text-center text-[11px] text-ink-soft/70 ${
                     chromeVisible ? "invisible" : ""
                   }`}
                 >
-                  {item.title}
-                  {chapters.length > 1 && chapters[chapterIndex]?.title
-                    ? ` · ${chapters[chapterIndex].title}`
-                    : ""}
+                  {hintSeen ? (
+                    <>
+                      {item.title}
+                      {chapters.length > 1 && chapters[chapterIndex]?.title
+                        ? ` · ${chapters[chapterIndex].title}`
+                        : ""}
+                    </>
+                  ) : (
+                    "Tap the middle of the page, or ⋯, for the toolbar"
+                  )}
                 </p>
+                {!chromeVisible && (
+                  <button
+                    type="button"
+                    aria-label="Show toolbar"
+                    title="Show toolbar"
+                    onClick={() => {
+                      setChromeVisible(true);
+                      dismissHint();
+                    }}
+                    className="absolute bottom-0 right-1 flex h-9 w-9 items-center justify-center rounded-full text-ink-soft/70 transition-colors hover:text-ink sm:right-4"
+                  >
+                    <MoreIcon className="h-5 w-5" />
+                  </button>
+                )}
               </div>
               <div
                 className={`absolute inset-x-0 top-0 z-20 mx-auto w-full max-w-2xl bg-paper px-3 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-[0_8px_24px_-16px_rgb(var(--shadow-color)/0.4)] transition-opacity duration-200 sm:px-6 lg:max-w-4xl lg:pt-6 xl:max-w-5xl 2xl:max-w-6xl min-[1900px]:max-w-7xl ${
@@ -358,11 +418,14 @@ function ReadView() {
             spacingFactor={SPACING_FACTORS[prefs.spacing]}
             onCenterTap={() => {
               setSettingsOpen(false);
-              setChromeVisible((visible) => !visible);
+              // Pinned: the toolbar is already up, so a tap just closes settings.
+              if (!pinned) setChromeVisible((visible) => !visible);
+              dismissHint();
             }}
             onPageTurn={() => {
               setSettingsOpen(false);
               setChromeVisible(false);
+              dismissHint();
             }}
           />
         </div>

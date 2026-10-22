@@ -103,3 +103,29 @@ export function getReaderPrefs(): ReaderPrefs {
 export function setReaderPrefs(prefs: ReaderPrefs): void {
   window.localStorage.setItem(READER_PREFS_KEY, JSON.stringify(prefs));
 }
+
+const TOOLBAR_PINNED_KEY = "nagare:toolbar-pinned";
+
+/** Whether the reader's toolbar stays on screen. Defaults to on for wide
+ *  screens, where it costs nothing; on a phone it defaults to tuck-away. */
+export function getToolbarPinnedPreference(): boolean {
+  if (typeof window === "undefined") return false;
+  const stored = window.localStorage.getItem(TOOLBAR_PINNED_KEY);
+  if (stored !== null) return stored === "1";
+  return window.matchMedia("(min-width: 1024px)").matches;
+}
+
+export function setToolbarPinnedPreference(pinned: boolean): void {
+  window.localStorage.setItem(TOOLBAR_PINNED_KEY, pinned ? "1" : "0");
+}
+
+const TOOLBAR_HINT_KEY = "nagare:toolbar-hint-seen";
+
+export function getToolbarHintSeen(): boolean {
+  if (typeof window === "undefined") return true;
+  return window.localStorage.getItem(TOOLBAR_HINT_KEY) === "1";
+}
+
+export function setToolbarHintSeen(): void {
+  window.localStorage.setItem(TOOLBAR_HINT_KEY, "1");
+}
