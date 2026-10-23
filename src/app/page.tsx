@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 import ImportPanel from "@/components/ImportPanel";
 import LibraryList from "@/components/LibraryList";
@@ -10,6 +11,7 @@ import WikibooksShelf from "@/components/WikibooksShelf";
 import ContinueReading from "@/components/ContinueReading";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
+import { BookmarkIcon } from "@/components/icons";
 import { preloadTranslationModel } from "@/lib/translate";
 
 // The commit this build was made from (set by the Pages workflow), shown at the
@@ -28,7 +30,15 @@ export default function LibraryPage() {
     <div className="flex flex-1 flex-col lg:pl-60">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-9 pb-32 pt-4 sm:pt-8 lg:max-w-6xl lg:px-6 lg:pb-16 lg:pt-12">
         <div className="px-5">
-          <PageHeader title="Library" />
+          <PageHeader title="Library">
+            <Link
+              href="/words"
+              className="flex h-9 items-center gap-1.5 rounded-full bg-paper-raised px-3.5 text-sm font-semibold text-ink-soft ring-1 ring-line transition-colors hover:text-ink"
+            >
+              <BookmarkIcon className="h-4 w-4" />
+              Saved
+            </Link>
+          </PageHeader>
         </div>
 
         <ContinueReading />
