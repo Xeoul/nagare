@@ -164,7 +164,7 @@ function readingQuestion(d: LevelData): Question | null {
       section: "vocab",
       level: d.level,
       prompt: "How do you read the underlined word?",
-      stem: example ? example.j.replace(word.w, `[[${word.w}]]`) : `[[${word.w}]]`,
+      stem: example && !scope ? example.j.replace(word.w, `[[${word.w}]]`) : `[[${word.w}]]`,
       reading: word.r,
       explanation: `${word.w}（${word.r}）= ${word.m.join("; ")}${example ? `\n${example.j}\n${example.en}` : ""}`,
     },
@@ -251,7 +251,9 @@ function kanjiReadingQuestion(d: LevelData): Question | null {
   const kanji = pick(focus(d.kanji.filter((k) => readingsOf(k).length > 0), kanjiKey));
   if (!kanji) return null;
   const own = new Set(readingsOf(kanji));
-  const correct = pick(readingsOf(kanji));
+  // Ask about the everyday readings, not the rare ones listed after them.
+  const common = [...kanji.on.slice(0, 2), ...kanji.kun.slice(0, 2)].map((r) => r.replace(/[.\-]/g, "")).filter(Boolean);
+  const correct = pick(common);
   if (!correct) return null;
   const others = d.kanji.flatMap(readingsOf).filter((r) => !own.has(r));
   const wrong = distractors(
@@ -495,12 +497,23 @@ export async function buildQuiz(mode: Mode, level: Level, count = 10): Promise<Q
 }
 
 /** A short check on one unit's words, kanji and grammar. */
-export async function buildUnitQuiz(level: Level, keys: string[], count = 8): Promise<Question[] | null> {
-  const data = await loadLevel(level);
-  if (!data) return null;
+export async function buildUnitQuiz(level: Level, keys: string[], pool: string[], count = 8): Promise<Question[] | null> {
+  const full = await loadLevel(level);
+  if (!full) return null;
+  // Wrong answers come only from this unit and the ones before it, so none of
+  // the choices are words you haven't been taught yet.
+  const known = new Set(pool);
+  const data: LevelData = {
+    ...full,
+    vocab: full.vocab.filter((v) => known.has(vocabKey(v))),
+    kanji: full.kanji.filter((k) => known.has(kanjiKey(k))),
+    grammar: full.grammar.filter((g) => known.has(`g:${g.id}`)),
+  };
   scope = new Set(keys);
   try {
-    const out = fill(data, ["meaning", "gmeaning", "kanjiMeaning", "form", "context", "kanjiReading", "reading", "meaning"], count);
+    // Word and kanji meanings and readings, plus grammar: no fill-in-the-blank
+    // on random sentences, which are full of words the unit hasn't covered.
+    const out = fill(data, ["gmeaning", "meaning", "kanjiMeaning", "reading", "form", "meaning", "kanjiReading", "gmeaning"], count);
     return out.length >= Math.min(4, count) ? shuffle(out) : null;
   } finally {
     scope = null;
