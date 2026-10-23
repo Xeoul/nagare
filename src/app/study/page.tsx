@@ -4,16 +4,82 @@ import { useEffect, useMemo, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import FuriganaText from "@/components/FuriganaText";
 import PageHeader from "@/components/PageHeader";
+import { REFERENCE, type ReferenceSection } from "@/data/reference";
 import { speak } from "@/lib/speech";
 import { LEVELS, loadLevel, type GrammarItem, type KanjiItem, type Level, type LevelData, type VocabItem } from "@/lib/jlpt-data";
 
-type Tab = "grammar" | "kanji" | "vocab";
+type Tab = "grammar" | "kanji" | "vocab" | "reference";
 const TABS: { id: Tab; label: string }[] = [
   { id: "grammar", label: "Grammar" },
   { id: "kanji", label: "Kanji" },
   { id: "vocab", label: "Vocabulary" },
+  { id: "reference", label: "Reference" },
 ];
 const PAGE = 60;
+
+/** One reference table. A cell like "か|ka" is a kana with its romaji; tapping it speaks it. */
+function ReferenceTable({ section }: { section: ReferenceSection }) {
+  const kana = section.rows.some((row) => row.some((cell) => cell.includes("|")));
+  return (
+    <li className="card flex flex-col gap-3 px-4 py-4 lg:px-5">
+      <div>
+        <h3 className="text-lg font-bold">{section.title}</h3>
+        {section.intro && <p className="mt-0.5 text-sm text-ink-soft">{section.intro}</p>}
+      </div>
+      <div className="-mx-1 overflow-x-auto px-1">
+        <table className="w-full border-collapse text-left text-sm">
+          {section.head && (
+            <thead>
+              <tr>
+                {section.head.map((h, i) => (
+                  <th key={i} className="whitespace-nowrap px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+          )}
+          <tbody>
+            {section.rows.map((row, ri) => (
+              <tr key={ri} className="border-t border-line">
+                {row.map((cell, ci) => {
+                  if (cell.includes("|")) {
+                    const [text, romaji] = cell.split("|");
+                    return (
+                      <td key={ci} className="px-1 py-1 text-center">
+                        <button
+                          type="button"
+                          onClick={() => speak(text)}
+                          aria-label={`${text} (${romaji})`}
+                          className="flex w-full min-w-11 flex-col items-center rounded-lg px-1 py-1 transition-colors hover:bg-paper-sunk"
+                        >
+                          <span className="text-2xl font-semibold leading-tight" lang="ja">
+                            {text}
+                          </span>
+                          <span className="text-[11px] text-ink-soft">{romaji}</span>
+                        </button>
+                      </td>
+                    );
+                  }
+                  return (
+                    <td
+                      key={ci}
+                      lang="ja"
+                      className={`px-2 py-2 align-top ${ci === 0 ? "whitespace-nowrap font-semibold" : ""} ${kana ? "text-center text-xs text-ink-soft" : ""}`}
+                    >
+                      {cell}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {section.note && <p className="text-sm leading-relaxed text-ink-soft">{section.note}</p>}
+    </li>
+  );
+}
 
 function GrammarCard({ g }: { g: GrammarItem }) {
   return (
@@ -140,9 +206,11 @@ export default function StudyPage() {
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-5 pb-32 pt-4 sm:pt-8 lg:max-w-4xl lg:px-11 lg:pb-16 lg:pt-12">
         <PageHeader title="Study" />
         <p className="max-w-xl text-sm leading-relaxed text-ink-soft">
-          Every grammar point, kanji and word for each JLPT level, with example sentences. Read a level, then test yourself in Quiz.
+          Every grammar point, kanji and word for each JLPT level, with example sentences, plus kana charts, counters, particles and
+          conjugation tables in Reference. Read a level, then test yourself in Quiz.
         </p>
 
+        {tab !== "reference" && (
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Level">
           {LEVELS.map((l) => (
             <button
@@ -159,9 +227,10 @@ export default function StudyPage() {
             </button>
           ))}
         </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex gap-1 rounded-full bg-paper-sunk p-1" role="tablist">
+          <div className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-paper-sunk p-1" role="tablist">
             {TABS.map((t) => (
               <button
                 key={t.id}
@@ -169,12 +238,12 @@ export default function StudyPage() {
                 role="tab"
                 aria-selected={tab === t.id}
                 onClick={() => select(setTab, t.id)}
-                className={`h-9 rounded-full px-4 text-sm font-semibold transition-colors ${
+                className={`h-9 shrink-0 rounded-full px-3 text-sm font-semibold transition-colors sm:px-4 ${
                   tab === t.id ? "bg-paper-raised text-ink shadow-sm" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 {t.label}
-                {data && (
+                {data && t.id !== "reference" && (
                   <span className="ml-1.5 text-xs font-medium tabular-nums opacity-60">
                     {t.id === "grammar" ? data.grammar.length : t.id === "kanji" ? data.kanji.length : data.vocab.length}
                   </span>
@@ -182,6 +251,7 @@ export default function StudyPage() {
               </button>
             ))}
           </div>
+          {tab !== "reference" && (
           <input
             type="search"
             value={query}
@@ -190,19 +260,21 @@ export default function StudyPage() {
             aria-label="Search"
             className="h-10 min-w-0 flex-1 rounded-full bg-paper-raised px-4 text-sm outline-none ring-1 ring-line focus:ring-ink sm:max-w-xs"
           />
+          )}
         </div>
 
-        {data === undefined && <p className="text-sm text-ink-soft">Loading…</p>}
-        {data === null && <p className="text-sm text-accent-warm">Couldn&apos;t load this level. Check your connection and try again.</p>}
-        {data && items.length === 0 && <p className="text-sm text-ink-soft">Nothing matches that search.</p>}
+        {tab !== "reference" && data === undefined && <p className="text-sm text-ink-soft">Loading…</p>}
+        {tab !== "reference" && data === null && <p className="text-sm text-accent-warm">Couldn&apos;t load this level. Check your connection and try again.</p>}
+        {tab !== "reference" && data && items.length === 0 && <p className="text-sm text-ink-soft">Nothing matches that search.</p>}
 
         <ul className="flex flex-col gap-3">
+          {tab === "reference" && REFERENCE.map((section) => <ReferenceTable key={section.id} section={section} />)}
           {tab === "grammar" && (items as GrammarItem[]).slice(0, shown).map((g) => <GrammarCard key={g.id} g={g} />)}
           {tab === "kanji" && (items as KanjiItem[]).slice(0, shown).map((k) => <KanjiCard key={k.c} k={k} />)}
           {tab === "vocab" && (items as VocabItem[]).slice(0, shown).map((v, i) => <VocabRow key={`${v.w}-${i}`} v={v} />)}
         </ul>
 
-        {items.length > shown && (
+        {tab !== "reference" && items.length > shown && (
           <button
             type="button"
             onClick={() => setShown((n) => n + PAGE)}

@@ -1,3 +1,12 @@
+import {
+  ADJ_FORMS,
+  conjugateAdjective,
+  conjugateVerb,
+  conjugateWrongClass,
+  usableAdjective,
+  verbClass,
+  VERB_FORMS,
+} from "@/lib/conjugation";
 import { GRAMMAR_QUESTIONS } from "@/data/grammar-quiz";
 import { READING_QUESTIONS } from "@/data/reading-quiz";
 import { STARTER_READINGS } from "@/data/starter-readings";
@@ -20,9 +29,9 @@ export type { Level };
 // (src/data/grammar-quiz.ts). The JLPT's real test questions are copyrighted,
 // so none are reproduced here.
 
-export type Mode = "mixed" | "vocab" | "reading" | "grammar" | "passage";
+export type Mode = "mixed" | "vocab" | "reading" | "grammar" | "passage" | "conjugation";
 
-type Kind = "comprehension" | "meaning" | "context" | "reading" | "orthography" | "kanjiMeaning" | "kanjiReading" | "form" | "gmeaning";
+type Kind = "conjugation" | "comprehension" | "meaning" | "context" | "reading" | "orthography" | "kanjiMeaning" | "kanjiReading" | "form" | "gmeaning";
 
 export type Question = {
   kind: Kind;
@@ -244,6 +253,64 @@ function cores(pattern: string): string[] {
     .filter((core) => core.length >= 2 && !/[〜(（]/.test(core));
 }
 
+/** Conjugation drill: verbs by group and い-adjectives, with the classic wrong answers as distractors. */
+function conjugationQuestion(d: LevelData): Question | null {
+  const verbs = d.vocab.filter((v) => verbClass(v.w, v.p));
+  const adjectives = d.vocab.filter((v) => usableAdjective(v.w, v.p));
+  const useAdj = adjectives.length > 0 && (verbs.length === 0 || Math.random() < 0.25);
+  if (useAdj) {
+    const word = pick(adjectives);
+    if (!word) return null;
+    const form = pick(ADJ_FORMS);
+    if (!form) return null;
+    const correct = conjugateAdjective(word.w, form.id);
+    const wrong = [...new Set(ADJ_FORMS.filter((f) => f.id !== form.id).map((f) => conjugateAdjective(word.w, f.id)))].filter((c) => c !== correct);
+    // The easy-to-make mistakes: keeping the い, or using だ like a な-adjective.
+    wrong.push(word.w.slice(0, -1) + "いくない", word.w + "だった");
+    const options = shuffle([...new Set(wrong)].filter((c) => c !== correct)).slice(0, 3);
+    if (options.length < 3) return null;
+    return make(
+      {
+        kind: "conjugation",
+        section: "grammar",
+        level: d.level,
+        prompt: `Choose the correct ${form.label} of this い-adjective.`,
+        stem: `${word.w}（${word.r}）`,
+        explanation: `${word.w} → ${correct}\nい-adjectives: drop い and add くて / くない / かった / く.\n${word.w} = ${word.m.join("; ")}`,
+      },
+      correct,
+      options,
+    );
+  }
+  const word = pick(verbs);
+  const cls = word && verbClass(word.w, word.p);
+  const form = pick(VERB_FORMS);
+  if (!word || !cls || !form) return null;
+  const correct = conjugateVerb(word.w, cls, form.id);
+  const wrong = new Set<string>();
+  const trap = conjugateWrongClass(word.w, cls, form.id);
+  if (trap) wrong.add(trap);
+  for (const f of shuffle(VERB_FORMS.filter((x) => x.id !== form.id))) wrong.add(conjugateVerb(word.w, cls, f.id));
+  const options = shuffle([...wrong].filter((c) => c !== correct)).slice(0, 3);
+  if (options.length < 3) return null;
+  const how =
+    cls === "ichidan"
+      ? "Group 2 (る-verb): drop る, then add the ending."
+      : "Group 1 (う-verb): the last kana changes (て/た: く→いて, ぐ→いで, す→して, つ・る・う→って, ぬ・ぶ・む→んで).";
+  return make(
+    {
+      kind: "conjugation",
+      section: "grammar",
+      level: d.level,
+      prompt: `Choose the correct ${form.label} of this verb.`,
+      stem: `${word.w}（${word.r}）`,
+      explanation: `${word.w} → ${correct}\n${how}\n${word.w} = ${word.m.join("; ")}`,
+    },
+    correct,
+    options,
+  );
+}
+
 function formQuestion(d: LevelData): Question | null {
   const usable = d.grammar.flatMap((g) =>
     g.e.flatMap((example) => {
@@ -339,6 +406,7 @@ function comprehension(level: Level, count: number): Question[] {
 
 const GENERATORS: Record<Kind, (d: LevelData) => Question | null> = {
   comprehension: () => null,
+  conjugation: conjugationQuestion,
   meaning: meaningQuestion,
   context: contextQuestion,
   reading: readingQuestion,
@@ -354,7 +422,8 @@ const MODE_KINDS: Record<Mode, Kind[]> = {
   reading: ["reading", "orthography", "kanjiMeaning", "reading", "kanjiReading", "orthography"],
   grammar: ["form", "form", "gmeaning"],
   passage: [],
-  mixed: ["meaning", "form", "reading", "context", "form", "orthography", "kanjiMeaning", "gmeaning"],
+  conjugation: ["conjugation"],
+  mixed: ["meaning", "form", "reading", "context", "form", "orthography", "kanjiMeaning", "gmeaning", "conjugation"],
 };
 
 /** Fills a list with `count` distinct questions following the order of `kinds`. */

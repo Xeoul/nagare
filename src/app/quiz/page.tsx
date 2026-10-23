@@ -21,6 +21,7 @@ const MODES: { id: Mode; label: string; hint: string }[] = [
   { id: "reading", label: "Kanji and writing", hint: "Readings, kanji meanings, which kanji" },
   { id: "grammar", label: "Grammar", hint: "Pick the form that fits" },
   { id: "passage", label: "Reading comprehension", hint: "Read a passage, answer questions" },
+  { id: "conjugation", label: "Conjugation", hint: "て-form, ない-form, potential and more" },
 ];
 
 const PREF_KEY = "nagare:quiz-setup";
