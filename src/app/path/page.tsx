@@ -104,6 +104,12 @@ export default function PathPage() {
   const kanaDone = (id: string) => !!progress[`u:kana:${id}`]?.l;
   const kanaOpen = level === "N5" ? KANA_LESSONS.find((k) => !kanaDone(k.id)) : undefined;
 
+  /** For people who know the early material: marks the first n units (and the kana, on N5) as done. */
+  function skipAhead(n: number) {
+    for (const u of units) setLearned(unitKey(level, u.n), u.n <= n);
+    if (level === "N5") for (const k of KANA_LESSONS) if (n > 0) setLearned(`u:kana:${k.id}`, true);
+  }
+
   function choose(l: Level) {
     setLevel(l);
     setData(undefined);
@@ -117,7 +123,7 @@ export default function PathPage() {
 
   async function startCheck(unit: Unit, run = 0) {
     setError(null);
-    const questions = await buildUnitQuiz(level, unit.keys);
+    const questions = await buildUnitQuiz(level, unit.keys, unit.pool);
     if (!questions) {
       setError("Couldn't build a check for this unit. Try again.");
       return;
@@ -184,6 +190,15 @@ export default function PathPage() {
         <p className="text-sm leading-relaxed text-ink-soft">
           Read the grammar first, then the kanji, then the words. Tap Listen on the words, say the examples out loud, then check yourself.
         </p>
+        {!done && (
+          <button
+            type="button"
+            onClick={() => void startCheck(unit)}
+            className="w-fit rounded-full bg-paper-raised px-4 py-2 text-sm font-semibold ring-1 ring-line transition-colors hover:bg-paper-sunk/60"
+          >
+            Know this already? Test out
+          </button>
+        )}
         {unit.grammar.length > 0 && (
           <section className="flex flex-col gap-3">
             <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">1. Grammar</h3>
@@ -340,6 +355,23 @@ export default function PathPage() {
                 </ul>
               </section>
             )}
+
+            <label className="flex flex-wrap items-center gap-2.5 text-sm text-ink-soft">
+              Already know some of this? Mark the first
+              <select
+                value={doneCount}
+                onChange={(event) => skipAhead(Number(event.target.value))}
+                aria-label="Units to skip"
+                className="h-10 rounded-full bg-paper-raised px-3 text-sm font-semibold text-ink ring-1 ring-line"
+              >
+                {Array.from({ length: units.length + 1 }, (_, n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+              units as done
+            </label>
 
             <section className="flex flex-col gap-2.5">
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">Units</h2>
