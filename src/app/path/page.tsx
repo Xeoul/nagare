@@ -8,14 +8,12 @@ import { Results, Runner, type Report, type Session } from "@/components/QuizRun
 import ReferenceTable from "@/components/ReferenceTable";
 import { GrammarCard, KanjiCard, VocabRow } from "@/components/StudyCards";
 import { REFERENCE } from "@/data/reference";
-import { buildUnits, unitKey, type Unit } from "@/lib/curriculum";
+import { buildUnits, isPass, PASS_RATE, unitKey, type Unit } from "@/lib/curriculum";
 import { LEVELS, loadLevel, type Level, type LevelData } from "@/lib/jlpt-data";
-import { setLearned, statusOf, useProgress, type Progress } from "@/lib/progress";
+import { resetProgress, setLearned, statusOf, useProgress, type Progress } from "@/lib/progress";
 import { buildUnitQuiz } from "@/lib/quiz";
 
 const LEVEL_KEY = "nagare:path-level";
-/** Share of a unit check that counts as passed. */
-const PASS = 0.7;
 
 const KANA_LESSONS = [
   { id: "hiragana", title: "Hiragana", sub: "The 46 basic sounds, then voiced and combined", sections: ["hiragana", "hiragana-voiced", "hiragana-combined"] },
@@ -71,7 +69,7 @@ function UnitRow({ unit, level, progress, current, onOpen }: { unit: Unit; level
             {unit.title}
           </span>
           <span className="text-xs text-ink-soft">
-            {unit.grammar.length} grammar · {unit.kanji.length} kanji · {unit.vocab.length} words
+            {unit.pack ? "Vocabulary pack" : `${unit.grammar.length} grammar · ${unit.kanji.length} kanji`} · {unit.vocab.length} words
             {!done && seen > 0 ? ` · ${seen}/${unit.keys.length} studied` : ""}
           </span>
         </span>
@@ -139,7 +137,7 @@ export default function PathPage() {
   function finishCheck(unit: Unit, report: Report) {
     const qs = report.session.sections[0].questions;
     const right = qs.filter((q, i) => report.answers[0][i] === q.answer).length;
-    const passed = right / qs.length >= PASS;
+    const passed = isPass(right, qs.length);
     if (passed) setLearned(unitKey(level, unit.n), true);
     setView({ kind: "result", unit, report, passed });
   }
@@ -181,7 +179,7 @@ export default function PathPage() {
         <BackButton onClick={() => setView({ kind: "list" })}>Path</BackButton>
         <div className="flex flex-col gap-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">
-            {level} · Unit {unit.n} of {units.length}
+            {level} · {unit.pack ? "Word pack" : `Unit ${unit.n}`} · {unit.n} of {units.length}
           </p>
           <h2 className="text-2xl font-bold" lang="ja">
             {unit.title}
@@ -221,7 +219,7 @@ export default function PathPage() {
         )}
         {unit.vocab.length > 0 && (
           <section className="flex flex-col gap-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">3. Words</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">{unit.pack ? "Words" : "3. Words"}</h3>
             <ul className="flex flex-col gap-3">
               {unit.vocab.map((v, i) => (
                 <VocabRow key={`${v.w}-${i}`} v={v} />
@@ -263,9 +261,9 @@ export default function PathPage() {
         <p className={`rounded-xl px-4 py-3 text-sm font-semibold ${passed ? "bg-emerald-600 text-white" : "bg-paper-sunk text-ink"}`}>
           {passed
             ? `Unit ${unit.n} complete.${nextUnit ? " The next unit is ready." : ` That's all of ${level}.`}`
-            : `Not quite yet. Get ${Math.round(PASS * 100)}% to finish the unit. Read it again, then retry.`}
+            : `Not quite yet. Get ${Math.round(PASS_RATE * 100)}% to finish the unit. Read it again, then retry.`}
         </p>
-        <Results report={view.report} onAgain={() => void startCheck(unit, Date.now())} onChange={() => setView({ kind: "unit", unit })} changeLabel="Back to the lesson" />
+        <Results report={view.report} onAgain={() => void startCheck(unit, Date.now())} onChange={() => setView({ kind: "unit", unit })} changeLabel="Back to the lesson" title={`${level} unit check`} againLabel="Retry the check" />
         {passed && nextUnit && (
           <button type="button" onClick={() => setView({ kind: "unit", unit: nextUnit })} className="h-12 w-fit rounded-full bg-ink px-8 text-[15px] font-semibold text-paper">
             Start unit {nextUnit.n}
@@ -388,6 +386,16 @@ export default function PathPage() {
                 ))}
               </ul>
             </section>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Clear all your progress on this device?")) resetProgress();
+              }}
+              className="w-fit text-xs font-semibold text-ink-soft underline underline-offset-4"
+            >
+              Reset all progress
+            </button>
 
             <p className="text-sm text-ink-soft">
               Want a free-for-all instead? Browse everything in{" "}

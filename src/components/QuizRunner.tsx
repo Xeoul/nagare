@@ -279,11 +279,17 @@ export function Results({
   onAgain,
   onChange,
   changeLabel = "Change setup",
+  title,
+  againLabel,
 }: {
   report: Report;
   onAgain: () => void;
   onChange: () => void;
   changeLabel?: string;
+  /** Replaces "N5 quiz result". */
+  title?: string;
+  /** Replaces "Another N5 quiz". */
+  againLabel?: string;
 }) {
   const { session, answers } = report;
   const sectionScores = session.sections.map((s, si) => ({
@@ -301,7 +307,7 @@ export function Results({
     <section className="flex flex-col gap-5">
       <div className="card flex flex-col items-center gap-1 px-5 py-8 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-soft">
-          {session.level} {session.mock ? "mock test" : "quiz"} result
+          {title ?? `${session.level} ${session.mock ? "mock test" : "quiz"} result`}
         </p>
         <p className="text-6xl font-bold tabular-nums">
           {correct}
@@ -360,7 +366,7 @@ export function Results({
           onClick={onAgain}
           className="h-12 rounded-full bg-ink px-8 text-[15px] font-semibold text-paper transition-transform active:scale-95"
         >
-          {session.mock ? `Another ${session.level} mock test` : `Another ${session.level} quiz`}
+          {againLabel ?? (session.mock ? `Another ${session.level} mock test` : `Another ${session.level} quiz`)}
         </button>
         <button
           type="button"
