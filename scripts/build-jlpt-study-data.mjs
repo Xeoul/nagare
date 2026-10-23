@@ -22,6 +22,23 @@ const read = (kind, level) => JSON.parse(readFileSync(path.join(srcDir, kind, `$
 const outDir = path.join(import.meta.dirname, "..", "public", "jlpt");
 mkdirSync(outDir, { recursive: true });
 
+// Fixes to the upstream text, found when proofreading every grammar entry.
+// Keys are "<level>/<grammar id>"; the fields replace the upstream ones.
+const CORRECTIONS = {
+  "n5/zenzen-nai": {
+    notes:
+      "Stronger than あまり〜ない. In casual speech 全然 is sometimes used with positive words (全然大丈夫), but pairing it with a negative is the standard use.",
+  },
+  "n5/ga-suki-ga-kirai": {
+    notes:
+      "好き and 嫌い are な-adjectives, but the thing liked or disliked still takes が, not を. 大好き and 大嫌い are stronger. 嫌い can sound blunt; あまり好きじゃない is softer.",
+  },
+  "n4/chuu-juu": {
+    notes:
+      "ちゅう marks an ongoing activity or a period (会議中, 午前中, 勉強中); じゅう means 'throughout' a time or place (一日中, 世界中). Some words, such as 今週中, are read both ways: じゅう ('by the end of this week') is the usual reading.",
+  },
+};
+
 for (const level of ["n5", "n4", "n3", "n2", "n1"]) {
   const vocab = read("vocab", level).map((e) => ({
     w: e.word,
@@ -39,7 +56,7 @@ for (const level of ["n5", "n4", "n3", "n2", "n1"]) {
     m: k.meanings.slice(0, 5),
     w: (k.words ?? []).slice(0, 6),
   }));
-  const grammar = read("grammar", level).map((g) => ({
+  const grammar = read("grammar", level).map((g) => ({ ...g, ...CORRECTIONS[`${level}/${g.id}`] })).map((g) => ({
     id: g.id,
     p: g.pattern,
     m: g.meaning,
