@@ -123,7 +123,22 @@ function verbatimExample(item: VocabItem) {
   return item.e.find((x) => x.j.includes(item.w) && x.j.split(item.w).length === 2);
 }
 
-const shorten = (text: string, max = 60) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
+/** Trims a long meaning at a clause break where it can, so choices don't end mid-word. */
+function shorten(text: string, max = 70) {
+  if (text.length <= max) return text;
+  const head = text.slice(0, max);
+  const cut = Math.max(head.lastIndexOf("; "), head.lastIndexOf(", "));
+  return cut > max / 2 ? head.slice(0, cut) : `${head.slice(0, head.lastIndexOf(" ")).trimEnd()}…`;
+}
+
+const STOP = new Set(["the", "and", "for", "with", "from", "into", "that", "this", "one", "something", "someone", "about", "not", "radical", "who", "are", "was"]);
+const tokens = (text: string) => new Set(text.toLowerCase().split(/[^a-z]+/).filter((w) => w.length >= 3 && !STOP.has(w)));
+/** True when two English glosses share a meaningful word, so either could pass for the other. */
+function alike(a: string, b: string) {
+  const left = tokens(a);
+  for (const word of tokens(b)) if (left.has(word)) return true;
+  return false;
+}
 
 // ───────── vocabulary and kanji ─────────
 
@@ -131,8 +146,9 @@ function meaningQuestion(d: LevelData): Question | null {
   const word = pick(focus(d.vocab.filter((v) => v.m[0] && v.m[0].length <= 38), vocabKey));
   if (!word) return null;
   // Same part of speech first, so "to eat" isn't the only verb among nouns.
-  const similar = d.vocab.filter((v) => v.p === word.p && v.m[0]);
-  const wrong = distractors(similar.length >= 12 ? similar : d.vocab, (v) => v.m[0] ?? "", new Set([word.m[0]]));
+  const distinct = (v: VocabItem) => !!v.m[0] && !alike(word.m.join(" "), v.m.join(" "));
+  const similar = d.vocab.filter((v) => v.p === word.p && distinct(v));
+  const wrong = distractors(similar.length >= 12 ? similar : d.vocab.filter(distinct), (v) => v.m[0] ?? "", new Set([word.m[0]]));
   if (!wrong) return null;
   return make(
     {
@@ -228,7 +244,7 @@ function kanjiMeaningQuestion(d: LevelData): Question | null {
   const kanji = pick(focus(d.kanji.filter((k) => k.m[0]), kanjiKey));
   if (!kanji) return null;
   const label = (k: KanjiItem) => k.m.slice(0, 2).join(", ");
-  const wrong = distractors(d.kanji.filter((k) => k.m[0]), (k) => k.m[0], new Set([kanji.m[0]]));
+  const wrong = distractors(d.kanji.filter((k) => k.m[0] && !alike(kanji.m.join(" "), k.m.join(" "))), (k) => k.m[0], new Set([kanji.m[0]]));
   if (!wrong) return null;
   return make(
     {
@@ -385,7 +401,7 @@ function formQuestion(d: LevelData): Question | null {
 function grammarMeaningQuestion(d: LevelData): Question | null {
   const item = pick(focus(d.grammar.filter((g) => g.m), (g) => `g:${g.id}`));
   if (!item) return null;
-  const wrong = distractors(d.grammar.filter((g) => g.m), (g) => shorten(g.m), new Set([shorten(item.m)]));
+  const wrong = distractors(d.grammar.filter((g) => g.m && !alike(item.m, g.m)), (g) => shorten(g.m), new Set([shorten(item.m)]));
   if (!wrong) return null;
   const first = item.e[0];
   return make(
