@@ -499,12 +499,17 @@ export default function QuizPage() {
                     role="radio"
                     aria-checked={mode === m.id}
                     onClick={() => setMode(m.id)}
-                    className={`card flex flex-col items-start gap-0.5 px-4 py-3.5 text-left transition-colors ${
-                      mode === m.id ? "ring-2 ring-ink" : "hover:bg-paper-sunk/50"
+                    className={`flex flex-col items-start gap-0.5 rounded-2xl px-4 py-3.5 text-left transition-colors ${
+                      mode === m.id
+                        ? "bg-ink text-paper"
+                        : "card hover:bg-paper-sunk/50"
                     }`}
                   >
-                    <span className="text-[15px] font-semibold">{m.label}</span>
-                    <span className="text-xs text-ink-soft">{m.hint}</span>
+                    <span className="flex w-full items-center justify-between gap-2 text-[15px] font-semibold">
+                      {m.label}
+                      {mode === m.id && <span aria-hidden="true">✓</span>}
+                    </span>
+                    <span className={`text-xs ${mode === m.id ? "text-paper/70" : "text-ink-soft"}`}>{m.hint}</span>
                   </button>
                 ))}
               </div>
