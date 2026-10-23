@@ -68,6 +68,9 @@ const KANJI = /[一-鿿]/;
 const hasKanji = (text: string) => KANJI.test(text);
 const pick = <T>(items: readonly T[]): T | undefined => items[Math.floor(Math.random() * items.length)];
 
+/** Progress keys a quiz is limited to; null for an ordinary quiz. */
+let scope: Set<string> | null = null;
+
 const vocabKey = (v: VocabItem) => `v:${v.w}`;
 const kanjiKey = (k: KanjiItem) => `k:${k.c}`;
 
@@ -76,11 +79,14 @@ const kanjiKey = (k: KanjiItem) => `k:${k.c}`;
  * or have just studied, with fresh and mastered items still mixed in.
  */
 function focus<T>(pool: readonly T[], key: (item: T) => string): T[] {
+  // A unit check only asks about that unit's own items.
+  if (scope) return pool.filter((item) => scope?.has(key(item)));
   const progress = getProgress();
   const order = { weak: 0, learning: 1, new: 2, mastered: 3 } as const;
   const tiers: T[][] = [[], [], [], []];
   for (const item of pool) tiers[order[statusOf(progress[key(item)])]].push(item);
-  const weights = [3, 3, 2, 1].map((w, i) => (tiers[i].length ? w : 0));
+  // Material you haven't met yet is the rarest pick, so quizzes stay on what you've studied.
+  const weights = [4, 4, 1, 1].map((w, i) => (tiers[i].length ? w : 0));
   let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
   for (let i = 0; i < tiers.length; i++) {
     roll -= weights[i];
@@ -486,6 +492,19 @@ export async function buildQuiz(mode: Mode, level: Level, count = 10): Promise<Q
   const seed = mode === "grammar" ? shuffle(handwrittenGrammar(level)).slice(0, Math.ceil(count / 2)) : [];
   const out = fill(data, MODE_KINDS[mode], count, seed);
   return out.length ? shuffle(out) : null;
+}
+
+/** A short check on one unit's words, kanji and grammar. */
+export async function buildUnitQuiz(level: Level, keys: string[], count = 8): Promise<Question[] | null> {
+  const data = await loadLevel(level);
+  if (!data) return null;
+  scope = new Set(keys);
+  try {
+    const out = fill(data, ["meaning", "gmeaning", "kanjiMeaning", "form", "context", "kanjiReading", "reading", "meaning"], count);
+    return out.length >= Math.min(4, count) ? shuffle(out) : null;
+  } finally {
+    scope = null;
+  }
 }
 
 export type MockSection = { id: "vocab" | "grammar" | "reading"; title: string; minutes: number; questions: Question[] };
