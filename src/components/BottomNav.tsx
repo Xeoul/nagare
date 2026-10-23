@@ -12,9 +12,14 @@ const TABS = [
   { href: "/quiz", label: "Quiz", Icon: QuizIcon },
 ] as const;
 
-/** /library was the library's address before it became the home page. */
-const isActive = (pathname: string, href: string) =>
-  pathname === href || (href === "/" && pathname.replace(/\/$/, "") === "/library");
+/**
+ * The static export serves pages with a trailing slash (/study/), so compare
+ * without it. /library was the library's address before it became the home page.
+ */
+const isActive = (pathname: string, href: string) => {
+  const path = pathname.replace(/\/$/, "") || "/";
+  return path === href || (href === "/" && path === "/library");
+};
 
 /**
  * A floating glass capsule. The active tab grows into a pill with its label;
