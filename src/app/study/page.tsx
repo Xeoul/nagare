@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import FuriganaText from "@/components/FuriganaText";
+import LearnedButton from "@/components/LearnedButton";
 import PageHeader from "@/components/PageHeader";
 import { REFERENCE, type ReferenceSection } from "@/data/reference";
 import { speak } from "@/lib/speech";
@@ -89,6 +90,9 @@ function GrammarCard({ g }: { g: GrammarItem }) {
           {g.p}
         </h3>
         <p className="text-sm font-semibold text-ink-soft">{g.m}</p>
+        <span className="ml-auto">
+          <LearnedButton id={`g:${g.id}`} />
+        </span>
       </div>
       <p className="w-fit rounded-lg bg-paper-sunk px-2.5 py-1 text-xs text-ink-soft">{g.f}</p>
       {g.n && <p className="text-sm leading-relaxed">{g.n}</p>}
@@ -125,7 +129,10 @@ function KanjiCard({ k }: { k: KanjiItem }) {
           </p>
         )}
       </div>
-      <span className="shrink-0 text-xs text-ink-soft">{k.s} strokes</span>
+      <div className="flex shrink-0 flex-col items-end gap-2">
+        <span className="text-xs text-ink-soft">{k.s} strokes</span>
+        <LearnedButton id={`k:${k.c}`} />
+      </div>
     </li>
   );
 }
@@ -151,6 +158,7 @@ function VocabRow({ v }: { v: VocabItem }) {
         >
           Listen
         </button>
+        <LearnedButton id={`v:${v.w}`} />
       </div>
       <p className="text-sm">{v.m.join("; ")}</p>
       {ex && (
