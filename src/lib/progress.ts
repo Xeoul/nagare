@@ -100,3 +100,10 @@ function subscribe(fn: () => void) {
 export function useProgress(): Progress {
   return useSyncExternalStore(subscribe, getProgress, () => EMPTY);
 }
+
+export function setLearned(key: string, learned: boolean) {
+  mutate((draft) => {
+    const old = draft[key] ?? { a: 0, c: 0, s: 0, t: 0 };
+    draft[key] = { ...old, l: learned, t: Date.now() };
+  });
+}
