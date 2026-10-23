@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
+import { recordAnswers } from "@/lib/progress";
 import { speak } from "@/lib/speech";
 import {
   buildMock,
@@ -121,6 +122,7 @@ function Runner({ session, onDone, onQuit }: { session: Session; onDone: (report
       if (!session.mock && picked !== null) return;
       setPicked(choice);
       answers.current[sectionIndex][index] = choice;
+      if (!session.mock && current.item) recordAnswers([{ key: current.item, correct: choice === current.answer }]);
     },
     [current, intro, session.mock, picked, sectionIndex, index],
   );
@@ -432,6 +434,21 @@ export default function QuizPage() {
     setRunKey((k) => k + 1);
   }
 
+  // A mock test counts toward progress once it's handed in; practice counts per answer.
+  const finish = useCallback((done: Report) => {
+    if (done.session.mock) {
+      recordAnswers(
+        done.session.sections.flatMap((sec, si) =>
+          sec.questions.flatMap((q, qi) => {
+            const given = done.answers[si][qi];
+            return q.item && given !== null ? [{ key: q.item, correct: given === q.answer }] : [];
+          }),
+        ),
+      );
+    }
+    setReport(done);
+  }, []);
+
   const reset = () => {
     setSession(null);
     setReport(null);
@@ -520,7 +537,7 @@ export default function QuizPage() {
           </section>
         )}
 
-        {session && !report && <Runner key={runKey} session={session} onDone={setReport} onQuit={reset} />}
+        {session && !report && <Runner key={runKey} session={session} onDone={finish} onQuit={reset} />}
 
         {session && report && <Results report={report} onAgain={() => void start(session.mock)} onChange={reset} />}
       </div>

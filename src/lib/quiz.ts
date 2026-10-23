@@ -9,6 +9,7 @@ import {
 } from "@/lib/conjugation";
 import { GRAMMAR_QUESTIONS } from "@/data/grammar-quiz";
 import { READING_QUESTIONS } from "@/data/reading-quiz";
+import { getProgress, statusOf } from "@/lib/progress";
 import { STARTER_READINGS } from "@/data/starter-readings";
 import {
   loadLevel,
@@ -40,6 +41,8 @@ export type Question = {
   level: Level;
   /** The passage to read first, for reading-comprehension questions. */
   passage?: string;
+  /** Progress key of the word, kanji or grammar point it tests (see lib/progress.ts). */
+  item?: string;
   /** What's asked, e.g. "How do you read the underlined word?" */
   prompt: string;
   /** The thing asked about. Text inside [[ ]] is shown underlined, like on the exam. */
@@ -64,6 +67,27 @@ export function shuffle<T>(items: readonly T[]): T[] {
 const KANJI = /[一-鿿]/;
 const hasKanji = (text: string) => KANJI.test(text);
 const pick = <T>(items: readonly T[]): T | undefined => items[Math.floor(Math.random() * items.length)];
+
+const vocabKey = (v: VocabItem) => `v:${v.w}`;
+const kanjiKey = (k: KanjiItem) => `k:${k.c}`;
+
+/**
+ * Narrows a pool to one progress tier, so quizzes lean on what you got wrong
+ * or have just studied, with fresh and mastered items still mixed in.
+ */
+function focus<T>(pool: readonly T[], key: (item: T) => string): T[] {
+  const progress = getProgress();
+  const order = { weak: 0, learning: 1, new: 2, mastered: 3 } as const;
+  const tiers: T[][] = [[], [], [], []];
+  for (const item of pool) tiers[order[statusOf(progress[key(item)])]].push(item);
+  const weights = [3, 3, 2, 1].map((w, i) => (tiers[i].length ? w : 0));
+  let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < tiers.length; i++) {
+    roll -= weights[i];
+    if (roll < 0) return tiers[i];
+  }
+  return [...pool];
+}
 
 /** Picks `count` items that differ from the correct one (and each other) by `key`. */
 function distractors<T>(pool: readonly T[], key: (item: T) => string, forbidden: Set<string>, count = 3): T[] | null {
@@ -98,7 +122,7 @@ const shorten = (text: string, max = 60) => (text.length > max ? `${text.slice(0
 // ───────── vocabulary and kanji ─────────
 
 function meaningQuestion(d: LevelData): Question | null {
-  const word = pick(d.vocab.filter((v) => v.m[0] && v.m[0].length <= 38));
+  const word = pick(focus(d.vocab.filter((v) => v.m[0] && v.m[0].length <= 38), vocabKey));
   if (!word) return null;
   // Same part of speech first, so "to eat" isn't the only verb among nouns.
   const similar = d.vocab.filter((v) => v.p === word.p && v.m[0]);
@@ -107,6 +131,7 @@ function meaningQuestion(d: LevelData): Question | null {
   return make(
     {
       kind: "meaning",
+      item: vocabKey(word),
       section: "vocab",
       level: d.level,
       prompt: "What does this word mean?",
@@ -120,7 +145,7 @@ function meaningQuestion(d: LevelData): Question | null {
 }
 
 function readingQuestion(d: LevelData): Question | null {
-  const word = pick(d.vocab.filter((v) => hasKanji(v.w)));
+  const word = pick(focus(d.vocab.filter((v) => hasKanji(v.w)), vocabKey));
   if (!word) return null;
   const example = verbatimExample(word);
   const pool = d.vocab.filter((v) => hasKanji(v.w) && Math.abs(v.r.length - word.r.length) <= 1);
@@ -129,6 +154,7 @@ function readingQuestion(d: LevelData): Question | null {
   return make(
     {
       kind: "reading",
+      item: vocabKey(word),
       section: "vocab",
       level: d.level,
       prompt: "How do you read the underlined word?",
@@ -142,7 +168,7 @@ function readingQuestion(d: LevelData): Question | null {
 }
 
 function orthographyQuestion(d: LevelData): Question | null {
-  const word = pick(d.vocab.filter((v) => hasKanji(v.w) && verbatimExample(v)));
+  const word = pick(focus(d.vocab.filter((v) => hasKanji(v.w) && verbatimExample(v)), vocabKey));
   const example = word && verbatimExample(word);
   if (!word || !example) return null;
   // Look-alikes: other words that share a kanji or have the same length, but
@@ -156,6 +182,7 @@ function orthographyQuestion(d: LevelData): Question | null {
   return make(
     {
       kind: "orthography",
+      item: vocabKey(word),
       section: "vocab",
       level: d.level,
       prompt: "Choose the correct way to write the underlined word.",
@@ -168,7 +195,7 @@ function orthographyQuestion(d: LevelData): Question | null {
 }
 
 function contextQuestion(d: LevelData): Question | null {
-  const word = pick(d.vocab.filter((v) => v.p && verbatimExample(v)));
+  const word = pick(focus(d.vocab.filter((v) => v.p && verbatimExample(v)), vocabKey));
   const example = word && verbatimExample(word);
   if (!word || !example) return null;
   const pool = d.vocab.filter((v) => v.p === word.p && v.r !== word.r);
@@ -177,6 +204,7 @@ function contextQuestion(d: LevelData): Question | null {
   return make(
     {
       kind: "context",
+      item: vocabKey(word),
       section: "vocab",
       level: d.level,
       prompt: "Choose the best word to fill the gap.",
@@ -191,7 +219,7 @@ function contextQuestion(d: LevelData): Question | null {
 const readingsOf = (k: KanjiItem) => [...k.on, ...k.kun].map((r) => r.replace(/[.\-]/g, ""));
 
 function kanjiMeaningQuestion(d: LevelData): Question | null {
-  const kanji = pick(d.kanji.filter((k) => k.m[0]));
+  const kanji = pick(focus(d.kanji.filter((k) => k.m[0]), kanjiKey));
   if (!kanji) return null;
   const label = (k: KanjiItem) => k.m.slice(0, 2).join(", ");
   const wrong = distractors(d.kanji.filter((k) => k.m[0]), (k) => k.m[0], new Set([kanji.m[0]]));
@@ -199,6 +227,7 @@ function kanjiMeaningQuestion(d: LevelData): Question | null {
   return make(
     {
       kind: "kanjiMeaning",
+      item: kanjiKey(kanji),
       section: "vocab",
       level: d.level,
       prompt: "What does this kanji mean?",
@@ -213,7 +242,7 @@ function kanjiMeaningQuestion(d: LevelData): Question | null {
 }
 
 function kanjiReadingQuestion(d: LevelData): Question | null {
-  const kanji = pick(d.kanji.filter((k) => readingsOf(k).length > 0));
+  const kanji = pick(focus(d.kanji.filter((k) => readingsOf(k).length > 0), kanjiKey));
   if (!kanji) return null;
   const own = new Set(readingsOf(kanji));
   const correct = pick(readingsOf(kanji));
@@ -229,6 +258,7 @@ function kanjiReadingQuestion(d: LevelData): Question | null {
   return make(
     {
       kind: "kanjiReading",
+      item: kanjiKey(kanji),
       section: "vocab",
       level: d.level,
       prompt: "Which of these is a reading of this kanji?",
@@ -318,7 +348,7 @@ function formQuestion(d: LevelData): Question | null {
       return core ? [{ g, example, core }] : [];
     }),
   );
-  const chosen = pick(usable);
+  const chosen = pick(focus(usable, (x) => `g:${x.g.id}`));
   if (!chosen) return null;
   const { g, example, core } = chosen;
   // Wrong answers come from other patterns of the level that don't share a
@@ -332,6 +362,7 @@ function formQuestion(d: LevelData): Question | null {
   return make(
     {
       kind: "form",
+      item: `g:${g.id}`,
       section: "grammar",
       level: d.level,
       prompt: "Choose the expression that fits the gap.",
@@ -344,7 +375,7 @@ function formQuestion(d: LevelData): Question | null {
 }
 
 function grammarMeaningQuestion(d: LevelData): Question | null {
-  const item = pick(d.grammar.filter((g) => g.m));
+  const item = pick(focus(d.grammar.filter((g) => g.m), (g) => `g:${g.id}`));
   if (!item) return null;
   const wrong = distractors(d.grammar.filter((g) => g.m), (g) => shorten(g.m), new Set([shorten(item.m)]));
   if (!wrong) return null;
@@ -352,6 +383,7 @@ function grammarMeaningQuestion(d: LevelData): Question | null {
   return make(
     {
       kind: "gmeaning",
+      item: `g:${item.id}`,
       section: "grammar",
       level: d.level,
       prompt: "What does this grammar pattern express?",
@@ -389,6 +421,7 @@ function comprehension(level: Level, count: number): Question[] {
       const order = shuffle([0, 1, 2, 3]);
       out.push({
         kind: "comprehension",
+        item: `p:${reading.title}`,
         section: "reading",
         level,
         passage: reading.text,
