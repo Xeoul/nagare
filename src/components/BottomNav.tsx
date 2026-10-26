@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { BookOpenIcon, LibraryIcon, PathIcon, QuizIcon } from "./icons";
 
 const TABS = [
-  { href: "/", label: "Library", Icon: LibraryIcon },
   { href: "/path", label: "Path", Icon: PathIcon },
+  { href: "/", label: "Library", Icon: LibraryIcon },
   { href: "/study", label: "Study", Icon: BookOpenIcon },
   { href: "/quiz", label: "Quiz", Icon: QuizIcon },
 ] as const;
