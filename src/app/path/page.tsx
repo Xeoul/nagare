@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import PageHeader from "@/components/PageHeader";
 import { Results, Runner, type Report, type Session } from "@/components/QuizRunner";
+import UnitLesson from "@/components/UnitLesson";
 import ReferenceTable from "@/components/ReferenceTable";
-import { GrammarCard, KanjiCard, VocabRow } from "@/components/StudyCards";
 import { REFERENCE } from "@/data/reference";
 import { buildUnits, isPass, PASS_RATE, unitKey, type Unit } from "@/lib/curriculum";
 import { LEVELS, loadLevel, type Level, type LevelData } from "@/lib/jlpt-data";
@@ -185,9 +185,6 @@ export default function PathPage() {
             {unit.title}
           </h2>
         </div>
-        <p className="text-sm leading-relaxed text-ink-soft">
-          Read the grammar first, then the kanji, then the words. Tap Listen on the words, say the examples out loud, then check yourself.
-        </p>
         {!done && (
           <button
             type="button"
@@ -197,51 +194,29 @@ export default function PathPage() {
             Know this already? Test out
           </button>
         )}
-        {unit.grammar.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">1. Grammar</h3>
-            <ul className="flex flex-col gap-3">
-              {unit.grammar.map((g) => (
-                <GrammarCard key={g.id} g={g} />
-              ))}
-            </ul>
-          </section>
-        )}
-        {unit.kanji.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">2. Kanji</h3>
-            <ul className="flex flex-col gap-3">
-              {unit.kanji.map((k) => (
-                <KanjiCard key={k.c} k={k} />
-              ))}
-            </ul>
-          </section>
-        )}
-        {unit.vocab.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">{unit.pack ? "Words" : "3. Words"}</h3>
-            <ul className="flex flex-col gap-3">
-              {unit.vocab.map((v, i) => (
-                <VocabRow key={`${v.w}-${i}`} v={v} />
-              ))}
-            </ul>
-          </section>
-        )}
-        {error && <p className="text-sm text-accent-warm">{error}</p>}
-        <div className="flex flex-wrap gap-2.5">
-          <button type="button" onClick={() => void startCheck(unit)} className="h-12 rounded-full bg-ink px-8 text-[15px] font-semibold text-paper active:scale-95">
-            {done ? "Check again" : "Check yourself"}
-          </button>
-          {done && nextUnit && (
-            <button
-              type="button"
-              onClick={() => setView({ kind: "unit", unit: nextUnit })}
-              className="h-12 rounded-full bg-paper-raised px-6 text-[15px] font-semibold ring-1 ring-line"
-            >
-              Next unit
-            </button>
-          )}
-        </div>
+        <UnitLesson
+          key={unit.id}
+          unit={unit}
+          footer={
+            <>
+              {error && <p className="text-sm text-accent-warm">{error}</p>}
+              <div className="flex flex-wrap gap-2.5">
+                <button type="button" onClick={() => void startCheck(unit)} className="h-12 rounded-full bg-ink px-8 text-[15px] font-semibold text-paper active:scale-95">
+                  {done ? "Check again" : "Check yourself"}
+                </button>
+                {done && nextUnit && (
+                  <button
+                    type="button"
+                    onClick={() => setView({ kind: "unit", unit: nextUnit })}
+                    className="h-12 rounded-full bg-paper-raised px-6 text-[15px] font-semibold ring-1 ring-line"
+                  >
+                    Next unit
+                  </button>
+                )}
+              </div>
+            </>
+          }
+        />
       </>
     );
   } else if (view.kind === "check") {
