@@ -5,19 +5,19 @@ import { usePathname } from "next/navigation";
 import { BookOpenIcon, LibraryIcon, PathIcon, QuizIcon } from "./icons";
 
 const TABS = [
-  { href: "/path", label: "Path", Icon: PathIcon },
-  { href: "/", label: "Library", Icon: LibraryIcon },
+  { href: "/", label: "Path", Icon: PathIcon },
+  { href: "/library", label: "Library", Icon: LibraryIcon },
   { href: "/study", label: "Study", Icon: BookOpenIcon },
   { href: "/quiz", label: "Quiz", Icon: QuizIcon },
 ] as const;
 
 /**
  * The static export serves pages with a trailing slash (/study/), so compare
- * without it. /library was the library's address before it became the home page.
+ * without it. /path is the old address of Path, now the home page.
  */
 const isActive = (pathname: string, href: string) => {
   const path = pathname.replace(/\/$/, "") || "/";
-  return path === href || (href === "/" && path === "/library");
+  return path === href || (href === "/" && path === "/path");
 };
 
 /**
