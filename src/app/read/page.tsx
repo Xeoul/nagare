@@ -200,7 +200,7 @@ function ReadView() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
         <p>Couldn&apos;t find that item.</p>
-        <Link href="/" className="text-sm text-accent hover:underline">
+        <Link href="/library" className="text-sm text-accent hover:underline">
           Back to library
         </Link>
       </div>
@@ -225,7 +225,7 @@ function ReadView() {
             // Go back to wherever the book was opened from (the library or
             // your saved words), falling back to the library on a direct visit.
             if (window.history.length > 1) router.back();
-            else router.push("/");
+            else router.push("/library");
           }}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-paper-raised shadow-[0_0_0_1px_rgb(var(--shadow-color)/0.06),0_4px_12px_-6px_rgb(var(--shadow-color)/0.3)] transition-transform active:scale-90"
         >
